@@ -1,5 +1,6 @@
 import SwiftUI
 import FamilyControls
+import ManagedSettings
 import DeviceActivity
 
 @available(iOS 17.0, *)
@@ -15,14 +16,17 @@ struct OnboardingStep3: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color(hex: "F5F3F0").ignoresSafeArea()
+                // Fundo no tom bege-acinzentado suave
+                Color(hex: "E3DEDB").ignoresSafeArea()
 
                 VStack(spacing: 0) {
+                    // Título principal
                     Text("\(appInfos.count) distractions selected")
                         .font(.system(size: 32, weight: .bold))
                         .foregroundColor(Color(hex: "1D1D1F"))
                         .padding(.top, 40)
 
+                    // Estados de carregamento e lista
                     if isLoading {
                         Spacer()
                         ProgressView("Loading apps...")
@@ -58,6 +62,7 @@ struct OnboardingStep3: View {
 
                     Spacer()
 
+                    // Botões de ação
                     VStack(spacing: 16) {
                         Button(action: {
                             if appInfos.count > 100 {
@@ -90,6 +95,7 @@ struct OnboardingStep3: View {
                     .padding(.horizontal, 20)
                 }
             }
+            // Barra de navegação e navegação entre telas
             .navigationBarItems(leading: BackButton(action: { showStep2 = true }))
             .fullScreenCover(isPresented: $showMainView) {
                 OnboardingStep4()
@@ -109,6 +115,7 @@ struct OnboardingStep3: View {
                 Text("You can only block up to 100 apps. Please remove some apps to continue.")
             }
             .task {
+                // Carrega a seleção salva
                 if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
                    let savedSelection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
                     model.selection = savedSelection
@@ -120,6 +127,7 @@ struct OnboardingStep3: View {
         }
     }
 
+    // Atualiza apps após editar seleção
     private func refreshSelectionAndApps() async {
         if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
            let savedSelection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
@@ -128,21 +136,42 @@ struct OnboardingStep3: View {
         }
     }
 
+    // Carrega informações reais dos apps
     private func loadAppInfos() async {
-        var infos: [AppInfo] = []
-        let colors: [Color] = [Color(hex: "E8B5A0"), Color(hex: "FF6B6B"), Color(hex: "4ECDC4"), Color(hex: "0A66C2"), Color(hex: "E1306C")]
-        
-        for (index, _) in model.selection.applicationTokens.enumerated() {
-            let name = "App \(index + 1)"
-            let color = colors[index % colors.count]
-            infos.append(AppInfo(id: "\(index)", name: name, icon: UIImage(), color: color))
-        }
-
+        isLoading = true
+        let infos = await fetchAppInfo(from: model.selection)
         await MainActor.run {
             self.appInfos = infos
             self.isLoading = false
         }
     }
+
+    @available(iOS 17.0, *)
+    func fetchAppInfo(from selection: FamilyActivitySelection) async -> [AppInfo] {
+        var infos: [AppInfo] = []
+
+        for token in selection.applicationTokens {
+            // Application agora é não opcional
+            let app = Application(token: token)
+            
+            // Nome do app
+            let name = app.localizedDisplayName ?? "Unknown App"
+            
+            let icon = UIImage(systemName: "app.fill")!
+            
+            infos.append(AppInfo(
+                id: token.hashValue.description,
+                name: name,
+                icon: icon,
+                color: .clear,
+                token: token
+            ))
+        }
+
+        return infos
+    }
+
+
 }
 
 // MARK: - Modelos e Views auxiliares
@@ -152,6 +181,7 @@ struct AppInfo: Identifiable {
     let name: String
     let icon: UIImage
     let color: Color
+    let token: ApplicationToken
 }
 
 struct AppRow: View {
@@ -159,11 +189,8 @@ struct AppRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(appInfo.color)
-                .frame(width: 50, height: 50)
-            
-            Text(appInfo.name)
+            Label(appInfo.token)
+                .labelStyle(.titleAndIcon)
                 .font(.system(size: 17))
                 .foregroundColor(Color(hex: "1D1D1F"))
             
@@ -195,3 +222,4 @@ struct BackButton: View {
         Text("Requires iOS 17")
     }
 }
+
