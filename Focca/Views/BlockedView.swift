@@ -44,8 +44,6 @@ struct BlockedView: View {
                     let store = ManagedSettingsStore()
                     store.application.blockedApplications = nil
                     
-                    UserDefaults.standard.removeObject(forKey: "blocked_start_date")
-                    
                     isBlocked = false
                 })
                 

@@ -5,10 +5,10 @@ import ManagedSettings
 struct UnlockedView: View {
     @Binding var isBlocked: Bool
     @Binding var selectedTab: Int
-    @State private var elapsedTime = "10h 33m"
     @State private var showModeSheet = false
     @State private var activeModeName = UserDefaults.standard.string(forKey: "active_mode_name") ?? "-"
     @State private var activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+    @State private var todayTime: String = "0h 0m"
     
     var body: some View {
         ZStack {
@@ -23,7 +23,7 @@ struct UnlockedView: View {
                 Spacer(minLength: 60)
                 
                 HStack(spacing: 4) {
-                    Text(elapsedTime)
+                    Text(todayTime)
                         .font(.system(size: 18, weight: .semibold, design: .rounded))
                         .foregroundColor(Color(hex: "1C1C1E"))
                     
@@ -98,6 +98,32 @@ struct UnlockedView: View {
             ModeSelectionSheet()
                 .presentationDetents([.medium])
         }
+        .onAppear {
+            TimerStorage.shared.initializeFirstLaunch()
+            updateTodayTime()
+            
+            Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+                DispatchQueue.main.async {
+                    self.updateTodayTime()
+                }
+            }
+        }
+        .onChange(of: isBlocked) { blocked in
+            if !blocked {
+                updateTodayTime()
+            }
+        }
+    }
+    
+    private func updateTodayTime() {
+        let totalTime = TimerStorage.shared.getTodayTime()
+        print("🕐 UnlockedView - Today's blocked time: \(totalTime) seconds")
+        
+        let hours = Int(totalTime) / 3600
+        let minutes = (Int(totalTime) % 3600) / 60
+        todayTime = String(format: "%dh %dm", hours, minutes)
+        
+        print("🕐 UnlockedView - Formatted: \(todayTime)")
     }
 }
 

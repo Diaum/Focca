@@ -2,7 +2,7 @@ import SwiftUI
 import Combine
 
 class TimerManager: ObservableObject {
-    @Published var elapsedTime: String = "0:00:00"
+    @Published var elapsedTime: String = "0h 0m 0s"
     private var timer: Timer?
     private var startDate: Date?
     
@@ -23,9 +23,19 @@ class TimerManager: ObservableObject {
     }
     
     func stop() {
+        guard let startDate = startDate else {
+            print("⚠️ TimerManager - No start date to stop")
+            return
+        }
+        
+        print("⏹️ TimerManager - Stopping timer, start date: \(startDate)")
+        
         timer?.invalidate()
         timer = nil
-        startDate = nil
+        
+        TimerStorage.shared.splitOvernightTime(from: startDate, to: Date())
+        
+        self.startDate = nil
         UserDefaults.standard.removeObject(forKey: "blocked_start_date")
     }
     
@@ -60,6 +70,8 @@ struct TimerComponent: View {
             .onChange(of: isActive) { active in
                 if active {
                     timerManager.start()
+                } else {
+                    timerManager.stop()
                 }
             }
     }
