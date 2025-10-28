@@ -53,5 +53,39 @@ class TimerStorage {
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: date)
     }
+    
+    func getAllDailyTimes() -> [(date: Date, time: TimeInterval)] {
+        var result: [(date: Date, time: TimeInterval)] = []
+        let allKeys = userDefaults.dictionaryRepresentation().keys
+        
+        let timeKeys = allKeys.filter { $0.hasPrefix("daily_time_") }
+        
+        for key in timeKeys {
+            let time = userDefaults.double(forKey: key)
+            if time > 0 {
+                let dateString = key.replacingOccurrences(of: "daily_time_", with: "")
+                if let date = parseDate(dateString) {
+                    result.append((date: date, time: time))
+                }
+            }
+        }
+        
+        result.sort { $0.date > $1.date }
+        return result
+    }
+    
+    func getAverageTime() -> TimeInterval {
+        let dailyTimes = getAllDailyTimes()
+        guard !dailyTimes.isEmpty else { return 0 }
+        
+        let totalTime = dailyTimes.reduce(0) { $0 + $1.time }
+        return totalTime / Double(dailyTimes.count)
+    }
+    
+    private func parseDate(_ dateString: String) -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.date(from: dateString)
+    }
 }
 
