@@ -13,6 +13,7 @@ struct ContentView: View {
             OnboardingStep1()
                 .navigationBarHidden(true)
         }
+        .preferredColorScheme(.light)
     }
 }
 

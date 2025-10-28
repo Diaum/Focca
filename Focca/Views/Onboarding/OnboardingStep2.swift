@@ -44,7 +44,6 @@ struct OnboardingStep2: View {
                 }
             }
             .navigationBarTitle("", displayMode: .inline)
-            .preferredColorScheme(.light)
             .onAppear {
                 Task {
                     try? await AuthorizationCenter.shared.requestAuthorization(for: .individual)

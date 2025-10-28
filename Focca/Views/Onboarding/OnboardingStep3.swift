@@ -9,7 +9,6 @@ struct OnboardingStep3: View {
             Text("Step 3")
                 .font(.system(size: 32, weight: .bold))
         }
-        .preferredColorScheme(.light)
     }
 }
 
