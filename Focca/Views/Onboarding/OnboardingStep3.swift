@@ -7,6 +7,7 @@ struct OnboardingStep3: View {
     @StateObject var model = SelectionModel()
     @State private var appInfos: [AppInfo] = []
     @State private var isLoading = true
+    @State private var showMainView = false
 
     var body: some View {
         NavigationView {
@@ -47,15 +48,17 @@ struct OnboardingStep3: View {
                     Spacer()
 
                     VStack(spacing: 16) {
-                        Button("Complete setup") { }
-                            .font(.system(size: 17, weight: .medium))
-                            .foregroundColor(Color(hex: "1D1D1F"))
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 50)
-                            .background(Color(hex: "E5E5EA"))
-                            .cornerRadius(12)
-                            .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
-                            .padding(.horizontal, 20)
+                        Button("Complete setup") {
+                            showMainView = true
+                        }
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundColor(Color(hex: "1D1D1F"))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(Color(hex: "E5E5EA"))
+                        .cornerRadius(12)
+                        .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
+                        .padding(.horizontal, 20)
 
                         Button("Edit apps") { }
                             .font(.system(size: 17, weight: .medium))
@@ -66,6 +69,9 @@ struct OnboardingStep3: View {
                 }
             }
             .navigationBarItems(leading: BackButton())
+            .fullScreenCover(isPresented: $showMainView) {
+                OnboardingStep4()
+            }
             .task {
                 if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
                    let savedSelection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
