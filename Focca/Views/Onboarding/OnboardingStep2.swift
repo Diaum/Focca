@@ -53,10 +53,6 @@ struct OnboardingStep2: View {
     }
     
     private func saveSelection() {
-        let store = ManagedSettingsStore()
-        let applications = Set(selection.applicationTokens.compactMap { Application(token: $0) })
-        store.application.blockedApplications = applications
-        
         saveAppsToUserDefaults()
     }
     

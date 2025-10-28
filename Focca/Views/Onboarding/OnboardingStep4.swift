@@ -1,4 +1,6 @@
 import SwiftUI
+import FamilyControls
+import ManagedSettings
 
 struct OnboardingStep4: View {
     @State private var showBlockedView = false
@@ -67,6 +69,12 @@ struct OnboardingStep4: View {
                 
                 // 🔹 Botão
                 Button(action: {
+                    if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
+                       let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+                        let store = ManagedSettingsStore()
+                        let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
+                        store.application.blockedApplications = apps
+                    }
                     showBlockedView = true
                 }) {
                     Text("Brick device")
