@@ -19,7 +19,7 @@ struct UnlockedView: View {
                 
                 HStack(spacing: 4) {
                     Text(elapsedTime)
-                        .font(.system(size: 24, weight: .semibold, design: .rounded))
+                        .font(.system(size: 18, weight: .semibold, design: .rounded))
                         .foregroundColor(Color(hex: "1C1C1E"))
                     
                     Text("today")
