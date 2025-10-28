@@ -49,18 +49,19 @@ struct UnlockedView: View {
                 .padding(.bottom, 60)
                 
                 VStack(spacing: 8) {
-                    HStack(spacing: 6) {
-                        Text("Mode : Allow")
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundColor(Color(hex: "1C1C1E"))
-                        
-                        Button(action: { showModeSheet = true }) {
+                    Button(action: { showModeSheet = true }) {
+                        HStack(spacing: 6) {
+                            Text("Mode : Allow")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundColor(Color(hex: "1C1C1E"))
+                            
                             Image(systemName: "chevron.down")
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundColor(Color(hex: "1C1C1E"))
                                 .offset(y: 1)
                         }
                     }
+                    .buttonStyle(.plain)
                     
                     Text("Allowing 47 apps")
                         .font(.system(size: 14))

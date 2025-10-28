@@ -18,7 +18,7 @@ struct PrincipalView: View {
             case 2:
                 ActivityView(selectedTab: $selectedTab)
             case 3:
-                UnlockedView(isBlocked: $isBlocked, selectedTab: $selectedTab)
+                SettingsView(selectedTab: $selectedTab)
             default:
                 UnlockedView(isBlocked: $isBlocked, selectedTab: $selectedTab)
             }
