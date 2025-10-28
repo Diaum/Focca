@@ -9,6 +9,7 @@ struct ModeSelectionSheet: View {
     @State private var refreshTrigger = false
     @State private var modeNames: [String] = []
     @State private var selectedModeName: String = ""
+    @State private var shouldDismissParent = false
     
     var body: some View {
         ZStack {
@@ -86,8 +87,14 @@ struct ModeSelectionSheet: View {
         .sheet(isPresented: $showCreateMode, onDismiss: {
             print("📥 ModeSelectionSheet - CreateModeView dismissed")
             loadModeNames()
+            if shouldDismissParent {
+                presentationMode.wrappedValue.dismiss()
+            }
+            shouldDismissParent = false
         }) {
-            CreateModeView()
+            CreateModeView(onDismiss: {
+                shouldDismissParent = true
+            })
         }
         .sheet(isPresented: $showEditMode, onDismiss: {
             print("📥 ModeSelectionSheet - EditModeView dismissed")

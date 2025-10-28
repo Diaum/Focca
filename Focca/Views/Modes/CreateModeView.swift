@@ -6,6 +6,7 @@ struct CreateModeView: View {
     @State private var selection = FamilyActivitySelection()
     @State private var showAppPicker = false
     @Environment(\.presentationMode) var presentationMode
+    var onDismiss: (() -> Void)?
     
     private var canSave: Bool {
         modeName.count >= 4 && modeName.count <= 18 && selection.applicationTokens.count > 0
@@ -105,6 +106,9 @@ struct CreateModeView: View {
                 Button(action: {
                     saveMode()
                     presentationMode.wrappedValue.dismiss()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        onDismiss?()
+                    }
                 }) {
                     Text("Save mode")
                         .font(.system(size: 17, weight: .semibold))
@@ -139,8 +143,12 @@ struct CreateModeView: View {
             UserDefaults.standard.set(true, forKey: existsKey)
             UserDefaults.standard.set(Date(), forKey: "mode_\(modeName)_last_used")
             
+            UserDefaults.standard.set(modeName, forKey: "active_mode_name")
+            UserDefaults.standard.set(selection.applicationTokens.count, forKey: "active_mode_app_count")
+            
             print("✅ Saved selection to: '\(selectionKey)'")
             print("✅ Set exists flag to: '\(existsKey)'")
+            print("✅ Auto-selected mode: '\(modeName)'")
             
             UserDefaults.standard.synchronize()
             
