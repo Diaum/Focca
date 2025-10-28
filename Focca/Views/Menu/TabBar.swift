@@ -22,7 +22,7 @@ struct TabBar: View {
         .background(
             Group {
                 if colorScheme == .dark {
-                    Color(hex: "0F0F0F")
+                    Color.clear
                 } else {
                     LinearGradient(
                         colors: [Color(hex: "F5F5F7"), Color(hex: "")],
