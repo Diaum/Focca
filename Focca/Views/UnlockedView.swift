@@ -77,6 +77,10 @@ struct UnlockedView: View {
                         let store = ManagedSettingsStore()
                         let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
                         store.application.blockedApplications = apps
+                        
+                        let now = Date()
+                        UserDefaults.standard.set(now, forKey: "blocked_start_date")
+                        
                         isBlocked = true
                     }
                 })

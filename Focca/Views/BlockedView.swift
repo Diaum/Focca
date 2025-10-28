@@ -4,7 +4,6 @@ import ManagedSettings
 struct BlockedView: View {
     @Binding var isBlocked: Bool
     @Binding var selectedTab: Int
-    @State private var elapsedTime = "4h 27m 54s"
     
     var body: some View {
         ZStack {
@@ -19,9 +18,7 @@ struct BlockedView: View {
                     .foregroundColor(Color(hex: "8A8A8E"))
                     .padding(.bottom, 10)
                 
-                Text(elapsedTime)
-                    .font(.system(size: 42, weight: .semibold, design: .rounded))
-                    .foregroundColor(.white)
+                TimerComponent(isActive: isBlocked)
                     .padding(.bottom, 56)
                 
                 Image("block-rectangle-dark")
@@ -46,6 +43,9 @@ struct BlockedView: View {
                 DarkBlockButton(action: {
                     let store = ManagedSettingsStore()
                     store.application.blockedApplications = nil
+                    
+                    UserDefaults.standard.removeObject(forKey: "blocked_start_date")
+                    
                     isBlocked = false
                 })
                 
