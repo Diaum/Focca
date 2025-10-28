@@ -4,66 +4,63 @@ struct WhiteBlockButton: View {
     let action: () -> Void
     
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 40)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color.white,
-                            Color(hex: "")
-                        ],
-                        startPoint: .bottom,
-                        endPoint: .top
-                    )
-                )
-                .frame(height: 120)
-                .padding(.horizontal, 0)
-                .padding(.bottom, 0)
-                .shadow(color: Color.gray.opacity(0.9), radius: 12, x: 0, y: -4)
-                .clipShape(
-                    RoundedCorner(radius: 10, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
-                )
-            
-            Button(action: action) {
-                Text("Brick device")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(Color(hex: "1C1C1E"))
-                    .tracking(0.3)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 60)
-                    .background(
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 30)
-                                .fill(
-                                    LinearGradient(
-                                        colors: [
-                                            Color.white,
-                                            Color(hex: "E5E5EA")
-                                        ],
-                                        startPoint: .top,
-                                        endPoint: .bottom
+        Button(action: action) {
+            Text("Brick device")
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundColor(Color(hex: "1C1C1E"))
+                .frame(maxWidth: .infinity)
+                .frame(height: 60)
+                .background(
+                    ZStack {
+                        // Base suave
+                        RoundedRectangle(cornerRadius: 30)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color(hex: "F9F9F9"),
+                                        Color(hex: "EAEAEC")
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            // Simulação de sombra interna sutil
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 30)
+                                    .stroke(
+                                        LinearGradient(
+                                            colors: [
+                                                Color.white.opacity(0.8),
+                                                Color.black.opacity(0.05)
+                                            ],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        ),
+                                        lineWidth: 0.8
                                     )
-                                )
-                            
-                            RoundedRectangle(cornerRadius: 30)
-                                .stroke(
-                                    LinearGradient(
-                                        colors: [
-                                            Color.black.opacity(0.05),
-                                            Color.white.opacity(0.7)
-                                        ],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                    lineWidth: 1
-                                )
-                        }
-                    )
-                    .shadow(color: Color.gray.opacity(0.9), radius: 18, x: 0, y: 8)
-                    .shadow(color: Color.white.opacity(0.04), radius: 1, x: 0, y: -1)
-            }
-            .padding(.horizontal, 30)
-            .padding(.bottom, 60)
+                            )
+                            // Sombra externa bem suave e difusa
+                            .shadow(color: Color.white.opacity(0.8), radius: 2, x: -2, y: -2)
+                            .shadow(color: Color.black.opacity(0.08), radius: 6, x: 2, y: 3)
+                            // Efeito de leve profundidade (simula sombra interna)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 30)
+                                    .stroke(
+                                        LinearGradient(
+                                            colors: [
+                                                Color.black.opacity(0.04),
+                                                Color.white.opacity(0.3)
+                                            ],
+                                            startPoint: .bottomTrailing,
+                                            endPoint: .topLeading
+                                        ),
+                                        lineWidth: 1
+                                    )
+                                    .blur(radius: 1)
+                            )
+                    }
+                )
+                .padding(.horizontal, 36)
         }
     }
 }
@@ -80,8 +77,8 @@ struct WhiteBlockButton: View {
         VStack {
             Spacer()
             WhiteBlockButton(action: {})
+                .padding(.bottom, 80)
         }
     }
     .preferredColorScheme(.light)
 }
-
