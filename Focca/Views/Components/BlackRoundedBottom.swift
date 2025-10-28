@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct WhiteRoundedBottom: View {
+struct BlackRoundedBottom: View {
     let action: () -> Void
     
     var body: some View {
@@ -9,14 +9,14 @@ struct WhiteRoundedBottom: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color.white,
+                            Color.black,
                             Color(hex: "")
                         ],
                         startPoint: .bottom,
                         endPoint: .top
                     )
                 )
-                .frame(height: 120)
+                .frame(height: 100)
                 .padding(.horizontal, 0)
                 .padding(.bottom, 0)
                 .clipShape(
@@ -29,18 +29,14 @@ struct WhiteRoundedBottom: View {
 
 #Preview {
     ZStack {
-        LinearGradient(
-            colors: [Color(hex: "F7F7F8"), Color(hex: "ECECEC")],
-            startPoint: .top,
-            endPoint: .bottom
-        )
-        .ignoresSafeArea()
+        Color(hex: "fff")
+            .ignoresSafeArea()
         
         VStack {
             Spacer()
-            WhiteRoundedBottom(action: {})
+            BlackRoundedBottom(action: {})
         }
     }
-    .preferredColorScheme(.light)
+    .preferredColorScheme(.dark)
 }
 
