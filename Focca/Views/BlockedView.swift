@@ -1,4 +1,5 @@
 import SwiftUI
+import ManagedSettings
 
 struct BlockedView: View {
     @Binding var isBlocked: Bool
@@ -51,7 +52,11 @@ struct BlockedView: View {
                 }
                 .padding(.bottom, 100)
                 
-                DarkBlockButton(action: {})
+                DarkBlockButton(action: {
+                    let store = ManagedSettingsStore()
+                    store.application.blockedApplications = nil
+                    isBlocked = false
+                })
                 
                 Spacer()
                 
