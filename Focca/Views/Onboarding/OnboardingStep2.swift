@@ -21,14 +21,21 @@ struct OnboardingStep2: View {
                     
                     HStack(spacing: 12) {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("\(selection.applicationTokens.count + selection.categoryTokens.count)/50 items selected")
-                                .font(.system(size: 14))
-                                .foregroundColor(.secondary)
-                            
-                            if selection.categoryTokens.count > 0 && selection.applicationTokens.count == 0 {
-                                Text("⚠️ Tap category \"All\" to select all apps")
+                            if selection.applicationTokens.count > 0 {
+                                Text("\(selection.applicationTokens.count)/50 apps selected")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                            } else if selection.categoryTokens.count > 0 {
+                                Text("0/50 apps selected")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                                Text("⚠️ Deselect category → select apps individually")
                                     .font(.system(size: 11))
                                     .foregroundColor(.orange)
+                            } else {
+                                Text("0/50 apps selected")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
                             }
                         }
                         

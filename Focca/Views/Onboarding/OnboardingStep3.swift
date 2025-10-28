@@ -8,6 +8,8 @@ struct OnboardingStep3: View {
     @State private var appInfos: [AppInfo] = []
     @State private var isLoading = true
     @State private var showMainView = false
+    @State private var showStep2 = false
+    @Environment(\.presentationMode) var presentationMode
 
     var body: some View {
         NavigationView {
@@ -60,7 +62,9 @@ struct OnboardingStep3: View {
                         .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
                         .padding(.horizontal, 20)
 
-                        Button("Edit apps") { }
+                        Button("Edit apps") {
+                            showStep2 = true
+                        }
                             .font(.system(size: 17, weight: .medium))
                             .foregroundColor(Color(hex: "1D1D1F"))
                     }
@@ -71,6 +75,11 @@ struct OnboardingStep3: View {
             .navigationBarItems(leading: BackButton())
             .fullScreenCover(isPresented: $showMainView) {
                 OnboardingStep4()
+            }
+            .sheet(isPresented: $showStep2) {
+                OnboardingStep2(didComplete: {
+                    showStep2 = false
+                })
             }
             .task {
                 if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
