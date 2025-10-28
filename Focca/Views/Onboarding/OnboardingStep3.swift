@@ -16,17 +16,14 @@ struct OnboardingStep3: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Fundo no tom bege-acinzentado suave
                 Color(hex: "E3DEDB").ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    // Título principal
                     Text("\(appInfos.count) distractions selected")
                         .font(.system(size: 32, weight: .bold))
                         .foregroundColor(Color(hex: "1D1D1F"))
                         .padding(.top, 40)
 
-                    // Estados de carregamento e lista
                     if isLoading {
                         Spacer()
                         ProgressView("Loading apps...")
@@ -62,7 +59,6 @@ struct OnboardingStep3: View {
 
                     Spacer()
 
-                    // Botões de ação
                     VStack(spacing: 16) {
                         Button(action: {
                             if appInfos.count > 100 {
@@ -95,7 +91,6 @@ struct OnboardingStep3: View {
                     .padding(.horizontal, 20)
                 }
             }
-            // Barra de navegação e navegação entre telas
             .navigationBarItems(leading: BackButton(action: { showStep2 = true }))
             .fullScreenCover(isPresented: $showMainView) {
                 OnboardingStep4()
@@ -115,7 +110,6 @@ struct OnboardingStep3: View {
                 Text("You can only block up to 100 apps. Please remove some apps to continue.")
             }
             .task {
-                // Carrega a seleção salva
                 if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
                    let savedSelection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
                     model.selection = savedSelection
@@ -127,7 +121,6 @@ struct OnboardingStep3: View {
         }
     }
 
-    // Atualiza apps após editar seleção
     private func refreshSelectionAndApps() async {
         if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
            let savedSelection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
@@ -136,7 +129,6 @@ struct OnboardingStep3: View {
         }
     }
 
-    // Carrega informações reais dos apps
     private func loadAppInfos() async {
         isLoading = true
         let infos = await fetchAppInfo(from: model.selection)
@@ -151,14 +143,10 @@ struct OnboardingStep3: View {
         var infos: [AppInfo] = []
 
         for token in selection.applicationTokens {
-            // Application agora é não opcional
             let app = Application(token: token)
-            
-            // Nome do app
             let name = app.localizedDisplayName ?? "Unknown App"
-            
             let icon = UIImage(systemName: "app.fill")!
-            
+
             infos.append(AppInfo(
                 id: token.hashValue.description,
                 name: name,
@@ -170,11 +158,7 @@ struct OnboardingStep3: View {
 
         return infos
     }
-
-
 }
-
-// MARK: - Modelos e Views auxiliares
 
 struct AppInfo: Identifiable {
     let id: String
@@ -188,15 +172,25 @@ struct AppRow: View {
     let appInfo: AppInfo
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 16) {
             Label(appInfo.token)
-                .labelStyle(.titleAndIcon)
-                .font(.system(size: 17))
-                .foregroundColor(Color(hex: "1D1D1F"))
-            
+                .labelStyle(.iconOnly)
+                .font(.system(size: 56))
+                .frame(width: 64, height: 64)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Label(appInfo.token)
+                    .labelStyle(.titleOnly)
+                    .font(.system(size: 19, weight: .semibold))
+                    .foregroundColor(Color(hex: "1D1D1F"))
+            }
+
             Spacer()
         }
-        .padding(.vertical, 12)
+        .padding(.vertical, 14)
     }
 }
 
@@ -222,4 +216,3 @@ struct BackButton: View {
         Text("Requires iOS 17")
     }
 }
-
