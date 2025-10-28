@@ -1,4 +1,6 @@
 import SwiftUI
+import FamilyControls
+import ManagedSettings
 
 struct UnlockedView: View {
     @Binding var isBlocked: Bool
@@ -37,16 +39,12 @@ struct UnlockedView: View {
                 )
                 .padding(.bottom, 70)
                 
-                Button(action: {
-                    isBlocked = true
-                }) {
-                    Image("focco_rectangle")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 220, height: 220)
-                        .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
-                }
-                .padding(.bottom, 60)
+                Image("focco_rectangle")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 220, height: 220)
+                    .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
+                    .padding(.bottom, 60)
                 
                 VStack(spacing: 8) {
                     Button(action: { showModeSheet = true }) {
@@ -69,7 +67,15 @@ struct UnlockedView: View {
                 }
                 .padding(.bottom, 80)
                 
-                WhiteBlockButton(action: {})
+                WhiteBlockButton(action: {
+                    if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
+                       let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+                        let store = ManagedSettingsStore()
+                        let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
+                        store.application.blockedApplications = apps
+                        isBlocked = true
+                    }
+                })
                 
                 Spacer()
                 

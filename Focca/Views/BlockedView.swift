@@ -24,15 +24,11 @@ struct BlockedView: View {
                     .foregroundColor(.white)
                     .padding(.bottom, 56)
                 
-                Button(action: {
-                    isBlocked = false
-                }) {
-                    Image("block-rectangle-dark")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 210, height: 210)
-                }
-                .padding(.bottom, 56)
+                Image("block-rectangle-dark")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 210, height: 210)
+                    .padding(.bottom, 56)
                 
                 VStack(spacing: 6) {
                     HStack(spacing: 6) {
