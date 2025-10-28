@@ -44,15 +44,16 @@ struct BlockedView: View {
                         .font(.system(size: 13))
                         .foregroundColor(Color(hex: "8A8A8E"))
                 }
-                .padding(.bottom, 60)
+                .padding(.bottom, 100)
                 
                 BlockButtonComponent(action: {})
                 
                 Spacer()
+                
+                TabBar(selectedTab: $selectedTab)
             }
         }
         .preferredColorScheme(.dark)
-        
     }
 }
 

@@ -63,7 +63,7 @@ struct BlockButtonComponent: View {
                     .shadow(color: Color.white.opacity(0.04), radius: 1, x: 0, y: -1)
             }
             .padding(.horizontal, 30)
-            .padding(.bottom, 10)
+            .padding(.bottom, 60)
         }
     }
 }
