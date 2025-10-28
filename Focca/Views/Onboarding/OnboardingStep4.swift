@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct OnboardingStep4: View {
+    @State private var showBlockedView = false
+    
     var body: some View {
         ZStack {
             // Fundo ligeiramente mais frio e neutro
@@ -28,7 +30,7 @@ struct OnboardingStep4: View {
                 
                 // 🔹 Título
                 VStack(spacing: 4) {
-                    Text("You’re ready to take")
+                    Text("You're ready to take")
                         .font(.system(size: 32, weight: .semibold))
                         .foregroundColor(Color(hex: "1D1D1F"))
                     Text("your time back")
@@ -64,7 +66,9 @@ struct OnboardingStep4: View {
                 Spacer()
                 
                 // 🔹 Botão
-                Button(action: {}) {
+                Button(action: {
+                    showBlockedView = true
+                }) {
                     Text("Brick device")
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(Color(hex: "1D1D1F"))
@@ -76,6 +80,9 @@ struct OnboardingStep4: View {
                 .padding(.horizontal, 24)
                 .padding(.bottom, 40)
             }
+        }
+        .fullScreenCover(isPresented: $showBlockedView) {
+            BlockedView()
         }
     }
 }

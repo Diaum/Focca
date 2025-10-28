@@ -2,36 +2,32 @@ import SwiftUI
 
 struct BlockedView: View {
     @State private var selectedTab = 0
-    @State private var elapsedTime = "4h 27m 54s" // Exemplo — você pode conectar a um timer real
+    @State private var elapsedTime = "4h 27m 54s"
     
     var body: some View {
         ZStack {
-            Color(hex: "0F0F0F") // Fundo mais profundo e neutro
+            Color(hex: "181818")
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 Spacer(minLength: 40)
                 
-                // 🔹 Texto superior
                 Text("You’ve been Bricked for")
-                    .font(.system(size: 15, weight: .regular))
-                    .foregroundColor(Color(hex: "8E8E93"))
-                    .padding(.bottom, 8)
+                    .font(.system(size: 12))
+                    .foregroundColor(Color(hex: "8A8A8E"))
+                    .padding(.bottom, 10)
                 
-                // 🔹 Tempo central
                 Text(elapsedTime)
-                    .font(.system(size: 54, weight: .semibold, design: .rounded))
+                    .font(.system(size: 42, weight: .semibold, design: .rounded))
                     .foregroundColor(.white)
-                    .padding(.bottom, 40)
+                    .padding(.bottom, 56)
                 
-                // 🔹 Imagem do Brick
                 Image("block-rectangle-dark")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 210, height: 210)
-                    .padding(.bottom, 36)
+                    .padding(.bottom, 56)
                 
-                // 🔹 Modo e subtítulo
                 VStack(spacing: 6) {
                     HStack(spacing: 6) {
                         Text("Mode : Focused")
@@ -46,35 +42,17 @@ struct BlockedView: View {
                     
                     Text("Blocking 6 apps")
                         .font(.system(size: 13))
-                        .foregroundColor(Color(hex: "8E8E93"))
+                        .foregroundColor(Color(hex: "8A8A8E"))
                 }
                 .padding(.bottom, 60)
                 
-                // 🔹 Botão principal
-                Button(action: {
-                    // ação para unbrick
-                }) {
-                    Text("Unbrick device")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(
-                            RoundedRectangle(cornerRadius: 28)
-                                .fill(Color(hex: "1A1A1A"))
-                                .shadow(color: .black.opacity(0.6), radius: 10, x: 0, y: 4)
-                        )
-                }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 40)
+                BlockButtonComponent(action: {})
                 
                 Spacer()
-                
-                // 🔹 TabBar inferior
-                TabBar(selectedTab: $selectedTab)
             }
         }
         .preferredColorScheme(.dark)
+        
     }
 }
 
