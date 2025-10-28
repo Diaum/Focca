@@ -43,8 +43,8 @@ struct TabItem: View {
     var body: some View {
         VStack(spacing: 6) {
             Text(title)
-                .font(.system(size: 12, weight: .regular))
-                .foregroundColor(isSelected ? (colorScheme == .dark ? .white : .black) : Color(hex: ""))
+                .font(.system(size: 14, weight: .regular))
+                .foregroundColor(isSelected ? (colorScheme == .dark ? .white : .black) : Color(hex: "9E9EA3"))
             
             Circle()
                 .fill(isSelected ? (colorScheme == .dark ? Color.white : Color.black) : Color.clear)
