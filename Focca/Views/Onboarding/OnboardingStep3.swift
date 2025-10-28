@@ -79,6 +79,7 @@ struct OnboardingStep3: View {
             .sheet(isPresented: $showStep2) {
                 OnboardingStep2(didComplete: {
                     showStep2 = false
+                    Task { await refreshSelectionAndApps() }
                 })
             }
             .task {
@@ -90,6 +91,14 @@ struct OnboardingStep3: View {
                     isLoading = false
                 }
             }
+        }
+    }
+
+    private func refreshSelectionAndApps() async {
+        if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
+           let savedSelection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+            await MainActor.run { model.selection = savedSelection }
+            await loadAppInfos()
         }
     }
 
