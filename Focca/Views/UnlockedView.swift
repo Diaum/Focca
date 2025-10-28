@@ -13,7 +13,7 @@ struct UnlockedView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [Color(hex: "F7F7F8"), Color(hex: "ECECEC")],
+                colors: [Color(hex: "F0ECEB"), Color(hex: "ECECEC")],
                 startPoint: .top,
                 endPoint: .bottom
             )

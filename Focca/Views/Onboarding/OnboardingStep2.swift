@@ -17,7 +17,7 @@ struct OnboardingStep2: View {
                     FamilyActivityPicker(selection: $selection)
                         .frame(maxHeight: .infinity)
                     
-                    Spacer()
+                    Spacer(minLength: 40)
                     
                     HStack(spacing: 12) {
                         VStack(alignment: .leading, spacing: 4) {
