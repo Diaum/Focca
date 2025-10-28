@@ -60,6 +60,7 @@ struct OnboardingStep2: View {
             }
             .navigationBarTitle("", displayMode: .inline)
             .onAppear {
+                loadSavedSelection()
                 Task {
                     try? await AuthorizationCenter.shared.requestAuthorization(for: .individual)
                 }
@@ -74,6 +75,13 @@ struct OnboardingStep2: View {
     private func saveAppsToUserDefaults() {
         if let encoded = try? JSONEncoder().encode(selection) {
             UserDefaults.standard.set(encoded, forKey: "familyActivitySelection")
+        }
+    }
+    
+    private func loadSavedSelection() {
+        if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
+           let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+            selection = saved
         }
     }
 }
