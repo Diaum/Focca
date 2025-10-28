@@ -2,7 +2,7 @@ import SwiftUI
 
 struct BlockedView: View {
     @Binding var isBlocked: Bool
-    @State private var selectedTab = 0
+    @Binding var selectedTab: Int
     @State private var elapsedTime = "4h 27m 54s"
     
     var body: some View {
@@ -63,6 +63,6 @@ struct BlockedView: View {
 }
 
 #Preview {
-    BlockedView(isBlocked: .constant(true))
+    BlockedView(isBlocked: .constant(true), selectedTab: .constant(0))
 }
 
