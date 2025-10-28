@@ -49,6 +49,9 @@ struct BlockedView: View {
                 
                 Spacer()
                 
+                WhiteRoundedBottom(action: {})
+                    .padding(.bottom, 0)
+                
                 TabBar(selectedTab: $selectedTab)
             }
         }
