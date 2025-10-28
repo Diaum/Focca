@@ -75,6 +75,17 @@ struct OnboardingStep4: View {
                         let store = ManagedSettingsStore()
                         let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
                         store.application.blockedApplications = apps
+
+                        // Marca criação do modo "default" no primeiro bloqueio e persiste a seleção
+                        if UserDefaults.standard.bool(forKey: "mode_default_exists") == false {
+                            UserDefaults.standard.set(true, forKey: "mode_default_exists")
+                            if let encoded = try? JSONEncoder().encode(saved) {
+                                UserDefaults.standard.set(encoded, forKey: "mode_default_selection")
+                            }
+                        }
+                        // Define o modo ativo e quantidade
+                        UserDefaults.standard.set("default", forKey: "active_mode_name")
+                        UserDefaults.standard.set(saved.applicationTokens.count, forKey: "active_mode_app_count")
                     }
                     showBlockedView = true
                 }) {

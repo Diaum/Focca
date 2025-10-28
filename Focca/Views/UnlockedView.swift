@@ -49,7 +49,7 @@ struct UnlockedView: View {
                 VStack(spacing: 8) {
                     Button(action: { showModeSheet = true }) {
                         HStack(spacing: 6) {
-                            Text("Mode : Allow")
+                            Text("Mode : \(UserDefaults.standard.string(forKey: "active_mode_name") ?? "-")")
                                 .font(.system(size: 17, weight: .semibold))
                                 .foregroundColor(Color(hex: "1C1C1E"))
                             
@@ -61,7 +61,7 @@ struct UnlockedView: View {
                     }
                     .buttonStyle(.plain)
                     
-                    Text("Allowing 47 apps")
+                    Text("Allowing \(UserDefaults.standard.integer(forKey: "active_mode_app_count")) apps")
                         .font(.system(size: 14))
                         .foregroundColor(Color(hex: "8E8E93"))
                 }

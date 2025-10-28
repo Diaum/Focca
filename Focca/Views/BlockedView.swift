@@ -32,17 +32,12 @@ struct BlockedView: View {
                 
                 VStack(spacing: 6) {
                     HStack(spacing: 6) {
-                        Text("Mode : Focused")
+                        Text("Mode : \(UserDefaults.standard.string(forKey: "active_mode_name") ?? "-")")
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.white)
-                        
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.white)
-                            .offset(y: 1)
                     }
                     
-                    Text("Blocking 6 apps")
+                    Text("Blocking \(UserDefaults.standard.integer(forKey: "active_mode_app_count")) apps")
                         .font(.system(size: 13))
                         .foregroundColor(Color(hex: "8A8A8E"))
                 }

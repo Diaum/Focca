@@ -30,9 +30,9 @@ struct ModeSelectionSheet: View {
                     .foregroundColor(Color(hex: "1C1C1E"))
 
                 VStack(spacing: 14) {
-                    ModeRow(title: "Allow", isSelected: false)
-                    ModeRow(title: "Work", isSelected: false)
-                    ModeRow(title: "Family", isSelected: true)
+                    DefaultModeRow()
+                    EmptyModeRow()
+                    EmptyModeRow()
                     CreateModeRow()
                 }
                 .padding(.horizontal, 20)
@@ -94,8 +94,43 @@ private struct CreateModeRow: View {
     }
 }
 
-#Preview {
-    ModeSelectionSheet()
+struct DefaultModeRow: View {
+    @State private var hasDefault = UserDefaults.standard.bool(forKey: "mode_default_exists")
+    
+    var body: some View {
+        HStack {
+            Text(hasDefault ? "default" : "")
+                .foregroundColor(Color(hex: "1C1C1E"))
+            Spacer()
+            Button("Edit", action: {})
+                .foregroundColor(Color(hex: "1C1C1E"))
+                .opacity(hasDefault ? 1 : 0)
+        }
+        .padding(.horizontal, 16)
+        .frame(height: 56)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(Color(hex: "EDEBEA"), lineWidth: 1)
+        )
+    }
 }
+
+struct EmptyModeRow: View {
+    var body: some View {
+        HStack { Spacer() }
+            .padding(.horizontal, 16)
+            .frame(height: 56)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color(hex: "EDEBEA"))
+            )
+    }
+}
+
+#Preview { ModeSelectionSheet() }
 
 
