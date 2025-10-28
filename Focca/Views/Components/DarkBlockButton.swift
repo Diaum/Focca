@@ -4,66 +4,78 @@ struct DarkBlockButton: View {
     let action: () -> Void
     
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 40)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color(hex: "222"),
-                            Color(hex: "")
-                        ],
-                        startPoint: .bottom,
-                        endPoint: .top
-                    )
-                )
-                .frame(height: 120)
-                .padding(.horizontal, 0)
-                .padding(.bottom, 0)
-                .shadow(color: Color.black.opacity(0.9), radius: 12, x: 0, y: -4)
-                .clipShape(
-                    RoundedCorner(radius: 10, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
-                )
-            
-            Button(action: action) {
-                Text("Unbrick device")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(.white)
-                    .tracking(0.3)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 60)
-                    .background(
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 30)
-                                .fill(
-                                    LinearGradient(
-                                        colors: [
-                                            Color(hex: "222222"),
-                                            Color(hex: "161616")
-                                        ],
-                                        startPoint: .top,
-                                        endPoint: .bottom
+        Button(action: action) {
+            Text("Unbrick device")
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 60)
+                .background(
+                    ZStack {
+                        // Base com gradiente escuro (parte de cima um pouco mais clara)
+                        RoundedRectangle(cornerRadius: 30)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color(hex: "2A2A2C"),
+                                        Color(hex: "151517")
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                        
+                        // Realce fino na borda (topo levemente claro -> base escurece)
+                        RoundedRectangle(cornerRadius: 30)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [
+                                        .white.opacity(0.10),
+                                        .black.opacity(0.60)
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                ),
+                                lineWidth: 1
+                            )
+                        
+                        // Sombra interna (top highlight)
+                        RoundedRectangle(cornerRadius: 30)
+                            .stroke(Color.white.opacity(0.20), lineWidth: 2)
+                            .blur(radius: 2)
+                            .offset(y: -2)
+                            .mask(
+                                RoundedRectangle(cornerRadius: 30)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [.white, .clear],
+                                            startPoint: .top,
+                                            endPoint: .center
+                                        )
                                     )
-                                )
-                            
-                            RoundedRectangle(cornerRadius: 30)
-                                .stroke(
-                                    LinearGradient(
-                                        colors: [
-                                            Color.white.opacity(0.05),
-                                            Color.black.opacity(0.7)
-                                        ],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                    lineWidth: 1
-                                )
-                        }
-                    )
-                    .shadow(color: Color.black.opacity(0.9), radius: 18, x: 0, y: 8)
-                    .shadow(color: Color.white.opacity(0.04), radius: 1, x: 0, y: -1)
-            }
-            .padding(.horizontal, 30)
-            .padding(.bottom, 60)
+                            )
+                        
+                        // Sombra interna (bottom shadow)
+                        RoundedRectangle(cornerRadius: 30)
+                            .stroke(Color.black.opacity(0.8), lineWidth: 3)
+                            .blur(radius: 3)
+                            .offset(y: 3)
+                            .mask(
+                                RoundedRectangle(cornerRadius: 30)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [.clear, .black],
+                                            startPoint: .center,
+                                            endPoint: .bottom
+                                        )
+                                    )
+                            )
+                    }
+                )
+                // Relevo externo discreto
+                .shadow(color: .black.opacity(0.55), radius: 10, x: 0, y: 6)
+                .shadow(color: .white.opacity(0.05), radius: 1, x: 0, y: -1)
+                .padding(.horizontal, 28)
         }
     }
 }
@@ -71,12 +83,11 @@ struct DarkBlockButton: View {
 #Preview {
     ZStack {
         Color(hex: "181818").ignoresSafeArea()
-        
         VStack {
             Spacer()
             DarkBlockButton(action: {})
+            Spacer().frame(height: 80)
         }
     }
     .preferredColorScheme(.dark)
 }
-
