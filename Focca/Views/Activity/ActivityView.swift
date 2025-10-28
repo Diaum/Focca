@@ -66,9 +66,14 @@ struct ActivityView: View {
                             }
                         }
                         .padding(.horizontal, 20)
-                        .padding(.bottom, 100)
+                        .padding(.bottom, 20)
                     }
                 }
+                
+                Spacer()
+                
+                WhiteRoundedBottom(action: {})
+                    .padding(.bottom, 0)
                 
                 TabBar(selectedTab: $selectedTab)
                     .padding(.top, 10)
