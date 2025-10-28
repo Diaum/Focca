@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ModeSelectionSheet: View {
+    @State private var showCreateMode = false
     var body: some View {
         ZStack {
             LinearGradient(
@@ -33,7 +34,7 @@ struct ModeSelectionSheet: View {
                     DefaultModeRow()
                     EmptyModeRow()
                     EmptyModeRow()
-                    CreateModeRow()
+                    CreateModeRow(showCreateMode: $showCreateMode)
                 }
                 .padding(.horizontal, 20)
 
@@ -51,6 +52,9 @@ struct ModeSelectionSheet: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
             }
+        }
+        .sheet(isPresented: $showCreateMode) {
+            CreateModeView()
         }
     }
 }
@@ -77,20 +81,26 @@ private struct ModeRow: View {
 }
 
 private struct CreateModeRow: View {
+    @Binding var showCreateMode: Bool
+    
     var body: some View {
-        HStack {
-            Text("Create new mode")
-                .foregroundColor(Color(hex: "1C1C1E"))
-            Spacer()
-            Image(systemName: "plus")
-                .foregroundColor(Color(hex: "1C1C1E"))
+        Button(action: {
+            showCreateMode = true
+        }) {
+            HStack {
+                Text("Create new mode")
+                    .foregroundColor(Color(hex: "1C1C1E"))
+                Spacer()
+                Image(systemName: "plus")
+                    .foregroundColor(Color(hex: "1C1C1E"))
+            }
+            .padding(.horizontal, 16)
+            .frame(height: 56)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color(hex: "EDEBEA"))
+            )
         }
-        .padding(.horizontal, 16)
-        .frame(height: 56)
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color(hex: "EDEBEA"))
-        )
     }
 }
 

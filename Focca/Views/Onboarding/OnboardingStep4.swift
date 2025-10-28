@@ -71,7 +71,8 @@ struct OnboardingStep4: View {
                 // blockedApplications remove os apps da tela e impede abertura
                 Button(action: {
                     if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
-                       let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+                       let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data),
+                       saved.applicationTokens.count > 0 {
                         let store = ManagedSettingsStore()
                         let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
                         store.application.blockedApplications = apps
@@ -86,8 +87,8 @@ struct OnboardingStep4: View {
                         // Define o modo ativo e quantidade
                         UserDefaults.standard.set("default", forKey: "active_mode_name")
                         UserDefaults.standard.set(saved.applicationTokens.count, forKey: "active_mode_app_count")
+                        showBlockedView = true
                     }
-                    showBlockedView = true
                 }) {
                     Text("Brick device")
                         .font(.system(size: 17, weight: .semibold))

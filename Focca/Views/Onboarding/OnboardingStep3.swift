@@ -9,6 +9,7 @@ struct OnboardingStep3: View {
     @State private var isLoading = true
     @State private var showMainView = false
     @State private var showStep2 = false
+    @State private var showAlert = false
     @Environment(\.presentationMode) var presentationMode
 
     var body: some View {
@@ -29,8 +30,16 @@ struct OnboardingStep3: View {
                         Spacer()
                     } else if appInfos.isEmpty {
                         Spacer()
-                        Text("No apps selected")
-                            .foregroundColor(.secondary)
+                        VStack(spacing: 12) {
+                            Text("No apps selected")
+                                .font(.system(size: 18, weight: .medium))
+                                .foregroundColor(Color(hex: "1D1D1F"))
+                            Text("Please select at least 1 app to continue setup")
+                                .font(.system(size: 15))
+                                .foregroundColor(Color(hex: "7A7A7A"))
+                                .multilineTextAlignment(.center)
+                        }
+                        .padding(.horizontal, 40)
                         Spacer()
                     } else {
                         ScrollView {
@@ -51,16 +60,21 @@ struct OnboardingStep3: View {
 
                     VStack(spacing: 16) {
                         Button("Complete setup") {
-                            showMainView = true
+                            if appInfos.count > 100 {
+                                showAlert = true
+                            } else if model.selection.applicationTokens.count > 0 && model.selection.applicationTokens.count <= 100 {
+                                showMainView = true
+                            }
                         }
                         .font(.system(size: 17, weight: .medium))
-                        .foregroundColor(Color(hex: "1D1D1F"))
+                        .foregroundColor((appInfos.isEmpty || appInfos.count > 100) ? Color(hex: "9E9EA3") : .white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
-                        .background(Color(hex: "E5E5EA"))
+                        .background((appInfos.isEmpty || appInfos.count > 100) ? Color(hex: "DAD7D6") : Color.black)
                         .cornerRadius(12)
-                        .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
+                        .shadow(color: (appInfos.isEmpty || appInfos.count > 100) ? .clear : Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
                         .padding(.horizontal, 20)
+                        .disabled(appInfos.isEmpty || appInfos.count > 100)
 
                         Button("Edit apps") {
                             showStep2 = true
@@ -72,7 +86,7 @@ struct OnboardingStep3: View {
                     .padding(.top, 20)
                 }
             }
-            .navigationBarItems(leading: BackButton())
+            .navigationBarItems(leading: BackButton(action: { showStep2 = true }))
             .fullScreenCover(isPresented: $showMainView) {
                 OnboardingStep4()
             }
@@ -81,6 +95,14 @@ struct OnboardingStep3: View {
                     showStep2 = false
                     Task { await refreshSelectionAndApps() }
                 })
+            }
+            .alert("Too Many Apps", isPresented: $showAlert) {
+                Button("Edit Apps", action: {
+                    showStep2 = true
+                })
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("You can only block up to 100 apps. Please remove some apps to continue.")
             }
             .task {
                 if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
@@ -148,9 +170,10 @@ struct AppRow: View {
 }
 
 struct BackButton: View {
-    @Environment(\.presentationMode) var presentationMode
+    let action: () -> Void
+    
     var body: some View {
-        Button(action: { presentationMode.wrappedValue.dismiss() }) {
+        Button(action: action) {
             Image(systemName: "chevron.left")
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(Color(hex: "1D1D1F"))
