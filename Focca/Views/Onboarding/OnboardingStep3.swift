@@ -1,89 +1,119 @@
 import SwiftUI
 import FamilyControls
+import DeviceActivity
 
+@available(iOS 17.0, *)
 struct OnboardingStep3: View {
     @StateObject var model = SelectionModel()
-    @State private var appInfo: [String: (name: String, color: Color)] = [:]
-    
+    @State private var appInfos: [AppInfo] = []
+    @State private var isLoading = true
+
     var body: some View {
         NavigationView {
             ZStack {
-                Color(hex: "F5F3F0")
-                    .ignoresSafeArea()
-                
+                Color(hex: "F5F3F0").ignoresSafeArea()
+
                 VStack(spacing: 0) {
-                    Text("\(model.selection.applicationTokens.count) distractions selected")
+                    Text("\(appInfos.count) distractions selected")
                         .font(.system(size: 32, weight: .bold))
                         .foregroundColor(Color(hex: "1D1D1F"))
                         .padding(.top, 40)
-                    
-                    if !model.selection.applicationTokens.isEmpty {
+
+                    if isLoading {
+                        Spacer()
+                        ProgressView("Loading apps...")
+                            .padding()
+                        Spacer()
+                    } else if appInfos.isEmpty {
+                        Spacer()
+                        Text("No apps selected")
+                            .foregroundColor(.secondary)
+                        Spacer()
+                    } else {
                         ScrollView {
                             VStack(spacing: 0) {
-                                ForEach(0..<model.selection.applicationTokens.count, id: \.self) { index in
-                                    AppRow(index: index)
-                                    
-                                    if index < model.selection.applicationTokens.count - 1 {
-                                        Divider()
-                                            .padding(.leading, 62)
+                                ForEach(appInfos) { app in
+                                    AppRow(appInfo: app)
+                                    if app.id != appInfos.last?.id {
+                                        Divider().padding(.leading, 62)
                                     }
                                 }
                             }
-                            .background(Color(hex: "F5F3F0"))
                         }
                         .padding(.horizontal, 20)
                         .padding(.top, 20)
                     }
-                    
+
                     Spacer()
-                    
+
                     VStack(spacing: 16) {
-                        Button(action: {
-                            
-                        }) {
-                            Text("Complete setup")
-                                .font(.system(size: 17, weight: .medium))
-                                .foregroundColor(Color(hex: "1D1D1F"))
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 50)
-                                .background(Color(hex: "E5E5EA"))
-                                .cornerRadius(12)
-                                .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 2)
-                        }
-                        .padding(.horizontal, 20)
-                        
-                        Button(action: {
-                            
-                        }) {
-                            Text("Edit apps")
-                                .font(.system(size: 17, weight: .medium))
-                                .foregroundColor(Color(hex: "1D1D1F"))
-                        }
+                        Button("Complete setup") { }
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundColor(Color(hex: "1D1D1F"))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 50)
+                            .background(Color(hex: "E5E5EA"))
+                            .cornerRadius(12)
+                            .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
+                            .padding(.horizontal, 20)
+
+                        Button("Edit apps") { }
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundColor(Color(hex: "1D1D1F"))
                     }
                     .padding(.bottom, 40)
                     .padding(.top, 20)
                 }
             }
-            .navigationBarTitle("", displayMode: .inline)
             .navigationBarItems(leading: BackButton())
+            .task {
+                if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
+                   let savedSelection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+                    model.selection = savedSelection
+                    await loadAppInfos()
+                } else {
+                    isLoading = false
+                }
+            }
+        }
+    }
+
+    private func loadAppInfos() async {
+        var infos: [AppInfo] = []
+        let colors: [Color] = [Color(hex: "E8B5A0"), Color(hex: "FF6B6B"), Color(hex: "4ECDC4"), Color(hex: "0A66C2"), Color(hex: "E1306C")]
+        
+        for (index, _) in model.selection.applicationTokens.enumerated() {
+            let name = "App \(index + 1)"
+            let color = colors[index % colors.count]
+            infos.append(AppInfo(id: "\(index)", name: name, icon: UIImage(), color: color))
+        }
+
+        await MainActor.run {
+            self.appInfos = infos
+            self.isLoading = false
         }
     }
 }
 
+// MARK: - Modelos e Views auxiliares
+
+struct AppInfo: Identifiable {
+    let id: String
+    let name: String
+    let icon: UIImage
+    let color: Color
+}
+
 struct AppRow: View {
-    let index: Int
-    
-    private var colors: [Color] {
-        [Color(hex: "E8B5A0"), Color(hex: "FF6B6B"), Color(hex: "4ECDC4"), Color(hex: "0A66C2"), Color(hex: "E1306C")]
-    }
-    
+    let appInfo: AppInfo
+
     var body: some View {
         HStack(spacing: 12) {
             RoundedRectangle(cornerRadius: 12)
-                .fill(colors[index % colors.count])
+                .fill(appInfo.color)
                 .frame(width: 50, height: 50)
             
-            Text("App \(index + 1)")
+            Text(appInfo.name)
                 .font(.system(size: 17))
                 .foregroundColor(Color(hex: "1D1D1F"))
             
@@ -95,11 +125,8 @@ struct AppRow: View {
 
 struct BackButton: View {
     @Environment(\.presentationMode) var presentationMode
-    
     var body: some View {
-        Button(action: {
-            presentationMode.wrappedValue.dismiss()
-        }) {
+        Button(action: { presentationMode.wrappedValue.dismiss() }) {
             Image(systemName: "chevron.left")
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(Color(hex: "1D1D1F"))
@@ -111,5 +138,9 @@ struct BackButton: View {
 }
 
 #Preview {
-    OnboardingStep3()
+    if #available(iOS 17.0, *) {
+        OnboardingStep3()
+    } else {
+        Text("Requires iOS 17")
+    }
 }
