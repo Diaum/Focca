@@ -4,6 +4,7 @@ struct UnlockedView: View {
     @Binding var isBlocked: Bool
     @Binding var selectedTab: Int
     @State private var elapsedTime = "10h 33m"
+    @State private var showModeSheet = false
     
     var body: some View {
         ZStack {
@@ -53,10 +54,12 @@ struct UnlockedView: View {
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(Color(hex: "1C1C1E"))
                         
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(Color(hex: "1C1C1E"))
-                            .offset(y: 1)
+                        Button(action: { showModeSheet = true }) {
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(Color(hex: "1C1C1E"))
+                                .offset(y: 1)
+                        }
                     }
                     
                     Text("Allowing 47 apps")
@@ -73,6 +76,10 @@ struct UnlockedView: View {
             }
         }
         .preferredColorScheme(.light)
+        .sheet(isPresented: $showModeSheet) {
+            ModeSelectionSheet()
+                .presentationDetents([.medium])
+        }
     }
 }
 

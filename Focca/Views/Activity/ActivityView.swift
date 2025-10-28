@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ActivityView: View {
     @Binding var selectedTab: Int
+    @State private var showModeSheet = false
         
     var body: some View {
         ZStack {
@@ -39,14 +40,14 @@ struct ActivityView: View {
                 .padding(.top, 40)
                 .padding(.bottom, 60)
                 
+                Spacer()
+
                 Text("Activities will appear after your first day using Brick")
                     .font(.system(size: 15, weight: .regular))
                     .foregroundColor(Color(hex: "9E9EA3"))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 40)
-                
-                Spacer()
-                
+                                
                 WhiteRoundedBottom(action: {})
                     .padding(.bottom, 0)
                 
@@ -54,6 +55,9 @@ struct ActivityView: View {
                     .padding(.top, 10)
 
             }
+        }
+        .sheet(isPresented: $showModeSheet) {
+            ModeSelectionSheet()
         }
     }
 }
