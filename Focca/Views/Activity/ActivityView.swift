@@ -47,10 +47,14 @@ struct ActivityView: View {
                 
                 Spacer()
                 
+                WhiteRoundedBottom(action: {})
+                    .padding(.bottom, 0)
+                
                 TabBar(selectedTab: $selectedTab)
+                    .padding(.top, 10)
+
             }
         }
-        .preferredColorScheme(.light)
     }
 }
 
