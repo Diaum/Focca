@@ -56,6 +56,14 @@ struct OnboardingStep2: View {
         let store = ManagedSettingsStore()
         let applications = Set(selection.applicationTokens.compactMap { Application(token: $0) })
         store.application.blockedApplications = applications
+        
+        saveAppsToUserDefaults()
+    }
+    
+    private func saveAppsToUserDefaults() {
+        if let encoded = try? JSONEncoder().encode(selection) {
+            UserDefaults.standard.set(encoded, forKey: "familyActivitySelection")
+        }
     }
 }
 
