@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct BlockedView: View {
+    @Binding var isBlocked: Bool
     @State private var selectedTab = 0
     @State private var elapsedTime = "4h 27m 54s"
     
@@ -12,7 +13,7 @@ struct BlockedView: View {
             VStack(spacing: 0) {
                 Spacer(minLength: 40)
                 
-                Text("You’ve been Bricked for")
+                Text("You've been Bricked for")
                     .font(.system(size: 12))
                     .foregroundColor(Color(hex: "8A8A8E"))
                     .padding(.bottom, 10)
@@ -22,11 +23,15 @@ struct BlockedView: View {
                     .foregroundColor(.white)
                     .padding(.bottom, 56)
                 
-                Image("block-rectangle-dark")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 210, height: 210)
-                    .padding(.bottom, 56)
+                Button(action: {
+                    isBlocked = false
+                }) {
+                    Image("block-rectangle-dark")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 210, height: 210)
+                }
+                .padding(.bottom, 56)
                 
                 VStack(spacing: 6) {
                     HStack(spacing: 6) {
@@ -46,7 +51,7 @@ struct BlockedView: View {
                 }
                 .padding(.bottom, 100)
                 
-                BlockButtonComponent(action: {})
+                DarkBlockButton(action: {})
                 
                 Spacer()
                 
@@ -58,5 +63,6 @@ struct BlockedView: View {
 }
 
 #Preview {
-    BlockedView()
+    BlockedView(isBlocked: .constant(true))
 }
+

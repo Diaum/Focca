@@ -82,7 +82,7 @@ struct OnboardingStep4: View {
             }
         }
         .fullScreenCover(isPresented: $showBlockedView) {
-            BlockedView()
+            PrincipalView()
         }
     }
 }
