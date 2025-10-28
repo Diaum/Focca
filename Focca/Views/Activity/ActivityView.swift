@@ -3,6 +3,7 @@ import SwiftUI
 struct ActivityView: View {
     @Binding var selectedTab: Int
     @State private var showModeSheet = false
+    @State private var todayTime: String = "0h 0m"
         
     var body: some View {
         ZStack {
@@ -22,7 +23,7 @@ struct ActivityView: View {
                             .font(.system(size: 15, weight: .medium))
                             .foregroundColor(Color(hex: "8A8A8E"))
                         
-                        Text("0:02")
+                        Text(todayTime)
                             .font(.system(size: 48, weight: .medium))
                             .foregroundColor(Color(hex: "1C1C1E"))
                     }
@@ -59,6 +60,22 @@ struct ActivityView: View {
         .sheet(isPresented: $showModeSheet) {
             ModeSelectionSheet()
         }
+        .onAppear {
+            updateTodayTime()
+            
+            Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+                DispatchQueue.main.async {
+                    self.updateTodayTime()
+                }
+            }
+        }
+    }
+    
+    private func updateTodayTime() {
+        let totalTime = TimerStorage.shared.getTodayTime()
+        let hours = Int(totalTime) / 3600
+        let minutes = (Int(totalTime) % 3600) / 60
+        todayTime = String(format: "%dh %dm", hours, minutes)
     }
 }
 

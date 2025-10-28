@@ -59,31 +59,35 @@ struct OnboardingStep3: View {
                     Spacer()
 
                     VStack(spacing: 16) {
-                        Button("Complete setup") {
+                        Button(action: {
                             if appInfos.count > 100 {
                                 showAlert = true
                             } else if model.selection.applicationTokens.count > 0 && model.selection.applicationTokens.count <= 100 {
                                 showMainView = true
                             }
+                        }) {
+                            Text("Complete setup")
+                                .font(.system(size: 17, weight: .medium))
+                                .foregroundColor((appInfos.isEmpty || appInfos.count > 100) ? Color(hex: "9E9EA3") : .white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 50)
+                                .background((appInfos.isEmpty || appInfos.count > 100) ? Color(hex: "DAD7D6") : Color.black)
+                                .cornerRadius(12)
+                                .shadow(color: (appInfos.isEmpty || appInfos.count > 100) ? .clear : Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
                         }
-                        .font(.system(size: 17, weight: .medium))
-                        .foregroundColor((appInfos.isEmpty || appInfos.count > 100) ? Color(hex: "9E9EA3") : .white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background((appInfos.isEmpty || appInfos.count > 100) ? Color(hex: "DAD7D6") : Color.black)
-                        .cornerRadius(12)
-                        .shadow(color: (appInfos.isEmpty || appInfos.count > 100) ? .clear : Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
-                        .padding(.horizontal, 20)
                         .disabled(appInfos.isEmpty || appInfos.count > 100)
 
-                        Button("Edit apps") {
+                        Button(action: {
                             showStep2 = true
+                        }) {
+                            Text("Edit apps")
+                                .font(.system(size: 17, weight: .medium))
+                                .foregroundColor(Color(hex: "1D1D1F"))
                         }
-                            .font(.system(size: 17, weight: .medium))
-                            .foregroundColor(Color(hex: "1D1D1F"))
                     }
                     .padding(.bottom, 40)
                     .padding(.top, 20)
+                    .padding(.horizontal, 20)
                 }
             }
             .navigationBarItems(leading: BackButton(action: { showStep2 = true }))

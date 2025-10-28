@@ -24,13 +24,10 @@ class TimerStorage {
         let currentTime = getDailyTime(for: date)
         let newTime = currentTime + timeInterval
         userDefaults.set(newTime, forKey: "daily_time_\(dateKey)")
-        print("💾 TimerStorage - Added \(timeInterval)s to \(dateKey). Total: \(newTime)s")
     }
     
     func getTodayTime() -> TimeInterval {
-        let time = getDailyTime(for: Date())
-        print("📊 TimerStorage - getTodayTime: \(time) seconds")
-        return time
+        return getDailyTime(for: Date())
     }
     
     func splitOvernightTime(from startDate: Date, to endDate: Date) {
@@ -38,20 +35,15 @@ class TimerStorage {
         let startDay = calendar.startOfDay(for: startDate)
         let endDay = calendar.startOfDay(for: endDate)
         
-        print("🔀 TimerStorage - Split overnight time from \(startDate) to \(endDate)")
-        
         if startDay < endDay {
             let startDayEnd = calendar.date(byAdding: .day, value: 1, to: startDay)!
             let timeInStartDay = startDayEnd.timeIntervalSince(startDate)
             let timeInEndDay = endDate.timeIntervalSince(endDay)
             
-            print("🔀 TimerStorage - Crossed midnight! Start day: \(timeInStartDay)s, End day: \(timeInEndDay)s")
-            
             addDailyTime(timeInStartDay, for: startDate)
             addDailyTime(timeInEndDay, for: endDate)
         } else {
             let totalTime = endDate.timeIntervalSince(startDate)
-            print("🔀 TimerStorage - Same day: \(totalTime)s")
             addDailyTime(totalTime, for: startDate)
         }
     }

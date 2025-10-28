@@ -23,12 +23,7 @@ class TimerManager: ObservableObject {
     }
     
     func stop() {
-        guard let startDate = startDate else {
-            print("⚠️ TimerManager - No start date to stop")
-            return
-        }
-        
-        print("⏹️ TimerManager - Stopping timer, start date: \(startDate)")
+        guard let startDate = startDate else { return }
         
         timer?.invalidate()
         timer = nil

@@ -4,6 +4,7 @@ import ManagedSettings
 
 struct OnboardingStep4: View {
     @State private var showBlockedView = false
+    @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
         ZStack {
@@ -14,7 +15,9 @@ struct OnboardingStep4: View {
             VStack(spacing: 0) {
                 // 🔹 Back Button no topo
                 HStack {
-                    Button(action: {}) {
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 18, weight: .medium))
                             .foregroundColor(Color(hex: "1D1D1F"))

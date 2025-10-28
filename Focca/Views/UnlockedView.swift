@@ -117,13 +117,9 @@ struct UnlockedView: View {
     
     private func updateTodayTime() {
         let totalTime = TimerStorage.shared.getTodayTime()
-        print("🕐 UnlockedView - Today's blocked time: \(totalTime) seconds")
-        
         let hours = Int(totalTime) / 3600
         let minutes = (Int(totalTime) % 3600) / 60
         todayTime = String(format: "%dh %dm", hours, minutes)
-        
-        print("🕐 UnlockedView - Formatted: \(todayTime)")
     }
 }
 
