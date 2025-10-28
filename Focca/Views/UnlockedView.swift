@@ -7,6 +7,8 @@ struct UnlockedView: View {
     @Binding var selectedTab: Int
     @State private var elapsedTime = "10h 33m"
     @State private var showModeSheet = false
+    @State private var activeModeName = UserDefaults.standard.string(forKey: "active_mode_name") ?? "-"
+    @State private var activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
     
     var body: some View {
         ZStack {
@@ -49,7 +51,7 @@ struct UnlockedView: View {
                 VStack(spacing: 8) {
                     Button(action: { showModeSheet = true }) {
                         HStack(spacing: 6) {
-                            Text("Mode : \(UserDefaults.standard.string(forKey: "active_mode_name") ?? "-")")
+                            Text("Mode : \(activeModeName)")
                                 .font(.system(size: 17, weight: .semibold))
                                 .foregroundColor(Color(hex: "1C1C1E"))
                             
@@ -61,14 +63,16 @@ struct UnlockedView: View {
                     }
                     .buttonStyle(.plain)
                     
-                    Text("Allowing \(UserDefaults.standard.integer(forKey: "active_mode_app_count")) apps")
+                    Text("Blocking \(activeModeCount) apps")
                         .font(.system(size: 14))
                         .foregroundColor(Color(hex: "8E8E93"))
                 }
                 .padding(.bottom, 80)
                 
                 WhiteBlockButton(action: {
-                    if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
+                    let activeMode = UserDefaults.standard.string(forKey: "active_mode_name") ?? "default"
+                    
+                    if let data = UserDefaults.standard.data(forKey: "mode_\(activeMode)_selection"),
                        let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
                         let store = ManagedSettingsStore()
                         let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
@@ -83,7 +87,10 @@ struct UnlockedView: View {
             }
         }
         .preferredColorScheme(.light)
-        .sheet(isPresented: $showModeSheet) {
+        .sheet(isPresented: $showModeSheet, onDismiss: {
+            activeModeName = UserDefaults.standard.string(forKey: "active_mode_name") ?? "-"
+            activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+        }) {
             ModeSelectionSheet()
                 .presentationDetents([.medium])
         }

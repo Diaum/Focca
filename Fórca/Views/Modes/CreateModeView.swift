@@ -8,7 +8,7 @@ struct CreateModeView: View {
     @Environment(\.presentationMode) var presentationMode
     
     private var canSave: Bool {
-        modeName.count >= 4 && modeName.count <= 18 && selection.applicationTokens.count > 0
+        !modeName.isEmpty && modeName.count <= 18 && selection.applicationTokens.count > 0
     }
     
     var body: some View {
@@ -44,6 +44,22 @@ struct CreateModeView: View {
                 
                 VStack(spacing: 16) {
                     HStack {
+                        Text("Apps Selected")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color(hex: "1C1C1E"))
+                        Spacer()
+                        Text("\(selection.applicationTokens.count)/100")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color(hex: "1C1C1E"))
+                    }
+                    .padding(.horizontal, 20)
+                    .frame(height: 56)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color.white)
+                    )
+                    
+                    HStack {
                         TextField("e.g. Work, Family Time", text: Binding(
                             get: { modeName },
                             set: { newValue in
@@ -54,22 +70,6 @@ struct CreateModeView: View {
                         ))
                         .font(.system(size: 16, weight: .regular))
                         .foregroundColor(Color(hex: "1C1C1E"))
-                    }
-                    .padding(.horizontal, 20)
-                    .frame(height: 56)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(Color.white)
-                    )
-                    
-                    HStack {
-                        Text("Apps Selected")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(hex: "1C1C1E"))
-                        Spacer()
-                        Text("\(selection.applicationTokens.count)/100")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(hex: "1C1C1E"))
                     }
                     .padding(.horizontal, 20)
                     .frame(height: 56)
@@ -125,38 +125,9 @@ struct CreateModeView: View {
     }
     
     private func saveMode() {
-        print("📱 CreateModeView - saveMode() called")
-        print("📱 Mode name: '\(modeName)'")
-        print("📱 Mode name count: \(modeName.count)")
-        print("📱 Apps selected count: \(selection.applicationTokens.count)")
-        print("📱 Can save: \(canSave)")
-        
         if canSave, let encoded = try? JSONEncoder().encode(selection) {
-            let selectionKey = "mode_\(modeName)_selection"
-            let existsKey = "mode_\(modeName)_exists"
-            
-            UserDefaults.standard.set(encoded, forKey: selectionKey)
-            UserDefaults.standard.set(true, forKey: existsKey)
-            UserDefaults.standard.set(Date(), forKey: "mode_\(modeName)_last_used")
-            
-            print("✅ Saved selection to: '\(selectionKey)'")
-            print("✅ Set exists flag to: '\(existsKey)'")
-            
-            UserDefaults.standard.synchronize()
-            
-            if let verifyData = UserDefaults.standard.data(forKey: selectionKey) {
-                print("✅ Verification: Data exists for '\(selectionKey)', size: \(verifyData.count) bytes")
-            } else {
-                print("❌ Verification: NO data found for '\(selectionKey)'")
-            }
-            
-            let verifyExists = UserDefaults.standard.bool(forKey: existsKey)
-            print("✅ Verification: exists flag = \(verifyExists)")
-        } else {
-            print("❌ Failed to save mode")
-            if !canSave {
-                print("❌ Reason: canSave is false")
-            }
+            UserDefaults.standard.set(encoded, forKey: "mode_\(modeName)_selection")
+            UserDefaults.standard.set(true, forKey: "mode_\(modeName)_exists")
         }
     }
 }
@@ -200,3 +171,4 @@ struct AppPickerSheet: View {
 #Preview {
     CreateModeView()
 }
+

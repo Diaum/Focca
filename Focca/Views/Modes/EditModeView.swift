@@ -5,8 +5,14 @@ struct EditModeView: View {
     let modeName: String
     @State private var editedModeName: String
     @State private var selection = FamilyActivitySelection()
-    @State private var showAppPicker = false
     @Environment(\.presentationMode) var presentationMode
+    
+    private var canDelete: Bool {
+        let allKeys = UserDefaults.standard.dictionaryRepresentation().keys
+        let modeKeys = allKeys.filter { $0.hasPrefix("mode_") && $0.hasSuffix("_exists") }
+        let existingModes = modeKeys.filter { UserDefaults.standard.bool(forKey: $0) }
+        return existingModes.count > 1
+    }
     
     init(modeName: String) {
         self.modeName = modeName
@@ -47,19 +53,33 @@ struct EditModeView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
                 
-                Text("Edit mode")
-                    .font(.system(size: 24, weight: .semibold))
-                    .foregroundColor(Color(hex: "1C1C1E"))
+                VStack(spacing: 4) {
+                    Text("Edit mode")
+                        .font(.system(size: 14, weight: .regular))
+                        .foregroundColor(Color(hex: "8E8E93"))
+                    
+                    Text(modeName)
+                        .font(.system(size: 32, weight: .bold))
+                        .foregroundColor(Color(hex: "1C1C1E"))
+                }
                 
                 VStack(spacing: 16) {
                     HStack {
-                        Text("Apps Selected")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(hex: "1C1C1E"))
+                        Text("Mode name")
+                            .font(.system(size: 15, weight: .regular))
+                            .foregroundColor(Color(hex: "8E8E93"))
                         Spacer()
-                        Text("\(selection.applicationTokens.count)/100")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(hex: "1C1C1E"))
+                        TextField("e.g. Work, Family Time", text: Binding(
+                            get: { editedModeName },
+                            set: { newValue in
+                                if newValue.count <= 18 {
+                                    editedModeName = newValue
+                                }
+                            }
+                        ))
+                        .font(.system(size: 17, weight: .regular))
+                        .foregroundColor(Color(hex: "1C1C1E"))
+                        .multilineTextAlignment(.trailing)
                     }
                     .padding(.horizontal, 20)
                     .frame(height: 56)
@@ -69,8 +89,12 @@ struct EditModeView: View {
                     )
                     
                     HStack {
-                        TextField("e.g. Work, Family Time", text: $editedModeName)
-                            .font(.system(size: 16, weight: .regular))
+                        Text("Apps Selected")
+                            .font(.system(size: 15, weight: .regular))
+                            .foregroundColor(Color(hex: "8E8E93"))
+                        Spacer()
+                        Text("\(selection.applicationTokens.count)/100")
+                            .font(.system(size: 17, weight: .regular))
                             .foregroundColor(Color(hex: "1C1C1E"))
                     }
                     .padding(.horizontal, 20)
@@ -80,17 +104,8 @@ struct EditModeView: View {
                             .fill(Color.white)
                     )
                     
-                    Button(action: {
-                        showAppPicker = true
-                    }) {
-                        Text("Select Apps")
-                            .font(.system(size: 17, weight: .medium))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(Color.black)
-                            .cornerRadius(14)
-                    }
+                    FamilyActivityPicker(selection: $selection)
+                        .frame(height: 400)
                     
                     Button(action: {
                         deleteMode()
@@ -98,12 +113,13 @@ struct EditModeView: View {
                     }) {
                         Text("Delete Mode")
                             .font(.system(size: 17, weight: .medium))
-                            .foregroundColor(.white)
+                            .foregroundColor(canDelete ? .white : Color(hex: "9E9EA3"))
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
-                            .background(Color.red)
+                            .background(canDelete ? Color.red : Color(hex: "EDEBEA"))
                             .cornerRadius(14)
                     }
+                    .disabled(!canDelete)
                 }
                 .padding(.horizontal, 20)
                 
@@ -112,9 +128,6 @@ struct EditModeView: View {
         }
         .onAppear {
             loadModeData()
-        }
-        .sheet(isPresented: $showAppPicker) {
-            AppPickerSheet(selection: $selection)
         }
     }
     
@@ -126,7 +139,7 @@ struct EditModeView: View {
     }
     
     private func saveMode() {
-        if let encoded = try? JSONEncoder().encode(selection) {
+        if !editedModeName.isEmpty && editedModeName.count >= 4 && editedModeName.count <= 18, let encoded = try? JSONEncoder().encode(selection) {
             UserDefaults.standard.set(encoded, forKey: "mode_\(editedModeName)_selection")
             UserDefaults.standard.set(true, forKey: "mode_\(editedModeName)_exists")
             if editedModeName != modeName {
@@ -137,12 +150,13 @@ struct EditModeView: View {
     }
     
     private func deleteMode() {
-        UserDefaults.standard.removeObject(forKey: "mode_\(modeName)_selection")
-        UserDefaults.standard.removeObject(forKey: "mode_\(modeName)_exists")
+        if canDelete {
+            UserDefaults.standard.set(false, forKey: "mode_\(modeName)_exists")
+            UserDefaults.standard.removeObject(forKey: "mode_\(modeName)_selection")
+        }
     }
 }
 
 #Preview {
     EditModeView(modeName: "default")
 }
-
