@@ -22,7 +22,7 @@ struct ActivityView: View {
                             .foregroundColor(Color(hex: "8A8A8E"))
                         
                         Text("0:02")
-                            .font(.system(size: 48, weight: .bold))
+                            .font(.system(size: 48, weight: .medium))
                             .foregroundColor(Color(hex: "1C1C1E"))
                     }
                     
@@ -32,7 +32,7 @@ struct ActivityView: View {
                             .foregroundColor(Color(hex: "8A8A8E"))
                         
                         Text("0:00")
-                            .font(.system(size: 48, weight: .bold))
+                            .font(.system(size: 48, weight: .medium))
                             .foregroundColor(Color(hex: "1C1C1E"))
                     }
                 }
