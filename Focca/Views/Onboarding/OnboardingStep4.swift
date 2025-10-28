@@ -67,10 +67,8 @@ struct OnboardingStep4: View {
                 
                 Spacer()
                 
-                // 🔹 Botão - Bloqueia apps via ManagedSettingsStore do Screen Time
-                // ManagedSettingsStore usa restrictions do Screen Time para bloquear apps
-                // Ao definir store.application.blockedApplications, o iOS remove esses apps da tela inicial
-                // e impede que sejam abertos, mostrando apenas o shield do Screen Time quando o usuário tenta abrir
+                // 🔹 Botão - Bloqueia apps via ManagedSettingsStore (Screen Time)
+                // blockedApplications remove os apps da tela e impede abertura
                 Button(action: {
                     if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
                        let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
