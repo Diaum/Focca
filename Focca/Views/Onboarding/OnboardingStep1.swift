@@ -63,6 +63,7 @@ struct OnboardingStep1: View {
                 .frame(height: UIScreen.main.bounds.height * 0.45)
             }
         }
+        .preferredColorScheme(.light)
         .sheet(isPresented: $showStep2) {
             OnboardingStep2(didComplete: {
                 showStep2 = false
