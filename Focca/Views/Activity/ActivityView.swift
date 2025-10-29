@@ -82,6 +82,9 @@ struct ActivityView: View {
         }
         .sheet(isPresented: $showModeSheet) {
             ModeSelectionSheet()
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(30)
         }
         .onAppear {
             loadActivityData()

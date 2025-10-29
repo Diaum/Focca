@@ -20,9 +20,10 @@ struct WhiteRoundedBottom: View {
                 .padding(.horizontal, 0)
                 .padding(.bottom, 0)
                 .clipShape(
-                    RoundedCorner(radius: 10, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
+                    RoundedCorner(radius: 8, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
                 )
             
+            WhiteBlockButton(action: action)
         }
     }
 }

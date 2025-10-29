@@ -7,11 +7,11 @@ struct BlockedView: View {
     
     var body: some View {
         ZStack {
-            Color(hex: "181818")
+            Color(hex: "0A0A0A")
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                Spacer(minLength: 40)
+                Spacer(minLength: 140)
                 
                 Text("You've been Bricked for")
                     .font(.system(size: 12))
@@ -38,18 +38,16 @@ struct BlockedView: View {
                         .font(.system(size: 13))
                         .foregroundColor(Color(hex: "8A8A8E"))
                 }
-                .padding(.bottom, 100)
+                .padding(.bottom, 30)
                 
-                DarkBlockButton(action: {
+                Spacer()
+                
+                BlackRoundedBottom(action: {
                     let store = ManagedSettingsStore()
                     store.application.blockedApplications = nil
                     
                     isBlocked = false
                 })
-                
-                Spacer()
-                
-                BlackRoundedBottom(action: {})
                     .padding(.bottom, 0)
                 
                 TabBar(selectedTab: $selectedTab)

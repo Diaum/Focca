@@ -20,7 +20,7 @@ struct UnlockedView: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                Spacer(minLength: 60)
+                Spacer(minLength: 140)
                 
                 HStack(spacing: 4) {
                     Text(todayTime)
@@ -39,7 +39,7 @@ struct UnlockedView: View {
                         .fill(Color.white.opacity(0.9))
                         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
                 )
-                .padding(.bottom, 70)
+                .padding(.bottom, 30)
                 
                 Image("focco_rectangle")
                     .resizable()
@@ -69,7 +69,9 @@ struct UnlockedView: View {
                 }
                 .padding(.bottom, 80)
                 
-                WhiteBlockButton(action: {
+                Spacer()
+                
+                WhiteRoundedBottom(action: {
                     let activeMode = UserDefaults.standard.string(forKey: "active_mode_name") ?? "default"
                     
                     if let data = UserDefaults.standard.data(forKey: "mode_\(activeMode)_selection"),
@@ -84,10 +86,6 @@ struct UnlockedView: View {
                         isBlocked = true
                     }
                 })
-                
-                Spacer()
-                
-                WhiteRoundedBottom(action: {})
                     .padding(.bottom, 0)
                 
                 TabBar(selectedTab: $selectedTab)
@@ -100,6 +98,8 @@ struct UnlockedView: View {
         }) {
             ModeSelectionSheet()
                 .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(30)
         }
         .onAppear {
             TimerStorage.shared.initializeFirstLaunch()

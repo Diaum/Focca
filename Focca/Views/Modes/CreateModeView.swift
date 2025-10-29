@@ -6,7 +6,6 @@ struct CreateModeView: View {
     @State private var selection = FamilyActivitySelection()
     @State private var showAppPicker = false
     @Environment(\.presentationMode) var presentationMode
-    var onDismiss: (() -> Void)?
     
     private var canSave: Bool {
         modeName.count >= 4 && modeName.count <= 18 && selection.applicationTokens.count > 0
@@ -107,9 +106,6 @@ struct CreateModeView: View {
                 Button(action: {
                     saveMode()
                     presentationMode.wrappedValue.dismiss()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        onDismiss?()
-                    }
                 }) {
                     Text("Save mode")
                         .font(.system(size: 17, weight: .semibold))

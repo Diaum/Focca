@@ -5,24 +5,26 @@ struct BlackRoundedBottom: View {
     
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 70)
+            RoundedRectangle(cornerRadius: 120)
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color.black,
+                            Color(hex: "181818"),
                             Color(hex: "")
                         ],
                         startPoint: .bottom,
                         endPoint: .top
+                        
                     )
                 )
                 .frame(height: 120)
                 .padding(.horizontal, 0)
                 .padding(.bottom, 0)
                 .clipShape(
-                    RoundedCorner(radius: 40, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
+                    RoundedCorner(radius: 8, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
                 )
             
+            DarkBlockButton(action: action)
         }
     }
 }

@@ -5,6 +5,8 @@ struct EditModeView: View {
     let modeName: String
     @State private var editedModeName: String
     @State private var selection = FamilyActivitySelection()
+    @State private var showAppPicker = false
+    @State private var showDeleteConfirmation = false
     @Environment(\.presentationMode) var presentationMode
     
     private var canDelete: Bool {
@@ -28,7 +30,7 @@ struct EditModeView: View {
             )
             .ignoresSafeArea()
             
-            VStack(spacing: 20) {
+            VStack(spacing: 16) {
                 HStack {
                     Button(action: {
                         presentationMode.wrappedValue.dismiss()
@@ -42,13 +44,6 @@ struct EditModeView: View {
                             .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                     }
                     Spacer()
-                    
-                    Button("Save") {
-                        saveMode()
-                        presentationMode.wrappedValue.dismiss()
-                    }
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(Color(hex: "1C1C1E"))
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
@@ -59,7 +54,7 @@ struct EditModeView: View {
                         .foregroundColor(Color(hex: "8E8E93"))
                     
                     Text(modeName)
-                        .font(.system(size: 32, weight: .bold))
+                        .font(.system(size: 24, weight: .bold))
                         .foregroundColor(Color(hex: "1C1C1E"))
                 }
                 
@@ -88,28 +83,48 @@ struct EditModeView: View {
                             .fill(Color.white)
                     )
                     
-                    HStack {
-                        Text("Apps Selected")
-                            .font(.system(size: 15, weight: .regular))
-                            .foregroundColor(Color(hex: "8E8E93"))
-                        Spacer()
-                        Text("\(selection.applicationTokens.count)/100")
-                            .font(.system(size: 17, weight: .regular))
-                            .foregroundColor(Color(hex: "1C1C1E"))
+                    Button(action: {
+                        showAppPicker = true
+                    }) {
+                        HStack {
+                            Text("Select Apps")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color(hex: "1C1C1E"))
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(Color(hex: "C6C6C8"))
+                        }
+                        .padding(.horizontal, 20)
+                        .frame(height: 56)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(Color.white)
+                        )
                     }
-                    .padding(.horizontal, 20)
-                    .frame(height: 56)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(Color.white)
-                    )
                     
-                    FamilyActivityPicker(selection: $selection)
-                        .frame(height: 400)
+                    AppIconGrid(selection: selection)
+                }
+                .padding(.horizontal, 20)
+                
+                Spacer()
+                
+                VStack(spacing: 12) {
+                    Button(action: {
+                        saveMode()
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Text("Save")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(Color(hex: "1C1C1E"))
+                            .cornerRadius(14)
+                    }
                     
                     Button(action: {
-                        deleteMode()
-                        presentationMode.wrappedValue.dismiss()
+                        showDeleteConfirmation = true
                     }) {
                         Text("Delete Mode")
                             .font(.system(size: 17, weight: .medium))
@@ -120,11 +135,22 @@ struct EditModeView: View {
                             .cornerRadius(14)
                     }
                     .disabled(!canDelete)
+                    .alert("Delete Mode", isPresented: $showDeleteConfirmation) {
+                        Button("Cancel", role: .cancel) {}
+                        Button("Delete", role: .destructive) {
+                            deleteMode()
+                            presentationMode.wrappedValue.dismiss()
+                        }
+                    } message: {
+                        Text("Are you sure you want to delete this mode? This action cannot be undone.")
+                    }
                 }
                 .padding(.horizontal, 20)
-                
-                Spacer()
+                .padding(.bottom, 20)
             }
+        }
+        .sheet(isPresented: $showAppPicker) {
+            AppPickerSheet(selection: $selection)
         }
         .onAppear {
             loadModeData()

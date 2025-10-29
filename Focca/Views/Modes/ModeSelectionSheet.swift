@@ -21,7 +21,9 @@ struct ModeSelectionSheet: View {
             
             VStack(spacing: 20) {
                 HStack {
-                    Button(action: {}) {
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
                         Image(systemName: "xmark")
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(Color(hex: "1C1C1E"))
@@ -92,15 +94,19 @@ struct ModeSelectionSheet: View {
             }
             shouldDismissParent = false
         }) {
-            CreateModeView(onDismiss: {
-                shouldDismissParent = true
-            })
+            CreateModeView()
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(30)
         }
         .sheet(isPresented: $showEditMode, onDismiss: {
             print("📥 ModeSelectionSheet - EditModeView dismissed")
             loadModeNames()
         }) {
             EditModeView(modeName: editModeName)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(30)
         }
         .onAppear {
             loadModeNames()
