@@ -123,6 +123,8 @@ struct CreateModeView: View {
         }
         .sheet(isPresented: $showAppPicker) {
             AppPickerSheet(selection: $selection)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
     }
     

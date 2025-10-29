@@ -95,7 +95,7 @@ struct ModeSelectionSheet: View {
             shouldDismissParent = false
         }) {
             CreateModeView()
-                .presentationDetents([.medium])
+                .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(30)
         }
