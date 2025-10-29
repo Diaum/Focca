@@ -18,20 +18,8 @@ struct TabBar: View {
             TabItem(title: "Settings", isSelected: selectedTab == 3)
                 .onTapGesture { selectedTab = 3 }
         }
-        .frame(height: 60)
-        .background(
-            Group {
-                if colorScheme == .dark {
-                    Color.clear
-                } else {
-                    LinearGradient(
-                        colors: [Color(hex: "F5F5F7"), Color(hex: "")],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                }
-            }
-        )
+        .frame(height: 90)
+        .padding(.bottom, 18)
     }
 }
 

@@ -16,11 +16,11 @@ struct BlackRoundedBottom: View {
                         endPoint: .top
                     )
                 )
-                .frame(height: 80)
+                .frame(height: 120)
                 .padding(.horizontal, 0)
                 .padding(.bottom, 0)
                 .clipShape(
-                    RoundedCorner(radius: 10, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
+                    RoundedCorner(radius: 40, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
                 )
             
         }

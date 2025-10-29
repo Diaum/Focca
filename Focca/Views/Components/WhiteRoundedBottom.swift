@@ -5,7 +5,7 @@ struct WhiteRoundedBottom: View {
     
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 70)
+            RoundedRectangle(cornerRadius: 120)
                 .fill(
                     LinearGradient(
                         colors: [
@@ -16,7 +16,7 @@ struct WhiteRoundedBottom: View {
                         endPoint: .top
                     )
                 )
-                .frame(height: 80)
+                .frame(height: 120)
                 .padding(.horizontal, 0)
                 .padding(.bottom, 0)
                 .clipShape(
