@@ -98,8 +98,9 @@ struct CreateModeView: View {
                                 .fill(Color.white)
                         )
                     }
+                    
+                    AppIconGrid(selection: selection)
                 }
-                .padding(.horizontal, 20)
                 
                 Spacer()
                 
@@ -122,6 +123,7 @@ struct CreateModeView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
             }
+            .padding(.horizontal, 20)
         }
         .sheet(isPresented: $showAppPicker) {
             AppPickerSheet(selection: $selection)

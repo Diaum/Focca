@@ -44,22 +44,6 @@ struct CreateModeView: View {
                 
                 VStack(spacing: 16) {
                     HStack {
-                        Text("Apps Selected")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(hex: "1C1C1E"))
-                        Spacer()
-                        Text("\(selection.applicationTokens.count)/100")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(hex: "1C1C1E"))
-                    }
-                    .padding(.horizontal, 20)
-                    .frame(height: 56)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(Color.white)
-                    )
-                    
-                    HStack {
                         TextField("e.g. Work, Family Time", text: Binding(
                             get: { modeName },
                             set: { newValue in
@@ -97,6 +81,8 @@ struct CreateModeView: View {
                                 .fill(Color.white)
                         )
                     }
+                    
+                    AppIconGrid(selection: selection)
                 }
                 .padding(.horizontal, 20)
                 
