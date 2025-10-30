@@ -6,6 +6,13 @@ struct ActivityView: View {
     @State private var todayTime: String = "0h 0m"
     @State private var averageTime: String = "0h 0m"
     @State private var dailyCards: [(date: Date, time: TimeInterval)] = []
+    // Permite injetar dados no Preview para mostrar cards
+    let initialDailyCards: [(date: Date, time: TimeInterval)]?
+    
+    init(selectedTab: Binding<Int>, initialDailyCards: [(date: Date, time: TimeInterval)]? = nil) {
+        self._selectedTab = selectedTab
+        self.initialDailyCards = initialDailyCards
+    }
         
     var body: some View {
         ZStack {
@@ -15,6 +22,7 @@ struct ActivityView: View {
                 endPoint: .bottom
             )
             .ignoresSafeArea()
+            .overlay(ReferenceGrid(spacing: 24, color: .red.opacity(0.15)))
             
             VStack(spacing: 0) {
                 Spacer(minLength: 140)
@@ -40,8 +48,8 @@ struct ActivityView: View {
                             .foregroundColor(Color(hex: "1C1C1E"))
                     }
                 }
-                .padding(.top, 40)
-                .padding(.bottom, 40)
+                .padding(.top, 0)
+                .padding(.bottom, 60)
                 
                 if dailyCards.isEmpty {
                     Spacer()
@@ -64,19 +72,19 @@ struct ActivityView: View {
                             }
                         }
                         .padding(.horizontal, 20)
-                        .padding(.bottom, 20)
                     }
                 }
                 
-                Spacer()
-                
-                WhiteRoundedBottom(action: {})
-                    .padding(.bottom, 0)
-                
-                TabBar(selectedTab: $selectedTab)
-                    .padding(.top, 10)
 
+                                
+                WhiteRoundedBottomPlain()
+                    .padding(.bottom, -6)
+                TabBar(selectedTab: $selectedTab)
+                    .padding(.bottom, -48)
+
+                
             }
+            
         }
         .sheet(isPresented: $showModeSheet) {
             ModeSelectionSheet()
@@ -84,8 +92,14 @@ struct ActivityView: View {
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(30)
         }
+        .preferredColorScheme(.light)
         .onAppear {
-            loadActivityData()
+            if let injected = initialDailyCards {
+                // Usa os dados de preview quando fornecidos
+                dailyCards = injected
+            } else {
+                loadActivityData()
+            }
             updateTodayTime()
             
             Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
@@ -114,7 +128,17 @@ struct ActivityView: View {
 }
 
 #Preview {
-    ActivityView(selectedTab: .constant(2))
+    // Gera 10 cards de dias anteriores para visualização no Preview
+    let calendar = Calendar.current
+    let samples: [(date: Date, time: TimeInterval)] = (0..<10).compactMap { offset in
+        if let date = calendar.date(byAdding: .day, value: -offset, to: Date()) {
+            // Ex.: 45min, 60min, 75min, 90min, 105min
+            let mins = 45 + offset * 15
+            return (date: date, time: TimeInterval(mins * 60))
+        }
+        return nil
+    }
+    return ActivityView(selectedTab: .constant(2), initialDailyCards: samples)
 }
 
 

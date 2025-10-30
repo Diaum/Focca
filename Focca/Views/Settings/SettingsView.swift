@@ -75,7 +75,7 @@ struct SettingsView: View {
                 
                 Spacer(minLength: 24)
                 
-                WhiteRoundedBottom(action: {})
+                WhiteRoundedBottomPlain()
                     .padding(.bottom, 0)
                 
                 TabBar(selectedTab: $selectedTab)
