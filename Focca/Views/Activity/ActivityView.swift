@@ -22,10 +22,10 @@ struct ActivityView: View {
                 endPoint: .bottom
             )
             .ignoresSafeArea()
-            .overlay(ReferenceGrid(spacing: 24, color: .red.opacity(0.15)))
+//            .overlay(ReferenceGrid(spacing: 24, color: .red.opacity(0.15)))
             
             VStack(spacing: 0) {
-                Spacer(minLength: 140)
+                Spacer(minLength: 30)
                 
                 HStack(spacing: 40) {
                     VStack(spacing: 4) {
@@ -130,7 +130,7 @@ struct ActivityView: View {
 #Preview {
     // Gera 10 cards de dias anteriores para visualização no Preview
     let calendar = Calendar.current
-    let samples: [(date: Date, time: TimeInterval)] = (0..<10).compactMap { offset in
+    let samples: [(date: Date, time: TimeInterval)] = (0..<15).compactMap { offset in
         if let date = calendar.date(byAdding: .day, value: -offset, to: Date()) {
             // Ex.: 45min, 60min, 75min, 90min, 105min
             let mins = 45 + offset * 15
