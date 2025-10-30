@@ -17,7 +17,7 @@ struct ActivityView: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                Spacer(minLength: 40)
+                Spacer(minLength: 140)
                 
                 HStack(spacing: 40) {
                     VStack(spacing: 4) {
@@ -26,7 +26,7 @@ struct ActivityView: View {
                             .foregroundColor(Color(hex: "8A8A8E"))
                         
                         Text(todayTime)
-                            .font(.system(size: 38, weight: .medium))
+                            .font(.system(size: 28, weight: .medium))
                             .foregroundColor(Color(hex: "1C1C1E"))
                     }
                     
@@ -36,7 +36,7 @@ struct ActivityView: View {
                             .foregroundColor(Color(hex: "8A8A8E"))
                         
                         Text(averageTime)
-                            .font(.system(size: 38, weight: .medium))
+                            .font(.system(size: 28, weight: .medium))
                             .foregroundColor(Color(hex: "1C1C1E"))
                     }
                 }
@@ -51,9 +51,7 @@ struct ActivityView: View {
                         .foregroundColor(Color(hex: "9E9EA3"))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
-                                    
-                    WhiteRoundedBottom(action: {})
-                        .padding(.bottom, 0)
+
                 } else {
                     ScrollView {
                         LazyVGrid(columns: [

@@ -21,7 +21,7 @@ struct UnlockedView: View {
 //            .overlay(ReferenceGrid(spacing: 24, color: .red.opacity(0.15)))
             
             VStack(spacing: 0) {
-                Spacer(minLength: 140)
+                Spacer(minLength: 145)
                 Spacer()
                 HStack(spacing: 4) {
                     Text(todayTime)

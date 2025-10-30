@@ -11,9 +11,10 @@ struct SettingsView: View {
                 endPoint: .bottom
             )
             .ignoresSafeArea()
+//            .overlay(ReferenceGrid(spacing: 24, color: .red.opacity(0.15)))
             
             VStack(spacing: 0) {
-                Spacer(minLength: 28)
+                Spacer(minLength: 120)
                 
                 // Header card
                 RoundedRectangle(cornerRadius: 18)
@@ -78,7 +79,7 @@ struct SettingsView: View {
                     .padding(.bottom, 0)
                 
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.top, 10)
+                    .padding(.top, 0)
             }
         }
         .preferredColorScheme(.light)
