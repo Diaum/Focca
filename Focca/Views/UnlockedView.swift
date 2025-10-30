@@ -18,10 +18,11 @@ struct UnlockedView: View {
                 endPoint: .bottom
             )
             .ignoresSafeArea()
+//            .overlay(ReferenceGrid(spacing: 24, color: .red.opacity(0.15)))
             
             VStack(spacing: 0) {
                 Spacer(minLength: 140)
-                
+                Spacer()
                 HStack(spacing: 4) {
                     Text(todayTime)
                         .font(.system(size: 18, weight: .semibold, design: .rounded))
@@ -39,12 +40,15 @@ struct UnlockedView: View {
                         .fill(Color.white.opacity(0.9))
                         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
                 )
-                .padding(.bottom, 30)
+                .padding(.bottom, 60)
+
+
                 
-                Image("focco_rectangle")
+                Image("Focca_branco")
+                
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 220, height: 220)
+                    .frame(width: 350, height: 197)
                     .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
                     .padding(.bottom, 60)
                 
@@ -67,7 +71,7 @@ struct UnlockedView: View {
                         .font(.system(size: 14))
                         .foregroundColor(Color(hex: "8E8E93"))
                 }
-                .padding(.bottom, 80)
+                .padding(.bottom, 60)
                 
                 Spacer()
                 

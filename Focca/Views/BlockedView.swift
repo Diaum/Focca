@@ -9,6 +9,7 @@ struct BlockedView: View {
         ZStack {
             Color(hex: "0A0A0A")
                 .ignoresSafeArea()
+                
             
             VStack(spacing: 0) {
                 Spacer(minLength: 140)
@@ -16,16 +17,15 @@ struct BlockedView: View {
                 Text("You've been Bricked for")
                     .font(.system(size: 12))
                     .foregroundColor(Color(hex: "8A8A8E"))
-                    .padding(.bottom, 10)
                 
                 TimerComponent(isActive: isBlocked)
-                    .padding(.bottom, 56)
+                    .padding(.bottom, 60)
                 
-                Image("block-rectangle-dark")
+                Image("Focca_Preto")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 210, height: 210)
-                    .padding(.bottom, 56)
+                    .frame(width: 350, height: 197)
+                    .padding(.bottom, 60)
                 
                 VStack(spacing: 6) {
                     HStack(spacing: 6) {
@@ -38,7 +38,7 @@ struct BlockedView: View {
                         .font(.system(size: 13))
                         .foregroundColor(Color(hex: "8A8A8E"))
                 }
-                .padding(.bottom, 30)
+                .padding(.bottom, 60)
                 
                 Spacer()
                 

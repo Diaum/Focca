@@ -47,10 +47,10 @@ struct OnboardingStep4: View {
                 .padding(.bottom, 60)
                 
                 // 🔹 Imagem do Brick
-                Image("focco_rectangle")
+                Image("Focca_branco")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 240, height: 240)
+                    .frame(width: 350, height: 197)
                     .padding(.bottom, 50)
                 
                 // 🔹 Subtítulo e texto auxiliar
