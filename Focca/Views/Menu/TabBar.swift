@@ -6,7 +6,7 @@ struct TabBar: View {
     
     var body: some View {
         HStack {
-            TabItem(title: "Brick", isSelected: selectedTab == 0)
+            TabItem(title: "Focca", isSelected: selectedTab == 0)
                 .onTapGesture { selectedTab = 0 }
             
             TabItem(title: "Schedule", isSelected: selectedTab == 1)

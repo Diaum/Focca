@@ -15,7 +15,7 @@ struct PrincipalView: View {
                     UnlockedView(isBlocked: $isBlocked, selectedTab: $selectedTab)
                 }
             case 1:
-                UnlockedView(isBlocked: $isBlocked, selectedTab: $selectedTab)
+                ScheduleListView(selectedTab: $selectedTab)
             case 2:
                 ActivityView(selectedTab: $selectedTab)
             case 3:
