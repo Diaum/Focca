@@ -201,21 +201,33 @@ struct CreateModeView: View {
             UserDefaults.standard.set(modeName, forKey: "active_mode_name")
             UserDefaults.standard.set(selection.applicationTokens.count, forKey: "active_mode_app_count")
             
-            // Salva (opcional) o agendamento simples em UserDefaults para uso futuro
-            if isScheduled {
-                let comp = Calendar.current
-                let start = comp.dateComponents([.hour, .minute], from: startTime)
-                let end = comp.dateComponents([.hour, .minute], from: endTime)
-                let schedule: [String: Any] = [
-                    "weekdays": Array(selectedWeekdays).sorted(),
-                    "startHour": start.hour ?? 0,
-                    "startMinute": start.minute ?? 0,
-                    "endHour": end.hour ?? 0,
-                    "endMinute": end.minute ?? 0
-                ]
-                UserDefaults.standard.set(schedule, forKey: "mode_\(modeName)_schedule")
-            } else {
-                UserDefaults.standard.removeObject(forKey: "mode_\(modeName)_schedule")
+            // Salva o schedule se ativado
+            if isScheduled && selectedWeekdays.count >= 1 {
+                // Valida que startTime < endTime ou duração >= 5 minutos
+                let calendar = Calendar.current
+                let startComps = calendar.dateComponents([.hour, .minute], from: startTime)
+                let endComps = calendar.dateComponents([.hour, .minute], from: endTime)
+                
+                // Normaliza os horários para o dia de hoje para validação
+                let start = calendar.date(bySettingHour: startComps.hour ?? 0, minute: startComps.minute ?? 0, second: 0, of: Date()) ?? Date()
+                let end = calendar.date(bySettingHour: endComps.hour ?? 0, minute: endComps.minute ?? 0, second: 0, of: Date()) ?? Date()
+                let duration = end.timeIntervalSince(start)
+                let actualDuration = duration < 0 ? duration + 86400 : duration
+                
+                // Mínimo 5 minutos
+                if actualDuration >= 300 {
+                    let schedule = ScheduleModel(
+                        modeName: modeName,
+                        weekdays: selectedWeekdays,
+                        startTime: startTime,
+                        endTime: endTime,
+                        isActive: true
+                    )
+                    ScheduleManager.shared.saveSchedule(schedule)
+                    print("✅ Schedule salvo para o modo '\(modeName)'")
+                } else {
+                    print("⚠️ Schedule inválido: duração mínima de 5 minutos não atendida")
+                }
             }
             
             print("✅ Saved selection to: '\(selectionKey)'")

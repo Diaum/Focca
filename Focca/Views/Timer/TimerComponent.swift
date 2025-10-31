@@ -7,6 +7,9 @@ class TimerManager: ObservableObject {
     private var startDate: Date?
     
     func start() {
+        // Para o timer anterior se existir
+        stop()
+        
         let blockedDate = UserDefaults.standard.object(forKey: "blocked_start_date") as? Date
         if let startDate = blockedDate {
             self.startDate = startDate
@@ -16,17 +19,23 @@ class TimerManager: ObservableObject {
             UserDefaults.standard.set(now, forKey: "blocked_start_date")
         }
         
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            self?.updateTime()
+        // Garante que o timer roda na thread principal e no RunLoop comum
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+                guard let self = self else { return }
+                self.updateTime()
+            }
+            RunLoop.main.add(self.timer!, forMode: .common)
+            self.updateTime()
         }
-        updateTime()
     }
     
     func stop() {
-        guard let startDate = startDate else { return }
-        
         timer?.invalidate()
         timer = nil
+        
+        guard let startDate = startDate else { return }
         
         TimerStorage.shared.splitOvernightTime(from: startDate, to: Date())
         
@@ -36,7 +45,12 @@ class TimerManager: ObservableObject {
     
     private func updateTime() {
         guard let startDate = startDate else {
-            elapsedTime = "0h 0m 0s"
+            let currentTime = elapsedTime
+            if currentTime != "0h 0m 0s" {
+                DispatchQueue.main.async { [weak self] in
+                    self?.elapsedTime = "0h 0m 0s"
+                }
+            }
             return
         }
         
@@ -45,7 +59,17 @@ class TimerManager: ObservableObject {
         let minutes = (Int(elapsed) % 3600) / 60
         let seconds = Int(elapsed) % 60
         
-        elapsedTime = String(format: "%dh %dm %ds", hours, minutes, seconds)
+        let newTime = String(format: "%dh %dm %ds", hours, minutes, seconds)
+        
+        // Atualiza apenas na thread principal e apenas se mudou
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self, newTime != self.elapsedTime else { return }
+            self.elapsedTime = newTime
+        }
+    }
+    
+    deinit {
+        timer?.invalidate()
     }
 }
 
@@ -57,10 +81,14 @@ struct TimerComponent: View {
         Text(timerManager.elapsedTime)
             .font(.system(size: 42, weight: .semibold, design: .rounded))
             .foregroundColor(isActive ? .white : Color(hex: "1C1C1E"))
+            .id("timer-\(isActive)") // Evita recriação desnecessária
             .onAppear {
                 if isActive {
                     timerManager.start()
                 }
+            }
+            .onDisappear {
+                timerManager.stop()
             }
             .onChange(of: isActive) { active in
                 if active {
