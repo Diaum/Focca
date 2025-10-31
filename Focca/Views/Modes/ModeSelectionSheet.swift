@@ -19,7 +19,7 @@ struct ModeSelectionSheet: View {
                 endPoint: .bottom
             ).ignoresSafeArea()
             
-            VStack(spacing: 20) {
+            VStack(spacing: 0) {
                 HStack {
                     Button(action: {
                         presentationMode.wrappedValue.dismiss()
@@ -36,10 +36,12 @@ struct ModeSelectionSheet: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
+                .padding(.bottom, 20)
 
                 Text("Select mode")
                     .font(.system(size: 24, weight: .semibold))
                     .foregroundColor(Color(hex: "1C1C1E"))
+                    .padding(.bottom, 70)
 
                 VStack(spacing: 14) {
                     ForEach(modeNames, id: \.self) { modeName in
@@ -57,17 +59,16 @@ struct ModeSelectionSheet: View {
                         )
                     }
                     
-                    if modeNames.count < 3 {
-                        ForEach(0..<(3 - modeNames.count), id: \.self) { _ in
-                            EmptyModeRow()
-                        }
-                    }
-                    
                     if canCreateMode {
-                        CreateModeRow(showCreateMode: $showCreateMode)
+                        
+                        CreateModeRow(
+                            showCreateMode: $showCreateMode,
+                            isDisabled: !canCreateMode
+                        )
                     } else {
                         MaxModesReachedRow()
                     }
+                    
                 }
                 .padding(.horizontal, 20)
 
@@ -140,7 +141,7 @@ struct ModeSelectionSheet: View {
     }
     
     private var canCreateMode: Bool {
-        modeNames.count < 3
+        modeNames.count < 4
     }
     
     private func loadSelectedMode() {
@@ -170,7 +171,7 @@ struct ModeRow: View {
     let isSelected: Bool
     let onEdit: () -> Void
     let onSelect: () -> Void
-    
+
     var body: some View {
         Button(action: onSelect) {
             HStack {
@@ -183,7 +184,7 @@ struct ModeRow: View {
                 }
             }
             .padding(.horizontal, 16)
-            .frame(height: 56)
+            .frame(height: 64)
             .background(
                 RoundedRectangle(cornerRadius: 14)
                     .fill(isSelected ? Color.white : Color(hex: "EDEBEA"))
@@ -194,31 +195,35 @@ struct ModeRow: View {
 
 private struct CreateModeRow: View {
     @Binding var showCreateMode: Bool
-    
+    let isDisabled: Bool
+
     var body: some View {
         Button(action: {
-            showCreateMode = true
+            if !isDisabled {
+                showCreateMode = true
+            }
         }) {
             HStack {
                 Text("Create new mode")
-                    .foregroundColor(Color(hex: "1C1C1E"))
+                    .foregroundColor(isDisabled ? Color(hex: "9E9EA3") : Color(hex: "1C1C1E"))
                 Spacer()
                 Image(systemName: "plus")
-                    .foregroundColor(Color(hex: "1C1C1E"))
+                    .foregroundColor(isDisabled ? Color(hex: "9E9EA3") : Color(hex: "1C1C1E"))
             }
             .padding(.horizontal, 16)
-            .frame(height: 56)
+            .frame(height: 84)
             .background(
                 RoundedRectangle(cornerRadius: 14)
                     .fill(Color(hex: "EDEBEA"))
             )
         }
+        .disabled(isDisabled)
     }
 }
 
 struct MaxModesReachedRow: View {
     var body: some View {
-        Text("Maximum number of modes reached (3)")
+        Text("Maximum number of modes reached (4)")
             .font(.system(size: 14, weight: .medium))
             .foregroundColor(Color(hex: "FF6B6B"))
             .padding(.horizontal, 16)
@@ -230,17 +235,4 @@ struct MaxModesReachedRow: View {
             )
     }
 }
-
-struct EmptyModeRow: View {
-    var body: some View {
-        HStack { Spacer() }
-            .padding(.horizontal, 16)
-            .frame(height: 56)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color(hex: "EDEBEA"))
-            )
-    }
-}
-
 #Preview { ModeSelectionSheet() }
