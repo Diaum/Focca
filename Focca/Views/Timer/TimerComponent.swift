@@ -31,7 +31,15 @@ class TimerManager: ObservableObject {
         }
     }
     
+    // Para o timer sem remover o estado (usado quando a view desaparece)
     func stop() {
+        timer?.invalidate()
+        timer = nil
+        // NÃO remove o blocked_start_date aqui - isso só deve acontecer quando o bloqueio realmente termina
+    }
+    
+    // Finaliza o timer, computa o tempo e remove o estado (chamado quando o bloqueio realmente termina)
+    func finalize() {
         timer?.invalidate()
         timer = nil
         
@@ -44,13 +52,25 @@ class TimerManager: ObservableObject {
     }
     
     private func updateTime() {
-        guard let startDate = startDate else {
-            let currentTime = elapsedTime
-            if currentTime != "0h 0m 0s" {
-                DispatchQueue.main.async { [weak self] in
-                    self?.elapsedTime = "0h 0m 0s"
+        // Se não há startDate local, tenta recuperar do UserDefaults (caso o timer tenha sido recriado)
+        var dateToUse = startDate
+        if dateToUse == nil {
+            if let blockedDate = UserDefaults.standard.object(forKey: "blocked_start_date") as? Date {
+                dateToUse = blockedDate
+                self.startDate = blockedDate // Restaura o startDate local
+            } else {
+                // Se não há bloqueio ativo, zera o timer
+                let currentTime = elapsedTime
+                if currentTime != "0h 0m 0s" {
+                    DispatchQueue.main.async { [weak self] in
+                        self?.elapsedTime = "0h 0m 0s"
+                    }
                 }
+                return
             }
+        }
+        
+        guard let startDate = dateToUse else {
             return
         }
         
@@ -88,13 +108,15 @@ struct TimerComponent: View {
                 }
             }
             .onDisappear {
+                // Apenas pausa o timer, não remove o estado (o bloqueio ainda está ativo)
                 timerManager.stop()
             }
             .onChange(of: isActive) { active in
                 if active {
                     timerManager.start()
                 } else {
-                    timerManager.stop()
+                    // Quando o bloqueio realmente termina, finaliza o timer
+                    timerManager.finalize()
                 }
             }
     }
