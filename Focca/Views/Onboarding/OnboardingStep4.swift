@@ -1,10 +1,14 @@
 import SwiftUI
 import FamilyControls
 import ManagedSettings
+import ActivityKit
 
 struct OnboardingStep4: View {
     @State private var showBlockedView = false
+    @State private var currentActivity: Activity<FoccaWidgetLiveAttributes>?
     @Environment(\.presentationMode) var presentationMode
+
+    private let sharedDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
     
     var body: some View {
         ZStack {
@@ -90,15 +94,18 @@ struct OnboardingStep4: View {
                         // Define o modo ativo e quantidade
                         UserDefaults.standard.set("default", forKey: "active_mode_name")
                         UserDefaults.standard.set(saved.applicationTokens.count, forKey: "active_mode_app_count")
-                        
-                        // Marca início do bloqueio para que o PrincipalView detecte que está bloqueado
+
+                        // Inicia timer
                         let now = Date()
-                        UserDefaults.standard.set(now, forKey: "blocked_start_date")
-                        
+                        sharedDefaults.set(now, forKey: "blocked_start_date")
+
+                        // Start Live Activity
+                        startLiveActivity(startDate: now)
+
                         showBlockedView = true
                     }
                 }) {
-                    Text("Focca your device")
+                    Text("Brick device")
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(Color(hex: "1D1D1F"))
                         .frame(maxWidth: .infinity)
@@ -112,6 +119,27 @@ struct OnboardingStep4: View {
         }
         .fullScreenCover(isPresented: $showBlockedView) {
             PrincipalView()
+        }
+    }
+
+    private func startLiveActivity(startDate: Date) {
+        let attributes = FoccaWidgetLiveAttributes()
+        let contentState = FoccaWidgetLiveAttributes.ContentState(
+            startDate: startDate,
+            isActive: true
+        )
+
+        do {
+            let activity = try Activity.request(
+                attributes: attributes,
+                content: .init(state: contentState, staleDate: nil),
+                pushType: nil
+            )
+            currentActivity = activity
+            sharedDefaults.set(activity.id, forKey: "live_activity_id")
+            print("✅ Live Activity iniciada com sucesso! ID: \(activity.id)")
+        } catch {
+            print("❌ Erro ao iniciar Live Activity: \(error.localizedDescription)")
         }
     }
 }

@@ -1,9 +1,12 @@
 import SwiftUI
 import ManagedSettings
+import ActivityKit
 
 struct BlockedView: View {
     @Binding var isBlocked: Bool
     @Binding var selectedTab: Int
+
+    private let sharedDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
     
     var body: some View {
         ZStack {
@@ -54,8 +57,15 @@ struct BlockedView: View {
                     // Desbloqueia os apps
                     let store = ManagedSettingsStore()
                     store.application.blockedApplications = nil
-                    
-                    // Atualiza o estado local
+
+                    if let startDate = sharedDefaults.object(forKey: "blocked_start_date") as? Date {
+                        TimerStorage.shared.splitOvernightTime(from: startDate, to: Date())
+                    }
+                    sharedDefaults.removeObject(forKey: "blocked_start_date")
+
+                    // Stop Live Activity
+                    stopLiveActivity()
+
                     isBlocked = false
                 })
                     .padding(.bottom, 0)
@@ -64,6 +74,19 @@ struct BlockedView: View {
             }
         }
         .preferredColorScheme(.dark)
+    }
+
+    private func stopLiveActivity() {
+        Task {
+            for activity in Activity<FoccaWidgetLiveAttributes>.activities {
+                await activity.end(
+                    .init(state: activity.content.state, staleDate: nil),
+                    dismissalPolicy: .immediate
+                )
+            }
+
+            sharedDefaults.removeObject(forKey: "live_activity_id")
+        }
     }
 }
 

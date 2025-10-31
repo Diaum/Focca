@@ -1,6 +1,7 @@
 import SwiftUI
 import FamilyControls
 import ManagedSettings
+import ActivityKit
 
 struct UnlockedView: View {
     @Binding var isBlocked: Bool
@@ -9,6 +10,9 @@ struct UnlockedView: View {
     @State private var activeModeName = UserDefaults.standard.string(forKey: "active_mode_name") ?? "-"
     @State private var activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
     @State private var todayTime: String = "0h 0m"
+    @State private var currentActivity: Activity<FoccaWidgetLiveAttributes>?
+
+    private let sharedDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
     
     var body: some View {
         ZStack {
@@ -85,8 +89,11 @@ struct UnlockedView: View {
                         store.application.blockedApplications = apps
                         
                         let now = Date()
-                        UserDefaults.standard.set(now, forKey: "blocked_start_date")
-                        
+                        sharedDefaults.set(now, forKey: "blocked_start_date")
+
+                        // Start Live Activity
+                        startLiveActivity(startDate: now)
+
                         isBlocked = true
                     }
                 })
@@ -127,6 +134,26 @@ struct UnlockedView: View {
         let hours = Int(totalTime) / 3600
         let minutes = (Int(totalTime) % 3600) / 60
         todayTime = String(format: "%dh %dm", hours, minutes)
+    }
+
+    private func startLiveActivity(startDate: Date) {
+        let attributes = FoccaWidgetLiveAttributes()
+        let contentState = FoccaWidgetLiveAttributes.ContentState(
+            startDate: startDate,
+            isActive: true
+        )
+
+        do {
+            let activity = try Activity.request(
+                attributes: attributes,
+                content: .init(state: contentState, staleDate: nil),
+                pushType: nil
+            )
+            currentActivity = activity
+            sharedDefaults.set(activity.id, forKey: "live_activity_id")
+        } catch {
+            print("Error starting Live Activity: \(error.localizedDescription)")
+        }
     }
 }
 
