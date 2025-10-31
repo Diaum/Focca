@@ -25,30 +25,7 @@ class NotificationScheduler {
         // Cria e agenda a requisição
         let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
         
-        notificationCenter.add(request) { error in
-            if let error = error {
-                print("❌ [NotificationScheduler] Erro ao agendar: \(error.localizedDescription)")
-                print("   Schedule ID: \(schedule.id)")
-                print("   Weekday: \(weekday)")
-                print("   Time: \(String(format: "%02d:%02d", notificationTime.hour, notificationTime.minute))")
-            } else {
-                let weekdayName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][(weekday - 1) % 7]
-                print("✅ [NotificationScheduler] Agendada para \(weekdayName) às \(String(format: "%02d:%02d", notificationTime.hour, notificationTime.minute))")
-                print("   Schedule ID: \(schedule.id)")
-                print("   Schedule Mode: \(schedule.modeName)")
-                print("   Trigger repeats: true")
-                
-                // Verifica se foi realmente agendada
-                self.notificationCenter.getPendingNotificationRequests { requests in
-                    let found = requests.contains { $0.identifier == identifier }
-                    if found {
-                        print("   ✅ Confirmado: Notificação encontrada nas pendentes")
-                    } else {
-                        print("   ⚠️ AVISO: Notificação não encontrada nas pendentes!")
-                    }
-                }
-            }
-        }
+        notificationCenter.add(request) { _ in }
     }
     
     /// Calcula o horário da notificação (10 minutos antes do início)
@@ -98,7 +75,6 @@ class NotificationScheduler {
             
             if !identifiersToCancel.isEmpty {
                 self.notificationCenter.removePendingNotificationRequests(withIdentifiers: identifiersToCancel)
-                print("🗑️ [NotificationScheduler] Canceladas \(identifiersToCancel.count) notificação(ões) para schedule '\(scheduleId)'")
             }
         }
     }
@@ -106,7 +82,6 @@ class NotificationScheduler {
     /// Cancela todas as notificações pendentes
     func cancelAllNotifications() {
         notificationCenter.removeAllPendingNotificationRequests()
-        print("🗑️ [NotificationScheduler] Todas as notificações foram canceladas")
     }
     
     /// Agenda notificação para HOJE se o schedule começar hoje e estiver nos weekdays
@@ -118,7 +93,6 @@ class NotificationScheduler {
         
         // Verifica se hoje está nos dias do schedule
         guard schedule.weekdays.contains(todayWeekday) else {
-            print("   ℹ️ [NotificationScheduler] Hoje não está nos dias do schedule")
             return
         }
         
@@ -147,7 +121,6 @@ class NotificationScheduler {
                         if triggerComps.weekday == todayWeekday &&
                            triggerComps.hour == notificationHour &&
                            triggerComps.minute == notificationMinute {
-                            print("   ℹ️ [NotificationScheduler] Notificação semanal já cobre hoje, não criando duplicata")
                             return true
                         }
                     }
@@ -157,7 +130,6 @@ class NotificationScheduler {
             
             // Se já existe notificação semanal que cobre hoje, não cria adicional
             if hasWeeklyNotification {
-                print("   ℹ️ [NotificationScheduler] Notificação semanal já agendada para hoje, pulando notificação específica")
                 return
             }
             
@@ -171,15 +143,11 @@ class NotificationScheduler {
             
             // Se já passou o horário hoje, não agenda (espera a notificação semanal)
             if minutesUntilStart < 0 {
-                print("   ℹ️ [NotificationScheduler] Horário do schedule já passou hoje")
                 return
             }
             
-            print("   📅 [NotificationScheduler] Schedule começa em \(Int(minutesUntilStart)) minutos hoje")
-            
             // Se começar em menos de 10 minutos, envia notificação IMEDIATA (mas só se não houver semanal)
             if minutesUntilStart < 10 {
-                print("   ⚡ [NotificationScheduler] Schedule começa em menos de 10 minutos! Enviando notificação IMEDIATA")
                 self.sendImmediateNotificationForSchedule(schedule: schedule)
                 return
             }
@@ -201,7 +169,6 @@ class NotificationScheduler {
                 
                 // Se a data já passou, não agenda
                 if notificationDate <= now {
-                    print("   ℹ️ [NotificationScheduler] Horário da notificação já passou hoje")
                     return
                 }
                 
@@ -218,16 +185,7 @@ class NotificationScheduler {
                 
                 let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
                 
-                self.notificationCenter.add(request) { error in
-                    if let error = error {
-                        print("   ❌ [NotificationScheduler] Erro ao agendar notificação para hoje: \(error.localizedDescription)")
-                    } else {
-                        print("   ✅ [NotificationScheduler] Notificação agendada para hoje às \(String(format: "%02d:%02d", notificationHour, notificationMinute))")
-                        print("      Faltam \(Int(minutesUntilStart)) minutos para o schedule começar")
-                    }
-                }
-            } else {
-                print("   ℹ️ [NotificationScheduler] Horário da notificação já passou hoje, será agendada para a próxima semana")
+                self.notificationCenter.add(request) { _ in }
             }
         }
     }
@@ -244,13 +202,7 @@ class NotificationScheduler {
         
         let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
         
-        notificationCenter.add(request) { error in
-            if let error = error {
-                print("   ❌ [NotificationScheduler] Erro ao enviar notificação imediata: \(error.localizedDescription)")
-            } else {
-                print("   ✅ [NotificationScheduler] Notificação IMEDIATA enviada para schedule '\(schedule.modeName)'")
-            }
-        }
+        notificationCenter.add(request) { _ in }
     }
 }
 

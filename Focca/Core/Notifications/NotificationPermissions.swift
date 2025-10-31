@@ -9,10 +9,8 @@ struct NotificationPermissions {
     func requestAuthorization() async -> Bool {
         do {
             let granted = try await notificationCenter.requestAuthorization(options: [.alert, .sound, .badge])
-            print("🔔 [NotificationPermissions] Permissão: \(granted ? "concedida" : "negada")")
             return granted
         } catch {
-            print("❌ [NotificationPermissions] Erro: \(error.localizedDescription)")
             return false
         }
     }

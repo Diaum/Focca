@@ -77,17 +77,6 @@ struct SettingsView: View {
                         showNotificationsView: $showNotificationsView
                     )
                     
-                    // Debug: Test Notifications
-                    SettingsSection(
-                        title: "Debug",
-                        items: [
-                            SettingsItem(title: "Test Notification", subtitle: "Send test notification in 5s", hasArrow: false, action: .testNotification),
-                            SettingsItem(title: "Test Immediate", subtitle: "Send test notification in 1s", hasArrow: false, action: .testImmediateNotification),
-                            SettingsItem(title: "List Pending", subtitle: "Show all scheduled notifications", hasArrow: false, action: .listNotifications)
-                        ],
-                        showNotificationsView: $showNotificationsView
-                    )
-                    
                     SettingsSection(
                         title: nil,
                         items: [
@@ -159,12 +148,6 @@ struct SettingsRow: View {
             switch item.action {
             case .notifications:
                 showNotificationsView = true
-            case .testNotification:
-                NotificationManager.shared.sendTestNotification()
-            case .testImmediateNotification:
-                NotificationManager.shared.sendImmediateTestNotification()
-            case .listNotifications:
-                NotificationManager.shared.listPendingNotifications()
             case .none:
                 break
             }
@@ -204,9 +187,6 @@ struct SettingsRow: View {
 enum SettingsAction {
     case none
     case notifications
-    case testNotification
-    case testImmediateNotification
-    case listNotifications
 }
 
 struct SettingsItem {
