@@ -108,7 +108,7 @@ struct UnlockedView: View {
             activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
         }) {
             ModeSelectionSheet()
-                .presentationDetents([.medium])
+                .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(30)
         }
