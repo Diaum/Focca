@@ -22,23 +22,23 @@ struct OnboardingStep2: View {
                     HStack(spacing: 12) {
                         VStack(alignment: .leading, spacing: 4) {
                             if selection.applicationTokens.count > 0 {
-                                Text("\(selection.applicationTokens.count)/100 apps selected")
+                                Text("\(selection.applicationTokens.count)/50 apps selected")
                                     .font(.system(size: 14))
                                     .foregroundColor(.secondary)
-                                if selection.applicationTokens.count > 100 {
-                                    Text("⚠️ Maximum 100 apps allowed")
+                                if selection.applicationTokens.count > 50 {
+                                    Text("⚠️ Maximum 50 apps allowed")
                                         .font(.system(size: 11))
                                         .foregroundColor(.orange)
                                 }
                             } else if selection.categoryTokens.count > 0 {
-                                Text("0/100 apps selected")
+                                Text("0/50 apps selected")
                                     .font(.system(size: 14))
                                     .foregroundColor(.secondary)
                                 Text("⚠️ Deselect category → select apps individually")
                                     .font(.system(size: 11))
                                     .foregroundColor(.orange)
                             } else {
-                                Text("0/100 apps selected")
+                                Text("0/50 apps selected")
                                     .font(.system(size: 14))
                                     .foregroundColor(.secondary)
                             }
@@ -47,20 +47,20 @@ struct OnboardingStep2: View {
                         Spacer()
                         
                         Button(action: {
-                            if selection.applicationTokens.count <= 100 {
+                            if selection.applicationTokens.count <= 50 {
                                 saveSelection()
                                 didComplete()
                             }
                         }) {
                             Text("Next")
                                 .fontWeight(.semibold)
-                                .foregroundColor(selection.applicationTokens.count > 100 ? Color(hex: "9E9EA3") : .white)
+                                .foregroundColor(selection.applicationTokens.count > 50 ? Color(hex: "9E9EA3") : .white)
                                 .padding(.horizontal, 24)
                                 .frame(height: 40)
-                                .background(selection.applicationTokens.count > 100 ? Color(hex: "DAD7D6") : Color.black)
+                                .background(selection.applicationTokens.count > 50 ? Color(hex: "DAD7D6") : Color.black)
                                 .cornerRadius(20)
                         }
-                        .disabled(selection.applicationTokens.count > 100)
+                        .disabled(selection.applicationTokens.count > 50)
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 10)

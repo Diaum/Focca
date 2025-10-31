@@ -12,7 +12,7 @@ struct BlockedView: View {
         ZStack {
             Color(hex: "0A0A0A")
                 .ignoresSafeArea()
-                
+//                .overlay(ReferenceGrid(spacing: 24, color: .red.opacity(0.15)))
             
             VStack(spacing: 0) {
                 Spacer(minLength: 140)
@@ -46,6 +46,15 @@ struct BlockedView: View {
                 Spacer()
                 
                 BlackRoundedBottom(action: {
+                    // Feature 5: Desativa o schedule do dia se usuário desbloquear antes do fim
+                    if let currentSchedule = ScheduleManager.shared.currentSchedule {
+                        ScheduleManager.shared.disableScheduleForToday(scheduleId: currentSchedule.id)
+                    } else if ScheduleManager.shared.isBlockedBySchedule {
+                        // Se há bloqueio por schedule mas não há schedule atual, desbloqueia manualmente
+                        ScheduleManager.shared.manualUnblock()
+                    }
+                    
+                    // Desbloqueia os apps
                     let store = ManagedSettingsStore()
                     store.application.blockedApplications = nil
 

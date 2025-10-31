@@ -53,7 +53,7 @@ struct OnboardingStep3: View {
                                 }
                             }
                         }
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, 24)
                         .padding(.top, 20)
                     }
 
@@ -61,22 +61,22 @@ struct OnboardingStep3: View {
 
                     VStack(spacing: 16) {
                         Button(action: {
-                            if appInfos.count > 100 {
+                            if appInfos.count > 50 {
                                 showAlert = true
-                            } else if model.selection.applicationTokens.count > 0 && model.selection.applicationTokens.count <= 100 {
+                            } else if model.selection.applicationTokens.count > 0 && model.selection.applicationTokens.count <= 50 {
                                 showMainView = true
                             }
                         }) {
                             Text("Complete setup")
                                 .font(.system(size: 17, weight: .medium))
-                                .foregroundColor((appInfos.isEmpty || appInfos.count > 100) ? Color(hex: "9E9EA3") : .white)
+                                .foregroundColor((appInfos.isEmpty || appInfos.count > 50) ? Color(hex: "9E9EA3") : .white)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 50)
-                                .background((appInfos.isEmpty || appInfos.count > 100) ? Color(hex: "DAD7D6") : Color.black)
+                                .background((appInfos.isEmpty || appInfos.count > 50) ? Color(hex: "DAD7D6") : Color.black)
                                 .cornerRadius(12)
-                                .shadow(color: (appInfos.isEmpty || appInfos.count > 100) ? .clear : Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
+                                .shadow(color: (appInfos.isEmpty || appInfos.count > 50) ? .clear : Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
                         }
-                        .disabled(appInfos.isEmpty || appInfos.count > 100)
+                        .disabled(appInfos.isEmpty || appInfos.count > 50)
 
                         Button(action: {
                             showStep2 = true
@@ -107,7 +107,7 @@ struct OnboardingStep3: View {
                 })
                 Button("OK", role: .cancel) { }
             } message: {
-                Text("You can only block up to 100 apps. Please remove some apps to continue.")
+                Text("You can only block up to 50 apps. Please remove some apps to continue.")
             }
             .task {
                 if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
@@ -186,6 +186,9 @@ struct AppRow: View {
                     .labelStyle(.titleOnly)
                     .font(.system(size: 19, weight: .semibold))
                     .foregroundColor(Color(hex: "1D1D1F"))
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .frame(maxWidth: 240, alignment: .leading)
             }
 
             Spacer()

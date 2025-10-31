@@ -5,7 +5,7 @@ struct WhiteBlockButton: View {
     
     var body: some View {
         Button(action: action) {
-            Text("Brick device")
+            Text("Focca your device")
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundColor(Color(hex: "1C1C1E"))
                 .frame(maxWidth: .infinity)

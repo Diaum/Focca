@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @Binding var selectedTab: Int
+    @State private var showNotificationsView = false
     
     var body: some View {
         ZStack {
@@ -11,9 +12,10 @@ struct SettingsView: View {
                 endPoint: .bottom
             )
             .ignoresSafeArea()
+//            .overlay(ReferenceGrid(spacing: 24, color: .red.opacity(0.15)))
             
             VStack(spacing: 0) {
-                Spacer(minLength: 28)
+                Spacer(minLength: 120)
                 
                 // Header card
                 RoundedRectangle(cornerRadius: 18)
@@ -39,55 +41,73 @@ struct SettingsView: View {
                             SettingsItem(title: "About Brick", hasArrow: true),
                             SettingsItem(title: "Why Brick?", hasArrow: true),
                             SettingsItem(title: "Privacy Policy", hasArrow: true)
-                        ]
+                        ],
+                        showNotificationsView: $showNotificationsView
                     )
                     
                     SettingsSection(
                         title: nil,
                         items: [
                             SettingsItem(title: "Emergency Unbrick", subtitle: "4 remaining", hasArrow: true)
-                        ]
+                        ],
+                        showNotificationsView: $showNotificationsView
                     )
                     
                     SettingsSection(
                         title: nil,
                         items: [
                             SettingsItem(title: "Strict mode", hasArrow: false)
-                        ]
+                        ],
+                        showNotificationsView: $showNotificationsView
                     )
                     
                     SettingsSection(
                         title: nil,
                         items: [
                             SettingsItem(title: "Questions", hasToggle: true, isToggledOn: true)
-                        ]
+                        ],
+                        showNotificationsView: $showNotificationsView
+                    )
+                    
+                    SettingsSection(
+                        title: nil,
+                        items: [
+                            SettingsItem(title: "Notifications", hasArrow: true, action: .notifications)
+                        ],
+                        showNotificationsView: $showNotificationsView
                     )
                     
                     SettingsSection(
                         title: nil,
                         items: [
                             SettingsItem(title: "Troubleshooting", hasArrow: true)
-                        ]
+                        ],
+                        showNotificationsView: $showNotificationsView
                     )
                 }
                 .padding(.horizontal, 16)
                 
                 Spacer(minLength: 24)
-                
-                WhiteRoundedBottom(action: {})
-                    .padding(.bottom, 0)
-                
+            }
+            
+            VStack(spacing: 0) {
+                Spacer()
+                WhiteRoundedBottomPlain()
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.top, 10)
+                    .padding(.bottom, 0)
             }
         }
         .preferredColorScheme(.light)
+        .sheet(isPresented: $showNotificationsView) {
+            NotificationsView()
+        }
     }
 }
 
 struct SettingsSection: View {
     let title: String?
     let items: [SettingsItem]
+    @Binding var showNotificationsView: Bool
     
     var body: some View {
         VStack(spacing: 10) {
@@ -103,7 +123,7 @@ struct SettingsSection: View {
             
             VStack(spacing: 0) {
                 ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-                    SettingsRow(item: item)
+                    SettingsRow(item: item, showNotificationsView: $showNotificationsView)
                     if index < items.count - 1 {
                         Divider()
                             .padding(.leading, 16)
@@ -121,36 +141,52 @@ struct SettingsSection: View {
 
 struct SettingsRow: View {
     let item: SettingsItem
+    @Binding var showNotificationsView: Bool
     
     var body: some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(item.title)
-                    .font(.system(size: 17, weight: .regular))
-                    .foregroundColor(Color(hex: "1C1C1E"))
+        Button(action: {
+            switch item.action {
+            case .notifications:
+                showNotificationsView = true
+            case .none:
+                break
+            }
+        }) {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.title)
+                        .font(.system(size: 17, weight: .regular))
+                        .foregroundColor(Color(hex: "1C1C1E"))
+                    
+                    if let subtitle = item.subtitle {
+                        Text(subtitle)
+                            .font(.system(size: 14, weight: .regular))
+                            .foregroundColor(Color(hex: "8E8E93"))
+                    }
+                }
                 
-                if let subtitle = item.subtitle {
-                    Text(subtitle)
-                        .font(.system(size: 14, weight: .regular))
-                        .foregroundColor(Color(hex: "8E8E93"))
+                Spacer()
+                
+                if item.hasToggle {
+                    Toggle("", isOn: .constant(item.isToggledOn))
+                        .tint(Color.blue)
+                        .labelsHidden()
+                } else if item.hasArrow {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Color(hex: "C6C6C8"))
                 }
             }
-            
-            Spacer()
-            
-            if item.hasToggle {
-                Toggle("", isOn: .constant(item.isToggledOn))
-                    .tint(Color.blue)
-                    .labelsHidden()
-            } else if item.hasArrow {
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(Color(hex: "C6C6C8"))
-            }
+            .padding(.horizontal, 16)
+            .frame(height: item.subtitle != nil ? 56 : 44)
         }
-        .padding(.horizontal, 16)
-        .frame(height: item.subtitle != nil ? 56 : 44)
+        .buttonStyle(PlainButtonStyle())
     }
+}
+
+enum SettingsAction {
+    case none
+    case notifications
 }
 
 struct SettingsItem {
@@ -159,6 +195,7 @@ struct SettingsItem {
     var hasArrow: Bool = false
     var hasToggle: Bool = false
     var isToggledOn: Bool = false
+    var action: SettingsAction = .none
 }
 
 #Preview {

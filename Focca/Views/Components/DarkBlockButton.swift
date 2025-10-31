@@ -5,7 +5,7 @@ struct DarkBlockButton: View {
     
     var body: some View {
         Button(action: action) {
-            Text("Unbrick device")
+            Text("Unfoccus")
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
