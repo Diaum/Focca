@@ -39,7 +39,7 @@ class ScheduleManager: ObservableObject {
     }
     
     // Carrega todos os schedules salvos (incluindo inativos)
-    private func loadAllSchedules() -> [ScheduleModel] {
+    private func loadAllSchedulesInternal() -> [ScheduleModel] {
         guard let data = userDefaults.data(forKey: "all_schedules"),
               let decoded = try? JSONDecoder().decode([ScheduleModel].self, from: data) else {
             return []
@@ -49,7 +49,12 @@ class ScheduleManager: ObservableObject {
     
     // Carrega apenas schedules ativos
     func loadSchedules() -> [ScheduleModel] {
-        return loadAllSchedules().filter { $0.isActive }
+        return loadAllSchedulesInternal().filter { $0.isActive }
+    }
+    
+    // Método público para carregar todos os schedules (para validação de conflitos)
+    func loadAllSchedules() -> [ScheduleModel] {
+        return loadAllSchedulesInternal()
     }
     
     // Salva um schedule (mantém todos os schedules, inclusive inativos)
@@ -65,7 +70,7 @@ class ScheduleManager: ObservableObject {
         print("   - Válido: \(schedule.isValid())")
         print("   - Ativo: \(schedule.isActive)")
         
-        var schedules = loadAllSchedules()
+        var schedules = loadAllSchedulesInternal()
         // Remove schedule antigo com mesmo id se existir
         schedules.removeAll { $0.id == schedule.id }
         schedules.append(schedule)
@@ -77,10 +82,37 @@ class ScheduleManager: ObservableObject {
     
     // Remove um schedule
     func removeSchedule(id: String) {
-        var schedules = loadAllSchedules()
+        var schedules = loadAllSchedulesInternal()
         schedules.removeAll { $0.id == id }
         saveAllSchedules(schedules)
         checkSchedules()
+    }
+    
+    // Feature 5: Desativa o schedule do dia atual se usuário desbloquear antes do fim
+    func disableScheduleForToday(scheduleId: String) {
+        guard let schedule = loadAllSchedulesInternal().first(where: { $0.id == scheduleId }) else { return }
+        
+        let calendar = Calendar.current
+        let today = Date()
+        let weekday = calendar.component(.weekday, from: today)
+        
+        // Verifica se o schedule inclui hoje
+        guard schedule.weekdays.contains(weekday) else { return }
+        
+        // Marca que o schedule foi desativado para hoje
+        let key = "schedule_\(scheduleId)_disabled_\(calendar.startOfDay(for: today).timeIntervalSince1970)"
+        userDefaults.set(true, forKey: key)
+        userDefaults.synchronize()
+        
+        print("🚫 [ScheduleManager] Schedule '\(schedule.modeName)' desativado para hoje (dia \(weekday))")
+    }
+    
+    // Verifica se o schedule está desativado para hoje
+    func isScheduleDisabledForToday(scheduleId: String) -> Bool {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let key = "schedule_\(scheduleId)_disabled_\(today.timeIntervalSince1970)"
+        return userDefaults.bool(forKey: key)
     }
     
     // Salva todos os schedules
@@ -118,6 +150,12 @@ class ScheduleManager: ObservableObject {
         
         // Encontra o schedule que deve estar ativo agora
         let activeSchedule = schedules.first { schedule in
+            // Feature 5: Verifica se o schedule está desativado para hoje
+            if isScheduleDisabledForToday(scheduleId: schedule.id) {
+                print("   🔎 Testando '\(schedule.modeName)': DESATIVADO para hoje")
+                return false
+            }
+            
             let containsDay = schedule.weekdays.contains(weekday)
             let shouldBeActive = schedule.shouldBeActiveNow()
             print("   🔎 Testando '\(schedule.modeName)': dia=\(containsDay), ativo=\(shouldBeActive)")
@@ -135,8 +173,6 @@ class ScheduleManager: ObservableObject {
     }
     
     private func processScheduleCheck(activeSchedule: ScheduleModel?) {
-        guard let self = self else { return }
-        
         if let schedule = activeSchedule {
             print("   ✅ Schedule '\(schedule.modeName)' deve estar ATIVO agora")
             // Deve estar bloqueado

@@ -12,8 +12,13 @@ struct CreateModeView: View {
     @State private var startTime: Date = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date()) ?? Date()
     @State private var endTime: Date = Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: Date()) ?? Date()
     
+    // Feature 1: Valida se schedule está ativo, deve ter pelo menos 1 dia selecionado
+    // Feature 4: Valida se não há conflito com schedules existentes
     private var canSave: Bool {
-        modeName.count >= 4 && modeName.count <= 18 && selection.applicationTokens.count > 0
+        let basicValidation = modeName.count >= 4 && modeName.count <= 18 && selection.applicationTokens.count > 0
+        let scheduleValidation = !isScheduled || selectedWeekdays.count >= 1
+        let noConflict = !hasScheduleConflict()
+        return basicValidation && scheduleValidation && noConflict
     }
     
     var body: some View {
@@ -131,7 +136,16 @@ struct CreateModeView: View {
                                     Text("Start")
                                         .font(.system(size: 13, weight: .medium))
                                         .foregroundColor(Color(hex: "8E8E93"))
-                                    DatePicker("", selection: $startTime, displayedComponents: .hourAndMinute)
+                                    DatePicker("", selection: Binding(
+                                        get: { startTime },
+                                        set: { newValue in
+                                            startTime = newValue
+                                            // Feature 2: Atualiza automaticamente endTime para 1h após startTime
+                                            if let newEndTime = Calendar.current.date(byAdding: .hour, value: 1, to: newValue) {
+                                                endTime = newEndTime
+                                            }
+                                        }
+                                    ), displayedComponents: .hourAndMinute)
                                         .labelsHidden()
                                 }
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -146,7 +160,24 @@ struct CreateModeView: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             .padding(.horizontal, 16)
-                            .padding(.bottom, 8)
+                            
+                            // Feature 3: Mostra aviso quando schedule cruza meia-noite
+                            if crossesMidnight() {
+                                Text("Schedule se encerrará no dia seguinte")
+                                    .font(.system(size: 11, weight: .regular))
+                                    .foregroundColor(Color(hex: "9E9EA3"))
+                                    .padding(.horizontal, 16)
+                                    .padding(.bottom, 8)
+                            }
+                            
+                            // Feature 4: Mostra aviso de conflito com schedule existente
+                            if hasScheduleConflict() {
+                                Text("Conflito: já existe um schedule ativo neste horário")
+                                    .font(.system(size: 11, weight: .regular))
+                                    .foregroundColor(.red.opacity(0.7))
+                                    .padding(.horizontal, 16)
+                                    .padding(.bottom, 8)
+                            }
                         }
                     }
                     .padding(.vertical, 12)
@@ -250,6 +281,81 @@ struct CreateModeView: View {
                 print("❌ Reason: canSave is false")
             }
         }
+    }
+    
+    // Feature 3: Verifica se o schedule cruza meia-noite
+    private func crossesMidnight() -> Bool {
+        let calendar = Calendar.current
+        let startComps = calendar.dateComponents([.hour, .minute], from: startTime)
+        let endComps = calendar.dateComponents([.hour, .minute], from: endTime)
+        let startMinutes = (startComps.hour ?? 0) * 60 + (startComps.minute ?? 0)
+        let endMinutes = (endComps.hour ?? 0) * 60 + (endComps.minute ?? 0)
+        return endMinutes < startMinutes
+    }
+    
+    // Feature 4: Verifica se há conflito com schedules existentes
+    private func hasScheduleConflict() -> Bool {
+        guard isScheduled && selectedWeekdays.count >= 1 else { return false }
+        
+        let allSchedules = ScheduleManager.shared.loadAllSchedules()
+        let calendar = Calendar.current
+        let newStartComps = calendar.dateComponents([.hour, .minute], from: startTime)
+        let newEndComps = calendar.dateComponents([.hour, .minute], from: endTime)
+        let newStartMinutes = (newStartComps.hour ?? 0) * 60 + (newStartComps.minute ?? 0)
+        let newEndMinutes = (newEndComps.hour ?? 0) * 60 + (newEndComps.minute ?? 0)
+        
+        // Verifica se há schedule existente para o mesmo modo (permitindo edição)
+        var existingScheduleId: String? = nil
+        for schedule in allSchedules {
+            if schedule.modeName == modeName {
+                existingScheduleId = schedule.id
+                break
+            }
+        }
+        
+        for existingSchedule in allSchedules {
+            // Pula o schedule atual se for edição do mesmo modo
+            if let existingId = existingScheduleId, existingSchedule.id == existingId {
+                continue
+            }
+            
+            guard existingSchedule.isActive else { continue }
+            
+            // Verifica se há sobreposição de dias
+            let overlappingDays = existingSchedule.weekdays.intersection(selectedWeekdays)
+            guard !overlappingDays.isEmpty else { continue }
+            
+            let existingStartComps = calendar.dateComponents([.hour, .minute], from: existingSchedule.startTime)
+            let existingEndComps = calendar.dateComponents([.hour, .minute], from: existingSchedule.endTime)
+            let existingStartMinutes = (existingStartComps.hour ?? 0) * 60 + (existingStartComps.minute ?? 0)
+            let existingEndMinutes = (existingEndComps.hour ?? 0) * 60 + (existingEndComps.minute ?? 0)
+            
+            // Verifica conflito de horário (considera que pode cruzar meia-noite)
+            func timesOverlap(start1: Int, end1: Int, start2: Int, end2: Int) -> Bool {
+                // Se nenhum cruza meia-noite
+                if end1 >= start1 && end2 >= start2 {
+                    return start1 < end2 && start2 < end1
+                }
+                // Se apenas o primeiro cruza
+                else if end1 < start1 && end2 >= start2 {
+                    return start1 < end2 || start2 < end1
+                }
+                // Se apenas o segundo cruza
+                else if end1 >= start1 && end2 < start2 {
+                    return start1 < end2 || start2 < end1
+                }
+                // Se ambos cruzam
+                else {
+                    return true
+                }
+            }
+            
+            if timesOverlap(start1: newStartMinutes, end1: newEndMinutes, start2: existingStartMinutes, end2: existingEndMinutes) {
+                return true
+            }
+        }
+        
+        return false
     }
 }
 
