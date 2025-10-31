@@ -11,7 +11,7 @@ struct AppIconGrid: View {
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(Color(hex: "1C1C1E"))
                 Spacer()
-                Text("\(selection.applicationTokens.count)/100")
+                Text("\(selection.applicationTokens.count)/50")
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(Color(hex: "1C1C1E"))
             }

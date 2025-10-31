@@ -46,11 +46,16 @@ struct BlockedView: View {
                     // Feature 5: Desativa o schedule do dia se usuário desbloquear antes do fim
                     if let currentSchedule = ScheduleManager.shared.currentSchedule {
                         ScheduleManager.shared.disableScheduleForToday(scheduleId: currentSchedule.id)
+                    } else if ScheduleManager.shared.isBlockedBySchedule {
+                        // Se há bloqueio por schedule mas não há schedule atual, desbloqueia manualmente
+                        ScheduleManager.shared.manualUnblock()
                     }
                     
+                    // Desbloqueia os apps
                     let store = ManagedSettingsStore()
                     store.application.blockedApplications = nil
                     
+                    // Atualiza o estado local
                     isBlocked = false
                 })
                     .padding(.bottom, 0)

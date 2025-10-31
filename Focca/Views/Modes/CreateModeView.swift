@@ -185,6 +185,19 @@ struct CreateModeView: View {
                         RoundedRectangle(cornerRadius: 14)
                             .fill(Color.white)
                     )
+                    .onChange(of: isScheduled) { newValue in
+                        // Quando o toggle é ativado, define horário de início como 10 minutos à frente
+                        if newValue {
+                            let now = Date()
+                            if let newStartTime = Calendar.current.date(byAdding: .minute, value: 10, to: now) {
+                                startTime = newStartTime
+                                // Isso automaticamente atualiza endTime para 1h depois devido ao binding
+                                if let newEndTime = Calendar.current.date(byAdding: .hour, value: 1, to: newStartTime) {
+                                    endTime = newEndTime
+                                }
+                            }
+                        }
+                    }
                 }
                 
                 Spacer()
@@ -320,6 +333,13 @@ struct CreateModeView: View {
             }
             
             guard existingSchedule.isActive else { continue }
+            
+            // Verifica se o modo do schedule ainda existe (não foi deletado)
+            let modeExistsKey = "mode_\(existingSchedule.modeName)_exists"
+            guard UserDefaults.standard.bool(forKey: modeExistsKey) else {
+                print("   ⚠️ Schedule de modo deletado ignorado: '\(existingSchedule.modeName)'")
+                continue
+            }
             
             // Verifica se há sobreposição de dias
             let overlappingDays = existingSchedule.weekdays.intersection(selectedWeekdays)

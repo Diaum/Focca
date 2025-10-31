@@ -47,9 +47,27 @@ class ScheduleManager: ObservableObject {
         return decoded
     }
     
-    // Carrega apenas schedules ativos
+    // Carrega apenas schedules ativos de modos que ainda existem
     func loadSchedules() -> [ScheduleModel] {
-        return loadAllSchedulesInternal().filter { $0.isActive }
+        return loadAllSchedulesInternal().filter { schedule in
+            // Filtra apenas schedules ativos
+            guard schedule.isActive else { return false }
+            
+            // Verifica se o modo do schedule ainda existe (não foi deletado)
+            let modeExistsKey = "mode_\(schedule.modeName)_exists"
+            let modeExists = UserDefaults.standard.bool(forKey: modeExistsKey)
+            
+            if !modeExists {
+                print("   🧹 [ScheduleManager] Removendo schedule órfão do modo deletado: '\(schedule.modeName)'")
+                // Remove automaticamente schedules órfãos (de modos deletados)
+                DispatchQueue.main.async {
+                    self.removeSchedule(id: schedule.id)
+                }
+                return false
+            }
+            
+            return true
+        }
     }
     
     // Método público para carregar todos os schedules (para validação de conflitos)
@@ -80,12 +98,37 @@ class ScheduleManager: ObservableObject {
         checkSchedules()
     }
     
-    // Remove um schedule
+    // Remove um schedule por ID
     func removeSchedule(id: String) {
         var schedules = loadAllSchedulesInternal()
         schedules.removeAll { $0.id == id }
         saveAllSchedules(schedules)
         checkSchedules()
+    }
+    
+    // Remove todos os schedules de um modo específico (quando o modo é deletado)
+    func removeSchedulesForMode(modeName: String) {
+        var schedules = loadAllSchedulesInternal()
+        let schedulesToRemove = schedules.filter { $0.modeName == modeName }
+        
+        if !schedulesToRemove.isEmpty {
+            print("🗑️ [ScheduleManager] Removendo \(schedulesToRemove.count) schedule(s) do modo '\(modeName)'")
+            
+            // Se algum dos schedules removidos está ativo, desativa primeiro
+            for schedule in schedulesToRemove {
+                if schedule.id == currentSchedule?.id {
+                    print("   ⚠️ Schedule ativo será desativado: '\(schedule.modeName)'")
+                    manualUnblock()
+                }
+            }
+            
+            // Remove os schedules
+            schedules.removeAll { $0.modeName == modeName }
+            saveAllSchedules(schedules)
+            
+            print("✅ [ScheduleManager] Schedules removidos. Total restante: \(schedules.count)")
+            checkSchedules()
+        }
     }
     
     // Feature 5: Desativa o schedule do dia atual se usuário desbloquear antes do fim
@@ -105,6 +148,27 @@ class ScheduleManager: ObservableObject {
         userDefaults.synchronize()
         
         print("🚫 [ScheduleManager] Schedule '\(schedule.modeName)' desativado para hoje (dia \(weekday))")
+        
+        // Se este é o schedule atual, desativa manualmente
+        if currentSchedule?.id == scheduleId {
+            manualUnblock()
+        }
+    }
+    
+    // Desbloqueia manualmente quando o usuário clica em "Unbrick"
+    func manualUnblock() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.currentSchedule = nil
+            self.isBlockedBySchedule = false
+            UserDefaults.standard.removeObject(forKey: "blocked_by_schedule")
+            UserDefaults.standard.removeObject(forKey: "blocked_start_date")
+            
+            // Notifica o app para mudar para UnlockedView
+            NotificationCenter.default.post(name: NSNotification.Name("ScheduleDeactivated"), object: nil)
+            
+            print("🔓 [ScheduleManager] Desbloqueio manual executado")
+        }
     }
     
     // Verifica se o schedule está desativado para hoje

@@ -90,6 +90,11 @@ struct OnboardingStep4: View {
                         // Define o modo ativo e quantidade
                         UserDefaults.standard.set("default", forKey: "active_mode_name")
                         UserDefaults.standard.set(saved.applicationTokens.count, forKey: "active_mode_app_count")
+                        
+                        // Marca início do bloqueio para que o PrincipalView detecte que está bloqueado
+                        let now = Date()
+                        UserDefaults.standard.set(now, forKey: "blocked_start_date")
+                        
                         showBlockedView = true
                     }
                 }) {

@@ -177,8 +177,22 @@ struct EditModeView: View {
     
     private func deleteMode() {
         if canDelete {
+            // Remove os schedules associados ao modo antes de deletar
+            ScheduleManager.shared.removeSchedulesForMode(modeName: modeName)
+            
+            // Remove outros dados relacionados ao modo
             UserDefaults.standard.set(false, forKey: "mode_\(modeName)_exists")
             UserDefaults.standard.removeObject(forKey: "mode_\(modeName)_selection")
+            UserDefaults.standard.removeObject(forKey: "mode_\(modeName)_last_used")
+            UserDefaults.standard.removeObject(forKey: "mode_\(modeName)_schedule")
+            
+            // Se este modo estava ativo, limpa as referências
+            if UserDefaults.standard.string(forKey: "active_mode_name") == modeName {
+                UserDefaults.standard.removeObject(forKey: "active_mode_name")
+                UserDefaults.standard.removeObject(forKey: "active_mode_app_count")
+            }
+            
+            print("🗑️ [EditModeView] Modo '\(modeName)' deletado e schedules removidos")
         }
     }
 }
