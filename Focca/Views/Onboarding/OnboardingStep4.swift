@@ -59,11 +59,11 @@ struct OnboardingStep4: View {
                 
                 // 🔹 Subtítulo e texto auxiliar
                 VStack(spacing: 10) {
-                    Text("Go grab your Brick")
+                    Text("Go grab your Focca")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(Color(hex: "1D1D1F"))
                     
-                    Text("You have 5 emergency unbricks, in case you ever are without your device")
+                    Text("You have 5 emergency unfocus, in case you ever are without your device")
                         .font(.system(size: 15))
                         .foregroundColor(Color(hex: "7A7A7A"))
                         .multilineTextAlignment(.center)

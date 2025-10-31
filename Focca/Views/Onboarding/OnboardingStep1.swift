@@ -42,8 +42,8 @@ struct OnboardingStep1: View {
                         Image("onboardingstep1")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(width: 220)
-                            .padding(.bottom, 40)
+                            .frame(width: 400)
+                            .padding(.bottom, 10)
 
                         Button(action: {
                             showStep2 = true
