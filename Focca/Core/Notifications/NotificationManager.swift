@@ -68,8 +68,13 @@ class NotificationManager {
                     scheduler.scheduleNotificationForWeekday(schedule: schedule, weekday: weekday)
                 }
                 
-                // Se o schedule começar HOJE, agenda notificação também para hoje
-                scheduler.scheduleNotificationForTodayIfNeeded(schedule: schedule)
+                // Aguarda um pouco para garantir que as notificações semanais foram processadas
+                // ANTES de verificar se precisa agendar para hoje (evita duplicatas)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    // Se o schedule começar HOJE, agenda notificação também para hoje
+                    // (mas só se não houver notificação semanal que já cobre)
+                    self.scheduler.scheduleNotificationForTodayIfNeeded(schedule: schedule)
+                }
                 
                 print("✅ [NotificationManager] Notificações agendadas para schedule '\(schedule.modeName)'")
                 

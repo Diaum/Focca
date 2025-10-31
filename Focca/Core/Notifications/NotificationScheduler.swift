@@ -110,6 +110,7 @@ class NotificationScheduler {
     }
     
     /// Agenda notificação para HOJE se o schedule começar hoje e estiver nos weekdays
+    /// IMPORTANTE: Só agenda se NÃO houver notificação semanal que já cobre hoje
     func scheduleNotificationForTodayIfNeeded(schedule: ScheduleModel) {
         let calendar = Calendar.current
         let now = Date()
@@ -127,75 +128,107 @@ class NotificationScheduler {
             return
         }
         
-        // Cria a data de início para hoje
-        guard let scheduleStartToday = calendar.date(bySettingHour: startHour, minute: startMin, second: 0, of: now) else {
-            return
-        }
-        
-        // Calcula quantos minutos faltam até o início
-        let minutesUntilStart = scheduleStartToday.timeIntervalSince(now) / 60.0
-        
-        // Se já passou o horário hoje, não agenda (espera a notificação semanal)
-        if minutesUntilStart < 0 {
-            print("   ℹ️ [NotificationScheduler] Horário do schedule já passou hoje")
-            return
-        }
-        
-        print("   📅 [NotificationScheduler] Schedule começa em \(Int(minutesUntilStart)) minutos hoje")
-        
-        // Se começar em menos de 10 minutos, envia notificação IMEDIATA
-        if minutesUntilStart < 10 {
-            print("   ⚡ [NotificationScheduler] Schedule começa em menos de 10 minutos! Enviando notificação IMEDIATA")
-            sendImmediateNotificationForSchedule(schedule: schedule)
-            return
-        }
-        
         // Calcula o horário da notificação (10 minutos antes)
         let notificationTime = calculateNotificationTime(for: schedule.startTime)
-        let notificationMinutes = Double(notificationTime.hour * 60 + notificationTime.minute)
-        let currentMinutes = Double(calendar.component(.hour, from: now) * 60 + calendar.component(.minute, from: now))
+        let notificationHour = notificationTime.hour
+        let notificationMinute = notificationTime.minute
         
-        // Verifica se o horário da notificação ainda não passou hoje
-        if notificationMinutes > currentMinutes || (notificationTime.hour == 0 && notificationTime.minute < 10) {
-            // Cria trigger para hoje específico
-            var dateComps = calendar.dateComponents([.year, .month, .day], from: now)
-            dateComps.hour = notificationTime.hour
-            dateComps.minute = notificationTime.minute
-            dateComps.second = 0
+        // Verifica se já existe uma notificação semanal pendente para hoje com o mesmo horário
+        notificationCenter.getPendingNotificationRequests { [weak self] requests in
+            guard let self = self else { return }
             
-            guard let notificationDate = calendar.date(from: dateComps) else {
-                return
-            }
-            
-            // Se a data já passou, não agenda
-            if notificationDate <= now {
-                print("   ℹ️ [NotificationScheduler] Horário da notificação já passou hoje")
-                return
-            }
-            
-            let timeInterval = notificationDate.timeIntervalSince(now)
-            
-            // Cria conteúdo da notificação
-            let content = NotificationContent.createScheduleNotification(for: schedule)
-            
-            // Trigger para data específica (não repete, só hoje)
-            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: timeInterval, repeats: false)
-            
-            // Identificador único para hoje
-            let identifier = "schedule_\(schedule.id)_today_\(calendar.startOfDay(for: now).timeIntervalSince1970)"
-            
-            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
-            
-            notificationCenter.add(request) { error in
-                if let error = error {
-                    print("   ❌ [NotificationScheduler] Erro ao agendar notificação para hoje: \(error.localizedDescription)")
-                } else {
-                    print("   ✅ [NotificationScheduler] Notificação agendada para hoje às \(String(format: "%02d:%02d", notificationTime.hour, notificationTime.minute))")
-                    print("      Faltam \(Int(minutesUntilStart)) minutos para o schedule começar")
+            let weeklyNotificationId = "schedule_\(schedule.id)_weekday_\(todayWeekday)"
+            let hasWeeklyNotification = requests.contains { req in
+                if req.identifier == weeklyNotificationId {
+                    // Verifica se o trigger semanal vai disparar hoje
+                    if let calendarTrigger = req.trigger as? UNCalendarNotificationTrigger {
+                        let triggerComps = calendarTrigger.dateComponents
+                        // Se weekday, hour e minute coincidem, a notificação semanal já vai disparar hoje
+                        if triggerComps.weekday == todayWeekday &&
+                           triggerComps.hour == notificationHour &&
+                           triggerComps.minute == notificationMinute {
+                            print("   ℹ️ [NotificationScheduler] Notificação semanal já cobre hoje, não criando duplicata")
+                            return true
+                        }
+                    }
                 }
+                return false
             }
-        } else {
-            print("   ℹ️ [NotificationScheduler] Horário da notificação já passou hoje, será agendada para a próxima semana")
+            
+            // Se já existe notificação semanal que cobre hoje, não cria adicional
+            if hasWeeklyNotification {
+                print("   ℹ️ [NotificationScheduler] Notificação semanal já agendada para hoje, pulando notificação específica")
+                return
+            }
+            
+            // Cria a data de início para hoje
+            guard let scheduleStartToday = calendar.date(bySettingHour: startHour, minute: startMin, second: 0, of: now) else {
+                return
+            }
+            
+            // Calcula quantos minutos faltam até o início
+            let minutesUntilStart = scheduleStartToday.timeIntervalSince(now) / 60.0
+            
+            // Se já passou o horário hoje, não agenda (espera a notificação semanal)
+            if minutesUntilStart < 0 {
+                print("   ℹ️ [NotificationScheduler] Horário do schedule já passou hoje")
+                return
+            }
+            
+            print("   📅 [NotificationScheduler] Schedule começa em \(Int(minutesUntilStart)) minutos hoje")
+            
+            // Se começar em menos de 10 minutos, envia notificação IMEDIATA (mas só se não houver semanal)
+            if minutesUntilStart < 10 {
+                print("   ⚡ [NotificationScheduler] Schedule começa em menos de 10 minutos! Enviando notificação IMEDIATA")
+                self.sendImmediateNotificationForSchedule(schedule: schedule)
+                return
+            }
+            
+            // Verifica se o horário da notificação ainda não passou hoje
+            let notificationMinutes = Double(notificationHour * 60 + notificationMinute)
+            let currentMinutes = Double(calendar.component(.hour, from: now) * 60 + calendar.component(.minute, from: now))
+            
+            if notificationMinutes > currentMinutes || (notificationHour == 0 && notificationMinute < 10) {
+                // Cria trigger para hoje específico
+                var dateComps = calendar.dateComponents([.year, .month, .day], from: now)
+                dateComps.hour = notificationHour
+                dateComps.minute = notificationMinute
+                dateComps.second = 0
+                
+                guard let notificationDate = calendar.date(from: dateComps) else {
+                    return
+                }
+                
+                // Se a data já passou, não agenda
+                if notificationDate <= now {
+                    print("   ℹ️ [NotificationScheduler] Horário da notificação já passou hoje")
+                    return
+                }
+                
+                let timeInterval = notificationDate.timeIntervalSince(now)
+                
+                // Cria conteúdo da notificação
+                let content = NotificationContent.createScheduleNotification(for: schedule)
+                
+                // Trigger para data específica (não repete, só hoje)
+                let trigger = UNTimeIntervalNotificationTrigger(timeInterval: timeInterval, repeats: false)
+                
+                // Identificador único para hoje
+                let identifier = "schedule_\(schedule.id)_today_\(calendar.startOfDay(for: now).timeIntervalSince1970)"
+                
+                let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+                
+                self.notificationCenter.add(request) { error in
+                    if let error = error {
+                        print("   ❌ [NotificationScheduler] Erro ao agendar notificação para hoje: \(error.localizedDescription)")
+                    } else {
+                        print("   ✅ [NotificationScheduler] Notificação agendada para hoje às \(String(format: "%02d:%02d", notificationHour, notificationMinute))")
+                        print("      Faltam \(Int(minutesUntilStart)) minutos para o schedule começar")
+                    }
+                }
+            } else {
+                print("   ℹ️ [NotificationScheduler] Horário da notificação já passou hoje, será agendada para a próxima semana")
+            }
         }
     }
     
