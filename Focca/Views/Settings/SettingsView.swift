@@ -15,7 +15,7 @@ struct SettingsView: View {
 //            .overlay(ReferenceGrid(spacing: 24, color: .red.opacity(0.15)))
             
             VStack(spacing: 0) {
-                Spacer(minLength: 120)
+                Spacer(minLength: 140)
                 
                 // Header card
                 RoundedRectangle(cornerRadius: 18)
@@ -36,10 +36,10 @@ struct SettingsView: View {
                 
                 VStack(spacing: 14) {
                     SettingsSection(
-                        title: "About Brick",
+                        title: "About Focca",
                         items: [
-                            SettingsItem(title: "About Brick", hasArrow: true),
-                            SettingsItem(title: "Why Brick?", hasArrow: true),
+                            SettingsItem(title: "About Focca", hasArrow: true),
+                            SettingsItem(title: "Why Focca?", hasArrow: true),
                             SettingsItem(title: "Privacy Policy", hasArrow: true)
                         ],
                         showNotificationsView: $showNotificationsView
@@ -48,7 +48,7 @@ struct SettingsView: View {
                     SettingsSection(
                         title: nil,
                         items: [
-                            SettingsItem(title: "Emergency Unbrick", subtitle: "4 remaining", hasArrow: true)
+                            SettingsItem(title: "Emergency Unblock", subtitle: "4 remaining", hasArrow: true)
                         ],
                         showNotificationsView: $showNotificationsView
                     )
@@ -72,18 +72,11 @@ struct SettingsView: View {
                     SettingsSection(
                         title: nil,
                         items: [
-                            SettingsItem(title: "Notifications", hasArrow: true, action: .notifications)
-                        ],
-                        showNotificationsView: $showNotificationsView
-                    )
-                    
-                    SettingsSection(
-                        title: nil,
-                        items: [
                             SettingsItem(title: "Troubleshooting", hasArrow: true)
                         ],
                         showNotificationsView: $showNotificationsView
                     )
+                    
                 }
                 .padding(.horizontal, 16)
                 
@@ -94,7 +87,7 @@ struct SettingsView: View {
                 Spacer()
                 WhiteRoundedBottomPlain()
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, 0)
+                    .padding(.bottom, -60)
             }
         }
         .preferredColorScheme(.light)
