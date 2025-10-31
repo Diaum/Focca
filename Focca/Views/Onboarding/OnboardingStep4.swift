@@ -98,7 +98,7 @@ struct OnboardingStep4: View {
                         showBlockedView = true
                     }
                 }) {
-                    Text("Brick device")
+                    Text("Focca your device")
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(Color(hex: "1D1D1F"))
                         .frame(maxWidth: .infinity)
