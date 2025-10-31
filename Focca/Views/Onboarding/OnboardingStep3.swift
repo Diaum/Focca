@@ -53,7 +53,7 @@ struct OnboardingStep3: View {
                                 }
                             }
                         }
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, 24)
                         .padding(.top, 20)
                     }
 
@@ -186,6 +186,9 @@ struct AppRow: View {
                     .labelStyle(.titleOnly)
                     .font(.system(size: 19, weight: .semibold))
                     .foregroundColor(Color(hex: "1D1D1F"))
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .frame(maxWidth: 240, alignment: .leading)
             }
 
             Spacer()
