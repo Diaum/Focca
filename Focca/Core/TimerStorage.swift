@@ -2,9 +2,9 @@ import Foundation
 
 class TimerStorage {
     static let shared = TimerStorage()
-    
-    private let userDefaults = UserDefaults.standard
-    
+
+    private let userDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
+
     private init() {}
     
     func initializeFirstLaunch() {

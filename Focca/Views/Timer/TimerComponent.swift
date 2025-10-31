@@ -5,15 +5,16 @@ class TimerManager: ObservableObject {
     @Published var elapsedTime: String = "0h 0m 0s"
     private var timer: Timer?
     private var startDate: Date?
-    
+    private let sharedDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
+
     func start() {
-        let blockedDate = UserDefaults.standard.object(forKey: "blocked_start_date") as? Date
+        let blockedDate = sharedDefaults.object(forKey: "blocked_start_date") as? Date
         if let startDate = blockedDate {
             self.startDate = startDate
         } else {
             let now = Date()
             self.startDate = now
-            UserDefaults.standard.set(now, forKey: "blocked_start_date")
+            sharedDefaults.set(now, forKey: "blocked_start_date")
         }
         
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
@@ -31,7 +32,7 @@ class TimerManager: ObservableObject {
         TimerStorage.shared.splitOvernightTime(from: startDate, to: Date())
         
         self.startDate = nil
-        UserDefaults.standard.removeObject(forKey: "blocked_start_date")
+        sharedDefaults.removeObject(forKey: "blocked_start_date")
     }
     
     private func updateTime() {
