@@ -28,7 +28,7 @@ struct FoccaWidgetLiveLiveActivity: Widget {
                 // Timer centralizado verticalmente
                 Text(timerInterval: context.state.startDate...Date.distantFuture, countsDown: false)
                     .monospacedDigit()
-                    .font(.system(size: 30, weight: .medium, design: .rounded))
+                    .font(.system(size: 25, weight: .medium, design: .rounded))
                     .foregroundColor(.white)
                     .frame(alignment: .center)
                     .padding(.trailing, 6)
