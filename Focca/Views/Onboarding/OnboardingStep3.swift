@@ -175,7 +175,8 @@ struct AppRow: View {
         HStack(spacing: 16) {
             Label(appInfo.token)
                 .labelStyle(.iconOnly)
-                .font(.system(size: 56))
+                .frame(width: 96, height: 96)
+                .scaleEffect(1.7)
                 .frame(width: 64, height: 64)
                 .background(Color.white)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
