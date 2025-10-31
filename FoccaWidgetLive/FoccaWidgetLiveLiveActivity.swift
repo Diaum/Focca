@@ -12,64 +12,44 @@ import SwiftUI
 struct FoccaWidgetLiveLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: FoccaWidgetLiveAttributes.self) { context in
-            VStack(spacing: 0) {
-                HStack(spacing: 12) {
-                    Image("focca_black")
-                        .renderingMode(.original)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 44, height: 44)
+            // MARK: - Main Container
+            HStack(spacing: 88) {
+                // Ícone / Bloco à esquerda
+                Image("focca_black")
+                    .renderingMode(.original)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 58, height: 58)
+                    .padding(.leading, 6)
+                    .shadow(color: .black.opacity(0.5), radius: 1, x: 0, y: 1)
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Focca ativo")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.white)
+                Spacer()
 
-                        Text("Apps bloqueados")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(Color(hex: "8A8A8E"))
-                    }
-
-                    Spacer()
-
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text(timerInterval: context.state.startDate...Date.distantFuture, countsDown: false)
-                            .monospacedDigit()
-                            .font(.system(size: 22, weight: .bold, design: .rounded))
-                            .foregroundColor(.white)
-                            .multilineTextAlignment(.trailing)
-
-                        Text("tempo decorrido")
-                            .font(.system(size: 9, weight: .medium))
-                            .foregroundColor(Color(hex: "8A8A8E"))
-                            .textCase(.uppercase)
-                            .kerning(0.5)
-                    }
-
-
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 16)
+                // Timer centralizado verticalmente
+                Text(timerInterval: context.state.startDate...Date.distantFuture, countsDown: false)
+                    .monospacedDigit()
+                    .font(.system(size: 30, weight: .medium, design: .rounded))
+                    .foregroundColor(.white)
+                    .frame(alignment: .center)
+                    .padding(.trailing, 6)
             }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 12)
             .background(
-                ZStack {
-                    LinearGradient(
-                        colors: [Color(hex: "1A1A1C"), Color(hex: "0A0A0A")],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(Color(hex: "1C1C1E")) // tom uniforme escuro
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .stroke(Color(hex: "2C2C2E"), lineWidth: 1.2) // borda sutil
                     )
-
-                    RoundedRectangle(cornerRadius: 24)
-                        .strokeBorder(Color(hex: "FF6B6B").opacity(0.8), lineWidth: 2)
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
             )
             .activityBackgroundTint(Color.clear)
             .activitySystemActionForegroundColor(Color.white)
 
-        } dynamicIsland: { context in
+        } dynamicIsland: { _ in
             DynamicIsland {
-                DynamicIslandExpandedRegion(.leading) {
+                DynamicIslandExpandedRegion(.center) {
                     EmptyView()
                 }
             } compactLeading: {
