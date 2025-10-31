@@ -16,7 +16,24 @@ struct ScheduleListView: View {
             
             VStack(spacing: 0) {
                 Spacer(minLength: 120)
-                
+
+                // Header card para manter proporções visuais das telas
+                RoundedRectangle(cornerRadius: 18)
+                    .fill(Color.white.opacity(0.85))
+                    .frame(height: 66)
+                    .overlay(
+                        HStack {
+                            Text("Schedules")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(Color(hex: "1C1C1E"))
+                            Spacer()
+                        }
+                        .padding(.horizontal, 18)
+                    )
+                    .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 18)
+
                 // Lista de modos com schedules
                 VStack(spacing: 14) {
                     if schedulesByMode.isEmpty {
@@ -79,25 +96,27 @@ private struct ScheduleModeCard: View {
             }
             .padding(.horizontal, 16)
             .padding(.top, 14)
-            
-            VStack(spacing: 12) {
-                ForEach(schedules) { schedule in
-                    HStack(spacing: 10) {
-                        Text(daysString(from: schedule.weekdays))
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(Color(hex: "1C1C1E"))
-                            .frame(width: 120, alignment: .leading)
-                        
+
+            VStack(spacing: 0) {
+                ForEach(Array(schedules.enumerated()), id: \.offset) { index, schedule in
+                    HStack(spacing: 12) {
+                        DayChips(weekdays: schedule.weekdays)
+                            .frame(minHeight: 28)
+                        Spacer()
                         Text("\(format(schedule.startTime)) - \(format(schedule.endTime))")
                             .font(.system(size: 14, weight: .regular))
                             .foregroundColor(Color(hex: "8E8E93"))
-                        
-                        Spacer()
+                    }
+                    .frame(height: 52)
+                    .padding(.horizontal, 16)
+
+                    if index < schedules.count - 1 {
+                        Divider()
+                            .padding(.leading, 16)
                     }
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
+            .padding(.vertical, 12)
         }
         .background(
             RoundedRectangle(cornerRadius: 16)
@@ -118,6 +137,31 @@ private struct ScheduleModeCard: View {
         let map: [Int: String] = [1:"S",2:"M",3:"T",4:"W",5:"T",6:"F",7:"S"]
         let ordered = (1...7).filter { set.contains($0) }
         return ordered.map { map[$0] ?? "?" }.joined(separator: " ")
+    }
+}
+
+private struct DayChips: View {
+    let weekdays: Set<Int>
+    
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(orderedDays(), id: \.self) { day in
+                Text(shortLabel(for: day))
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(Color(hex: "1C1C1E"))
+                    .frame(width: 26, height: 22)
+                    .background(Color(hex: "F4F4F5"))
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+            }
+        }
+    }
+    
+    private func orderedDays() -> [Int] {
+        return (1...7).filter { weekdays.contains($0) }
+    }
+    
+    private func shortLabel(for day: Int) -> String {
+        switch day { case 1: return "S"; case 2: return "M"; case 3: return "T"; case 4: return "W"; case 5: return "T"; case 6: return "F"; case 7: return "S"; default: return "?" }
     }
 }
 
