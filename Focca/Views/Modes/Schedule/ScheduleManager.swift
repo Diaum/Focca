@@ -89,17 +89,31 @@ class ScheduleManager: ObservableObject {
         print("   - Ativo: \(schedule.isActive)")
         
         var schedules = loadAllSchedulesInternal()
-        // Remove schedule antigo com mesmo id se existir
+        let isUpdate = schedules.contains(where: { $0.id == schedule.id })
+        
+        // Remove schedule antigo com mesmo id se existir (e suas notificações)
+        if isUpdate {
+            NotificationManager.shared.cancelNotification(for: schedule.id)
+        }
         schedules.removeAll { $0.id == schedule.id }
         schedules.append(schedule)
         saveAllSchedules(schedules)
         
-        print("📅 [ScheduleManager] Schedule salvo! Total de schedules: \(schedules.count)")
+        print("📅 [ScheduleManager] Schedule \(isUpdate ? "atualizado" : "salvo")! Total de schedules: \(schedules.count)")
+        
+        // Agenda/atualiza notificação 10 minutos antes do schedule começar
+        if schedule.isActive {
+            NotificationManager.shared.scheduleNotification(for: schedule)
+        }
+        
         checkSchedules()
     }
     
     // Remove um schedule por ID
     func removeSchedule(id: String) {
+        // Cancela notificações do schedule antes de remover
+        NotificationManager.shared.cancelNotification(for: id)
+        
         var schedules = loadAllSchedulesInternal()
         schedules.removeAll { $0.id == id }
         saveAllSchedules(schedules)
@@ -108,6 +122,9 @@ class ScheduleManager: ObservableObject {
     
     // Remove todos os schedules de um modo específico (quando o modo é deletado)
     func removeSchedulesForMode(modeName: String) {
+        // Cancela todas as notificações do modo antes de remover
+        NotificationManager.shared.cancelNotificationsForMode(modeName: modeName)
+        
         var schedules = loadAllSchedulesInternal()
         let schedulesToRemove = schedules.filter { $0.modeName == modeName }
         
@@ -159,6 +176,10 @@ class ScheduleManager: ObservableObject {
     func manualUnblock() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
+            // Se havia um schedule atual, marca como desativado para hoje para evitar reativação
+            if let scheduleId = self.currentSchedule?.id {
+                self.markScheduleDisabledForToday(scheduleId: scheduleId)
+            }
             self.currentSchedule = nil
             self.isBlockedBySchedule = false
             UserDefaults.standard.removeObject(forKey: "blocked_by_schedule")
@@ -177,6 +198,14 @@ class ScheduleManager: ObservableObject {
         let today = calendar.startOfDay(for: Date())
         let key = "schedule_\(scheduleId)_disabled_\(today.timeIntervalSince1970)"
         return userDefaults.bool(forKey: key)
+    }
+
+    // Marca um schedule como desativado para o dia atual (sem efeitos colaterais)
+    private func markScheduleDisabledForToday(scheduleId: String) {
+        let calendar = Calendar.current
+        let todayKey = "schedule_\(scheduleId)_disabled_\(calendar.startOfDay(for: Date()).timeIntervalSince1970)"
+        userDefaults.set(true, forKey: todayKey)
+        userDefaults.synchronize()
     }
     
     // Salva todos os schedules
@@ -241,6 +270,18 @@ class ScheduleManager: ObservableObject {
             print("   ✅ Schedule '\(schedule.modeName)' deve estar ATIVO agora")
             // Deve estar bloqueado
             if !self.isBlockedBySchedule {
+                // Se o usuário já está bloqueado manualmente, não ativa o schedule; desativa para hoje e avisa
+                let userIsBlocked = UserDefaults.standard.object(forKey: "blocked_start_date") != nil
+                let blockedByScheduleFlag = UserDefaults.standard.bool(forKey: "blocked_by_schedule")
+                if userIsBlocked && !blockedByScheduleFlag {
+                    print("   ⚠️ Usuário já está focado (bloqueio manual). Não ativando schedule '")
+                    self.markScheduleDisabledForToday(scheduleId: schedule.id)
+                    NotificationManager.shared.sendInfoNotification(
+                        title: "Schedule ignorado",
+                        body: "Você já está focado. O schedule '\(schedule.modeName)' foi desativado hoje."
+                    )
+                    return
+                }
                 print("   🚀 Ativando schedule...")
                 self.activateSchedule(schedule)
             } else if self.currentSchedule?.id != schedule.id {
