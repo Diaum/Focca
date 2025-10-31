@@ -21,9 +21,23 @@ struct NotificationContent {
         // Badge atualizado
         content.badge = 1
         
-        // Preparado para futuras ações (se necessário)
-        // content.categoryIdentifier = "SCHEDULE_REMINDER"
+        // Categoria para possíveis ações (abrir app / iniciar agora)
+        content.categoryIdentifier = "SCHEDULE_REMINDER"
         
+        return content
+    }
+
+    /// Conteúdo para notificação no horário exato do início
+    static func createScheduleStartNowNotification(for schedule: ScheduleModel) -> UNMutableNotificationContent {
+        let content = UNMutableNotificationContent()
+        content.title = "Agora é hora de FOCCAR!"
+        content.body = "O Focca ja vai ativar, o modo '\(schedule.modeName)' está começando agora"
+        content.sound = .default
+        content.badge = 1
+        content.categoryIdentifier = "SCHEDULE_START_NOW"
+        if #available(iOS 15.0, *) {
+            content.interruptionLevel = .timeSensitive
+        }
         return content
     }
 }

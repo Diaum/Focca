@@ -334,6 +334,9 @@ class ScheduleManager: ObservableObject {
         
         // Notifica o app para mudar para BlockedView
         NotificationCenter.default.post(name: NSNotification.Name("ScheduleActivated"), object: nil)
+
+        // Inicia Live Activity
+        LiveActivityManager.startIfSupported(startDate: now)
     }
     
     // Desativa o schedule atual (desbloqueia e computa tempo)
@@ -368,6 +371,9 @@ class ScheduleManager: ObservableObject {
         
         // Notifica o app para mudar para UnlockedView
         NotificationCenter.default.post(name: NSNotification.Name("ScheduleDeactivated"), object: nil)
+
+        // Encerra Live Activity
+        LiveActivityManager.endAll()
     }
 }
 

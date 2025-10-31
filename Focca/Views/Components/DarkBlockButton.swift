@@ -12,38 +12,24 @@ struct DarkBlockButton: View {
                 .frame(height: 60)
                 .background(
                     ZStack {
-                        // Base com gradiente escuro (parte de cima um pouco mais clara)
                         RoundedRectangle(cornerRadius: 30)
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color(hex: "2A2A2C"),
-                                        Color(hex: "151517")
-                                    ],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
+                            .fill(Color(hex: "1E1E1F"))
                         
-                        // Realce fino na borda (topo levemente claro -> base escurece)
+                        // Borda interna superior clara (simula a luz)
                         RoundedRectangle(cornerRadius: 30)
                             .stroke(
                                 LinearGradient(
                                     colors: [
-                                        .white.opacity(0.10),
-                                        .black.opacity(0.60)
+                                        Color.white.opacity(0.20),
+                                        Color.white.opacity(0.05)
                                     ],
-                                    startPoint: .top,
-                                    endPoint: .bottom
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
                                 ),
-                                lineWidth: 1
+                                lineWidth: 1.2
                             )
-                        
-                        // Sombra interna (top highlight)
-                        RoundedRectangle(cornerRadius: 30)
-                            .stroke(Color.white.opacity(0.20), lineWidth: 2)
-                            .blur(radius: 2)
-                            .offset(y: -2)
+                            .blur(radius: 0.8)
+                            .offset(y: -0.6)
                             .mask(
                                 RoundedRectangle(cornerRadius: 30)
                                     .fill(
@@ -55,11 +41,21 @@ struct DarkBlockButton: View {
                                     )
                             )
                         
-                        // Sombra interna (bottom shadow)
+                        // Borda interna inferior escura (simula rebaixo)
                         RoundedRectangle(cornerRadius: 30)
-                            .stroke(Color.black.opacity(0.8), lineWidth: 3)
-                            .blur(radius: 3)
-                            .offset(y: 3)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [
+                                        Color.black.opacity(0.7),
+                                        Color.black.opacity(0.9)
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                ),
+                                lineWidth: 2.2
+                            )
+                            .blur(radius: 2.5)
+                            .offset(y: 2.0)
                             .mask(
                                 RoundedRectangle(cornerRadius: 30)
                                     .fill(
@@ -70,24 +66,57 @@ struct DarkBlockButton: View {
                                         )
                                     )
                             )
+                        
+                
+                        RoundedRectangle(cornerRadius: 30)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color.black.opacity(0.25),
+                                        Color.black.opacity(0.0),
+                                        Color.black.opacity(0.25)
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .blur(radius: 2)
                     }
                 )
-                // Relevo externo discreto
-                .shadow(color: .black.opacity(0.55), radius: 10, x: 0, y: 6)
-                .shadow(color: .white.opacity(0.05), radius: 1, x: 0, y: -1)
+                // Efeito de “entalhado” (inset shadow)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 30)
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.08),
+                                    Color.black.opacity(0.6)
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            ),
+                            lineWidth: 0.8
+                        )
+                        .blendMode(.overlay)
+                )
+
                 .padding(.horizontal, 28)
         }
+        .buttonStyle(.plain)
     }
 }
 
-#Preview {
-    ZStack {
-        Color(hex: "181818").ignoresSafeArea()
-        VStack {
-            Spacer()
-            DarkBlockButton(action: {})
-            Spacer().frame(height: 80)
+struct DarkBlockButton_Previews: PreviewProvider {
+    static var previews: some View {
+        ZStack {
+            Color(hex: "181818").ignoresSafeArea()
+            VStack {
+                Spacer()
+                DarkBlockButton(action: {})
+                Spacer().frame(height: 80)
+            }
         }
+        .preferredColorScheme(.dark)
     }
-    .preferredColorScheme(.dark)
 }
+

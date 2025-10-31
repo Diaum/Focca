@@ -2,15 +2,30 @@ import Foundation
 import UserNotifications
 
 /// Componente responsável pela configuração de categorias de notificações
-/// Preparado para futuras ações customizadas (se necessário)
+/// Define ações para lembretes e início imediato do schedule
 struct NotificationCategories {
     static func setup() {
-        // Por enquanto, não há ações customizadas
-        // Mas mantém a estrutura para futuras extensões
-        // Exemplo futuro:
-        // let action = UNNotificationAction(identifier: "VIEW_SCHEDULE", title: "View Schedule")
-        // let category = UNNotificationCategory(identifier: "SCHEDULE_REMINDER", actions: [action], intentIdentifiers: [])
-        // UNUserNotificationCenter.current().setNotificationCategories([category])
+        let center = UNUserNotificationCenter.current()
+
+        // Ações para lembrete (10 min antes)
+        let openAction = UNNotificationAction(identifier: "OPEN_APP", title: "Abrir", options: [.foreground])
+        let reminderCategory = UNNotificationCategory(
+            identifier: "SCHEDULE_REMINDER",
+            actions: [openAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        // Ação para iniciar agora (no horário exato)
+        let startNowAction = UNNotificationAction(identifier: "START_NOW", title: "Iniciar agora", options: [])
+        let startNowCategory = UNNotificationCategory(
+            identifier: "SCHEDULE_START_NOW",
+            actions: [startNowAction, openAction],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        center.setNotificationCategories([reminderCategory, startNowCategory])
     }
 }
 

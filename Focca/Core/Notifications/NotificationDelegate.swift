@@ -17,6 +17,11 @@ class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
     
     /// Trata quando o usuário toca na notificação
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        let category = response.notification.request.content.categoryIdentifier
+        if category == "SCHEDULE_START_NOW" && response.actionIdentifier == "START_NOW" {
+            // Inicia o schedule imediatamente (sem abrir app)
+            ScheduleManager.shared.checkSchedules()
+        }
         completionHandler()
     }
 }

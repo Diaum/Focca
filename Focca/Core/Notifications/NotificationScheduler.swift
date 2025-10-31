@@ -26,6 +26,20 @@ class NotificationScheduler {
         let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
         
         notificationCenter.add(request) { _ in }
+
+        // Agenda também a notificação no horário exato de início para o mesmo dia da semana
+        var startComps = DateComponents()
+        let calendar = Calendar.current
+        let startTimeComps = calendar.dateComponents([.hour, .minute], from: schedule.startTime)
+        startComps.weekday = weekday
+        startComps.hour = startTimeComps.hour
+        startComps.minute = startTimeComps.minute
+
+        let startTrigger = UNCalendarNotificationTrigger(dateMatching: startComps, repeats: true)
+        let startIdentifier = "schedule_\(schedule.id)_weekday_\(weekday)_start"
+        let startContent = NotificationContent.createScheduleStartNowNotification(for: schedule)
+        let startRequest = UNNotificationRequest(identifier: startIdentifier, content: startContent, trigger: startTrigger)
+        notificationCenter.add(startRequest) { _ in }
     }
     
     /// Calcula o horário da notificação (10 minutos antes do início)
@@ -186,6 +200,20 @@ class NotificationScheduler {
                 let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
                 
                 self.notificationCenter.add(request) { _ in }
+
+                // Notificação no horário exato de início (somente hoje)
+                var startDateComps = calendar.dateComponents([.year, .month, .day], from: now)
+                startDateComps.hour = startHour
+                startDateComps.minute = startMin
+                startDateComps.second = 0
+                if let startDate = calendar.date(from: startDateComps), startDate > now {
+                    let startInterval = startDate.timeIntervalSince(now)
+                    let startContent = NotificationContent.createScheduleStartNowNotification(for: schedule)
+                    let startTrigger = UNTimeIntervalNotificationTrigger(timeInterval: startInterval, repeats: false)
+                    let startId = "schedule_\(schedule.id)_today_start_\(calendar.startOfDay(for: now).timeIntervalSince1970)"
+                    let startReq = UNNotificationRequest(identifier: startId, content: startContent, trigger: startTrigger)
+                    self.notificationCenter.add(startReq) { _ in }
+                }
             }
         }
     }
