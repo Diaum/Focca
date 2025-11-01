@@ -54,7 +54,7 @@ struct OnboardingStep4: View {
                 Image("Focca_branco")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 350, height: 197)
+                    .frame(width: 300, height: 197)
                     .padding(.bottom, 50)
                 
                 // 🔹 Subtítulo e texto auxiliar

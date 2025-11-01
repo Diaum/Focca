@@ -52,7 +52,7 @@ struct UnlockedView: View {
                 
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 350, height: 197)
+                    .frame(width: 300, height: 197)
                     .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
                     .padding(.bottom, 60)
                 

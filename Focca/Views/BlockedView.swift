@@ -27,7 +27,7 @@ struct BlockedView: View {
                 Image("Focca_Preto")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 350, height: 197)
+                    .frame(width: 300, height: 197)
                     .padding(.bottom, 60)
                 
                 VStack(spacing: 6) {
