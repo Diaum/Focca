@@ -38,7 +38,7 @@ struct AwardsView: View {
                     .padding(.bottom, 160)
                 }
 
-                Spacer(minLength: 120)
+                Spacer(minLength: 50)
             }
 
             VStack(spacing: 0) {
