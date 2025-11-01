@@ -22,7 +22,8 @@ struct WhiteRoundedBottom: View {
                 .clipShape(
                     RoundedCorner(radius: 8, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
                 )
-            
+                .allowsHitTesting(false)
+
             WhiteBlockButton(action: action)
         }
     }

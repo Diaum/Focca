@@ -23,7 +23,8 @@ struct BlackRoundedBottom: View {
                 .clipShape(
                     RoundedCorner(radius: 8, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
                 )
-            
+                .allowsHitTesting(false)
+
             DarkBlockButton(action: action)
         }
     }

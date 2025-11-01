@@ -87,7 +87,7 @@ struct SettingsView: View {
                 Spacer()
                 WhiteRoundedBottomPlain()
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, -60)
+                    .padding(.bottom, -50)
             }
         }
         .preferredColorScheme(.light)

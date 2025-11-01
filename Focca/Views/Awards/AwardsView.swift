@@ -23,7 +23,8 @@ struct AwardsView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
                 .padding(.bottom, 24)
-                
+                .allowsHitTesting(false)
+
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 12) {
                         AwardCard(icon: "timer", title: "30 minutes focused", subtitle: "Stay focused for 30 minutes in a single session", tint: Color(hex: "1C1C1E"))
@@ -34,16 +35,19 @@ struct AwardsView: View {
                         AwardCard(icon: "bolt.badge.a", title: "First Live Activity", subtitle: "Start your first Live Activity", tint: Color(hex: "F59E0B"))
                     }
                     .padding(.horizontal, 16)
-                    .padding(.bottom, 100)
+                    .padding(.bottom, 160)
                 }
+
+                Spacer(minLength: 120)
             }
-            
+
             VStack(spacing: 0) {
                 Spacer()
                 WhiteRoundedBottomPlain()
                 TabBar(selectedTab: $selectedTab)
                     .padding(.bottom, -50)
             }
+            .zIndex(1)
         }
         .preferredColorScheme(.light)
     }
