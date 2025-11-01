@@ -1,12 +1,14 @@
 import SwiftUI
 import FamilyControls
 
+extension String: Identifiable {
+    public var id: String { self }
+}
+
 struct ModeSelectionSheet: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var showCreateMode = false
-    @State private var showEditMode = false
-    @State private var editModeName: String = ""
-    @State private var refreshTrigger = false
+    @State private var editModeName: String?
     @State private var modeNames: [String] = []
     @State private var selectedModeName: String = ""
     @State private var shouldDismissParent = false
@@ -25,17 +27,20 @@ struct ModeSelectionSheet: View {
                         presentationMode.wrappedValue.dismiss()
                     }) {
                         Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(Color(hex: "1C1C1E"))
-                            .frame(width: 34, height: 34)
-                            .background(Color.white)
-                            .clipShape(Circle())
-                            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                            .frame(width: 40, height: 40)
+                            .background(
+                                Circle()
+                                    .fill(Color.white)
+                                    .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 2)
+                                    .shadow(color: Color.black.opacity(0.04), radius: 2, x: 0, y: 1)
+                            )
                     }
                     Spacer()
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 8)
+                .padding(.top, 16)
                 .padding(.bottom, 20)
 
                 Text("Select mode")
@@ -50,7 +55,6 @@ struct ModeSelectionSheet: View {
                             isSelected: selectedModeName == modeName,
                             onEdit: {
                                 editModeName = modeName
-                                showEditMode = true
                             },
                             onSelect: {
                                 selectedModeName = modeName
@@ -74,7 +78,9 @@ struct ModeSelectionSheet: View {
 
                 Spacer()
 
-                Button(action: {}) {
+                Button(action: {
+                    presentationMode.wrappedValue.dismiss()
+                }) {
                     Text("Done")
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(Color(hex: "1C1C1E"))
@@ -100,14 +106,14 @@ struct ModeSelectionSheet: View {
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(30)
         }
-        .sheet(isPresented: $showEditMode, onDismiss: {
-            print("📥 ModeSelectionSheet - EditModeView dismissed")
-            loadModeNames()
-        }) {
-            EditModeView(modeName: editModeName)
+        .sheet(item: $editModeName) { modeName in
+            EditModeView(modeName: modeName)
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(30)
+                .onDisappear {
+                    loadModeNames()
+                }
         }
         .onAppear {
             loadModeNames()
@@ -173,23 +179,29 @@ struct ModeRow: View {
     let onSelect: () -> Void
 
     var body: some View {
-        Button(action: onSelect) {
-            HStack {
-                Text(title)
-                    .foregroundColor(Color(hex: "1C1C1E"))
-                Spacer()
-                Button(action: onEdit) {
-                    Text("Edit")
+        HStack(spacing: 0) {
+            Button(action: onSelect) {
+                HStack {
+                    Text(title)
                         .foregroundColor(Color(hex: "1C1C1E"))
+                    Spacer()
                 }
+                .padding(.leading, 16)
+                .frame(height: 84)
             }
-            .padding(.horizontal, 16)
-            .frame(height: 64)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(isSelected ? Color.white : Color(hex: "EDEBEA"))
-            )
+
+            Button(action: onEdit) {
+                Text("Edit")
+                    .font(.system(size: 15, weight: .regular))
+                    .foregroundColor(Color(hex: "1C1C1E"))
+                    .padding(.horizontal, 16)
+                    .frame(height: 74)
+            }
         }
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(isSelected ? Color.white : Color(hex: "EDEBEA"))
+        )
     }
 }
 
@@ -235,4 +247,28 @@ struct MaxModesReachedRow: View {
             )
     }
 }
-#Preview { ModeSelectionSheet() }
+#Preview {
+    let defaults = UserDefaults.standard
+
+    for key in defaults.dictionaryRepresentation().keys {
+        if key.hasPrefix("mode_") {
+            defaults.removeObject(forKey: key)
+        }
+    }
+
+    defaults.set(true, forKey: "mode_Deep Focus_exists")
+    defaults.set(5, forKey: "mode_Deep Focus_app_count")
+    defaults.set(Date().addingTimeInterval(-86400), forKey: "mode_Deep Focus_last_used")
+
+    defaults.set(true, forKey: "mode_Work Mode_exists")
+    defaults.set(8, forKey: "mode_Work Mode_app_count")
+    defaults.set(Date(), forKey: "mode_Work Mode_last_used")
+    defaults.set("Work Mode", forKey: "active_mode_name")
+    defaults.set(8, forKey: "active_mode_app_count")
+
+    defaults.set(true, forKey: "mode_Family Time_exists")
+    defaults.set(3, forKey: "mode_Family Time_app_count")
+    defaults.set(Date().addingTimeInterval(-172800), forKey: "mode_Family Time_last_used")
+
+    return ModeSelectionSheet()
+}

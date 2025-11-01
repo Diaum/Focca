@@ -7,8 +7,8 @@ struct UnlockedView: View {
     @Binding var isBlocked: Bool
     @Binding var selectedTab: Int
     @State private var showModeSheet = false
-    @State private var activeModeName = UserDefaults.standard.string(forKey: "active_mode_name") ?? "-"
-    @State private var activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+    @State private var activeModeName = "-"
+    @State private var activeModeCount = 0
     @State private var todayTime: String = "0h 0m"
     @State private var currentActivity: Activity<FoccaWidgetLiveAttributes>?
 
@@ -80,8 +80,8 @@ struct UnlockedView: View {
                 Spacer()
                 
                 WhiteRoundedBottom(action: {
-                    let activeMode = UserDefaults.standard.string(forKey: "active_mode_name") ?? "default"
-                    
+                    let activeMode = getValidActiveMode()
+
                     if let data = UserDefaults.standard.data(forKey: "mode_\(activeMode)_selection"),
                        let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
                         let store = ManagedSettingsStore()
@@ -104,7 +104,8 @@ struct UnlockedView: View {
         }
         .preferredColorScheme(.light)
         .sheet(isPresented: $showModeSheet, onDismiss: {
-            activeModeName = UserDefaults.standard.string(forKey: "active_mode_name") ?? "-"
+            let validMode = getValidActiveMode()
+            activeModeName = validMode
             activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
         }) {
             ModeSelectionSheet()
@@ -115,7 +116,11 @@ struct UnlockedView: View {
         .onAppear {
             TimerStorage.shared.initializeFirstLaunch()
             updateTodayTime()
-            
+
+            let validMode = getValidActiveMode()
+            activeModeName = validMode
+            activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+
             Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
                 DispatchQueue.main.async {
                     self.updateTodayTime()
@@ -134,6 +139,41 @@ struct UnlockedView: View {
         let hours = Int(totalTime) / 3600
         let minutes = (Int(totalTime) % 3600) / 60
         todayTime = String(format: "%dh %dm", hours, minutes)
+    }
+
+    private func getValidActiveMode() -> String {
+
+        let savedActiveMode = UserDefaults.standard.string(forKey: "active_mode_name")
+
+        if let savedActiveMode = savedActiveMode,
+           !savedActiveMode.isEmpty {
+            let modeExists = UserDefaults.standard.bool(forKey: "mode_\(savedActiveMode)_exists")
+
+            if modeExists {
+                return savedActiveMode
+            } else {
+            }
+        }
+
+        let allKeys = UserDefaults.standard.dictionaryRepresentation().keys
+        let modeKeys = allKeys.filter { $0.hasPrefix("mode_") && $0.hasSuffix("_exists") }
+
+        for key in modeKeys {
+            if UserDefaults.standard.bool(forKey: key) {
+                let modeName = key.replacingOccurrences(of: "mode_", with: "").replacingOccurrences(of: "_exists", with: "")
+
+                UserDefaults.standard.set(modeName, forKey: "active_mode_name")
+
+                if let data = UserDefaults.standard.data(forKey: "mode_\(modeName)_selection"),
+                   let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+                    UserDefaults.standard.set(saved.applicationTokens.count, forKey: "active_mode_app_count")
+                }
+
+                return modeName
+            }
+        }
+
+        return "default"
     }
 
     private func startLiveActivity(startDate: Date) {
