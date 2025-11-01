@@ -79,10 +79,9 @@ struct OnboardingStep4: View {
                 Button(action: {
                     if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
                        let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data),
-                       saved.applicationTokens.count > 0 {
-                        let store = ManagedSettingsStore()
-                        let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
-                        store.application.blockedApplications = apps
+                       CategoryExpander.totalItemCount(saved) > 0 {
+                        // Block both apps and categories
+                        CategoryExpander.blockSelection(saved)
 
                         // Marca criação do modo "default" no primeiro bloqueio e persiste a seleção
                         if UserDefaults.standard.bool(forKey: "mode_default_exists") == false {
@@ -93,7 +92,7 @@ struct OnboardingStep4: View {
                         }
                         // Define o modo ativo e quantidade
                         UserDefaults.standard.set("default", forKey: "active_mode_name")
-                        UserDefaults.standard.set(saved.applicationTokens.count, forKey: "active_mode_app_count")
+                        UserDefaults.standard.set(CategoryExpander.totalItemCount(saved), forKey: "active_mode_app_count")
 
                         // Inicia timer
                         let now = Date()

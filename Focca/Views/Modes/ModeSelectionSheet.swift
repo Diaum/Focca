@@ -161,7 +161,7 @@ struct ModeSelectionSheet: View {
         
         if let data = UserDefaults.standard.data(forKey: "mode_\(modeName)_selection"),
            let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
-            UserDefaults.standard.set(saved.applicationTokens.count, forKey: "active_mode_app_count")
+            UserDefaults.standard.set(CategoryExpander.totalItemCount(saved), forKey: "active_mode_app_count")
             
             let encoded = try? JSONEncoder().encode(saved)
             UserDefaults.standard.set(encoded, forKey: "familyActivitySelection")

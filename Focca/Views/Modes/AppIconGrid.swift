@@ -7,38 +7,84 @@ struct AppIconGrid: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Apps Selected")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Color(hex: "1C1C1E"))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Items Selected")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(Color(hex: "1C1C1E"))
+
+                    let categoryCount = selection.categoryTokens.count
+                    let appCount = selection.applicationTokens.count
+                    let totalCount = CategoryExpander.totalItemCount(selection)
+
+                    if totalCount > 0 {
+                        HStack(spacing: 6) {
+                            if categoryCount > 0 {
+                                Text("\(categoryCount) \(categoryCount == 1 ? "category" : "categories")")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(Color(hex: "007AFF"))
+                            }
+                            if categoryCount > 0 && appCount > 0 {
+                                Text("•")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.secondary)
+                            }
+                            if appCount > 0 {
+                                Text("\(appCount) \(appCount == 1 ? "app" : "apps")")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    } else {
+                        Text("Nothing selected")
+                            .font(.system(size: 12))
+                            .foregroundColor(.secondary)
+                    }
+                }
                 Spacer()
-                Text("\(selection.applicationTokens.count)/50")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Color(hex: "1C1C1E"))
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 16)
-            
-            LazyVGrid(
-                columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 8),
-                spacing: 12
-            ) {
-                if selection.applicationTokens.count > 0 {
-                    ForEach(Array(selection.applicationTokens.prefix(16)), id: \.hashValue) { token in
-                        Label(token)
-                            .labelStyle(.iconOnly)
-                            .font(.system(size: 42))             .scaleEffect(1.6)
 
-                    }
-                } else {
-                    ForEach(0..<16, id: \.self) { _ in
-                        Image(systemName: "app.fill")
-                            .font(.system(size: 42))
-                            .foregroundColor(Color(hex: "C6C6C8"))
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    let totalCount = CategoryExpander.totalItemCount(selection)
+                    if totalCount > 0 {
+                        // Show app icons (limit to 24 for better UX)
+                        ForEach(Array(selection.applicationTokens.prefix(24)), id: \.hashValue) { token in
+                            Label(token)
+                                .labelStyle(.iconOnly)
+                                .frame(width: 48, height: 48)
+                                .background(Color.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                        }
+
+                        // Show category icons with real category icons
+                        let categoriesAvailable = max(0, min(selection.categoryTokens.count, 24 - selection.applicationTokens.count))
+                        ForEach(Array(selection.categoryTokens.prefix(categoriesAvailable)), id: \.hashValue) { categoryToken in
+                            Label(categoryToken)
+                                .labelStyle(.iconOnly)
+                                .frame(width: 48, height: 48)
+                                .background(Color(hex: "F0F8FF"))
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                        }
+                    } else {
+                        ForEach(0..<8, id: \.self) { _ in
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(Color(hex: "F5F5F5"))
+                                .frame(width: 48, height: 48)
+                                .overlay(
+                                    Image(systemName: "app.fill")
+                                        .font(.system(size: 24))
+                                        .foregroundColor(Color(hex: "C6C6C8"))
+                                )
+                        }
                     }
                 }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
             }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 20)
         }
         .background(
             RoundedRectangle(cornerRadius: 14)

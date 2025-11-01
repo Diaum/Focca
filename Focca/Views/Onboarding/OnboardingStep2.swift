@@ -21,46 +21,60 @@ struct OnboardingStep2: View {
                     
                     HStack(spacing: 12) {
                         VStack(alignment: .leading, spacing: 4) {
-                            if selection.applicationTokens.count > 0 {
-                                Text("\(selection.applicationTokens.count)/50 apps selected")
+                            let totalCount = CategoryExpander.totalItemCount(selection)
+                            let categoryCount = selection.categoryTokens.count
+                            let appCount = selection.applicationTokens.count
+
+                            if totalCount == 0 {
+                                Text("Nothing selected")
                                     .font(.system(size: 14))
                                     .foregroundColor(.secondary)
-                                if selection.applicationTokens.count > 50 {
-                                    Text("⚠️ Maximum 50 apps allowed")
-                                        .font(.system(size: 11))
-                                        .foregroundColor(.orange)
+                            } else {
+                                HStack(spacing: 8) {
+                                    if categoryCount > 0 {
+                                        Text("\(categoryCount) \(categoryCount == 1 ? "category" : "categories")")
+                                            .font(.system(size: 14, weight: .medium))
+                                            .foregroundColor(Color(hex: "007AFF"))
+                                    }
+                                    if categoryCount > 0 && appCount > 0 {
+                                        Text("•")
+                                            .font(.system(size: 14))
+                                            .foregroundColor(.secondary)
+                                    }
+                                    if appCount > 0 {
+                                        Text("\(appCount) \(appCount == 1 ? "app" : "apps")")
+                                            .font(.system(size: 14, weight: .medium))
+                                            .foregroundColor(Color(hex: "1C1C1E"))
+                                    }
                                 }
-                            } else if selection.categoryTokens.count > 0 {
-                                Text("0/50 apps selected")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.secondary)
-                                Text("⚠️ Deselect category → select apps individually")
+                            }
+
+                            if totalCount > 50 {
+                                Text("⚠️ Maximum 50 items allowed")
                                     .font(.system(size: 11))
                                     .foregroundColor(.orange)
-                            } else {
-                                Text("0/50 apps selected")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.secondary)
                             }
                         }
                         
                         Spacer()
                         
                         Button(action: {
-                            if selection.applicationTokens.count <= 50 {
+                            let totalCount = CategoryExpander.totalItemCount(selection)
+                            if totalCount <= 50 {
                                 saveSelection()
                                 didComplete()
                             }
                         }) {
+                            let totalCount = CategoryExpander.totalItemCount(selection)
                             Text("Next")
                                 .fontWeight(.semibold)
-                                .foregroundColor(selection.applicationTokens.count > 50 ? Color(hex: "9E9EA3") : .white)
+                                .foregroundColor(totalCount > 50 ? Color(hex: "9E9EA3") : .white)
                                 .padding(.horizontal, 24)
                                 .frame(height: 40)
-                                .background(selection.applicationTokens.count > 50 ? Color(hex: "DAD7D6") : Color.black)
+                                .background(totalCount > 50 ? Color(hex: "DAD7D6") : Color.black)
                                 .cornerRadius(20)
                         }
-                        .disabled(selection.applicationTokens.count > 50)
+                        .disabled(CategoryExpander.totalItemCount(selection) > 50)
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 10)

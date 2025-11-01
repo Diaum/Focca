@@ -1,10 +1,13 @@
 import SwiftUI
 import ManagedSettings
 import ActivityKit
+import FamilyControls
 
 struct BlockedView: View {
     @Binding var isBlocked: Bool
     @Binding var selectedTab: Int
+    @State private var activeCategoryCount = 0
+    @State private var activeAppCount = 0
 
     private let sharedDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
     
@@ -36,10 +39,27 @@ struct BlockedView: View {
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.white)
                     }
-                    
-                    Text("Blocking \(UserDefaults.standard.integer(forKey: "active_mode_app_count")) apps")
-                        .font(.system(size: 13))
-                        .foregroundColor(Color(hex: "8A8A8E"))
+
+                    HStack(spacing: 6) {
+                        Text("Blocking")
+                            .font(.system(size: 13))
+                            .foregroundColor(Color(hex: "8A8A8E"))
+                        if activeCategoryCount > 0 {
+                            Text("\(activeCategoryCount) \(activeCategoryCount == 1 ? "category" : "categories")")
+                                .font(.system(size: 13))
+                                .foregroundColor(Color(hex: "007AFF"))
+                        }
+                        if activeCategoryCount > 0 && activeAppCount > 0 {
+                            Text("•")
+                                .font(.system(size: 13))
+                                .foregroundColor(Color(hex: "8A8A8E"))
+                        }
+                        if activeAppCount > 0 {
+                            Text("\(activeAppCount) \(activeAppCount == 1 ? "app" : "apps")")
+                                .font(.system(size: 13))
+                                .foregroundColor(Color(hex: "8A8A8E"))
+                        }
+                    }
                 }
                 .padding(.bottom, 60)
                 
@@ -54,9 +74,8 @@ struct BlockedView: View {
                         ScheduleManager.shared.manualUnblock()
                     }
                     
-                    // Desbloqueia os apps
-                    let store = ManagedSettingsStore()
-                    store.application.blockedApplications = nil
+                    // Desbloqueia os apps e categorias
+                    CategoryExpander.unblockAll()
 
                     if let startDate = sharedDefaults.object(forKey: "blocked_start_date") as? Date {
                         TimerStorage.shared.splitOvernightTime(from: startDate, to: Date())
@@ -74,6 +93,18 @@ struct BlockedView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .onAppear {
+            loadActiveModeDetails()
+        }
+    }
+
+    private func loadActiveModeDetails() {
+        let activeModeName = UserDefaults.standard.string(forKey: "active_mode_name") ?? "default"
+        if let data = UserDefaults.standard.data(forKey: "mode_\(activeModeName)_selection"),
+           let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+            activeCategoryCount = saved.categoryTokens.count
+            activeAppCount = saved.applicationTokens.count
+        }
     }
 
     private func stopLiveActivity() {

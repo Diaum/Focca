@@ -63,7 +63,7 @@ struct OnboardingStep3: View {
                         Button(action: {
                             if appInfos.count > 50 {
                                 showAlert = true
-                            } else if model.selection.applicationTokens.count > 0 && model.selection.applicationTokens.count <= 50 {
+                            } else if CategoryExpander.totalItemCount(model.selection) > 0 && CategoryExpander.totalItemCount(model.selection) <= 50 {
                                 showMainView = true
                             }
                         }) {
@@ -142,6 +142,7 @@ struct OnboardingStep3: View {
     func fetchAppInfo(from selection: FamilyActivitySelection) async -> [AppInfo] {
         var infos: [AppInfo] = []
 
+        // Add individual apps
         for token in selection.applicationTokens {
             let app = Application(token: token)
             let name = app.localizedDisplayName ?? "Unknown App"
@@ -152,7 +153,22 @@ struct OnboardingStep3: View {
                 name: name,
                 icon: icon,
                 color: .clear,
-                token: token
+                token: token,
+                categoryToken: nil,
+                isCategory: false
+            ))
+        }
+
+        // Add categories
+        for categoryToken in selection.categoryTokens {
+            infos.append(AppInfo(
+                id: categoryToken.hashValue.description,
+                name: "",
+                icon: UIImage(systemName: "folder.fill")!,
+                color: .clear,
+                token: nil,
+                categoryToken: categoryToken,
+                isCategory: true
             ))
         }
 
@@ -165,30 +181,57 @@ struct AppInfo: Identifiable {
     let name: String
     let icon: UIImage
     let color: Color
-    let token: ApplicationToken
+    let token: ApplicationToken?
+    let categoryToken: ActivityCategoryToken?
+    let isCategory: Bool
 }
 
 struct AppRow: View {
     let appInfo: AppInfo
 
+    private let categoryIconScale: CGFloat = 2.4
+    private let appIconScale: CGFloat = 1.6
+
     var body: some View {
         HStack(spacing: 16) {
-            Label(appInfo.token)
-                .labelStyle(.iconOnly)
-                .frame(width: 96, height: 96)
-                .scaleEffect(2.8)
-                .frame(width: 64, height: 64)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+            if let categoryToken = appInfo.categoryToken {
+                // Show real category icon
+                Label(categoryToken)
+                    .labelStyle(.iconOnly)
+                    .frame(width: 40, height: 40)
+                    .scaleEffect(categoryIconScale)
+                    .frame(width: 64, height: 64)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+            } else if let token = appInfo.token {
+                // Show app icon for individual apps
+                Label(token)
+                    .labelStyle(.iconOnly)
+                    .frame(width: 40, height: 40)
+                    .scaleEffect(appIconScale)
+                    .frame(width: 64, height: 64)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+            }
 
             VStack(alignment: .leading, spacing: 4) {
-                Label(appInfo.token)
-                    .labelStyle(.titleOnly)
-                    .font(.system(size: 19, weight: .semibold))
-                    .foregroundColor(Color(hex: "1D1D1F"))
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                    .frame(maxWidth: 240, alignment: .leading)
+                if let categoryToken = appInfo.categoryToken {
+                    Label(categoryToken)
+                        .labelStyle(.titleOnly)
+                        .font(.system(size: 19, weight: .semibold))
+                        .foregroundColor(Color(hex: "1D1D1F"))
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                        .frame(maxWidth: 240, alignment: .leading)
+                } else if let token = appInfo.token {
+                    Label(token)
+                        .labelStyle(.titleOnly)
+                        .font(.system(size: 19, weight: .semibold))
+                        .foregroundColor(Color(hex: "1D1D1F"))
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                        .frame(maxWidth: 240, alignment: .leading)
+                }
             }
 
             Spacer()
