@@ -7,6 +7,8 @@ struct EditModeView: View {
     @State private var selection = FamilyActivitySelection()
     @State private var showAppPicker = false
     @State private var showDeleteConfirmation = false
+    @State private var showDuplicateNameAlert = false
+    @State private var showInvalidNameAlert = false
     @Environment(\.presentationMode) var presentationMode
     
     private var canDelete: Bool {
@@ -36,17 +38,20 @@ struct EditModeView: View {
                         presentationMode.wrappedValue.dismiss()
                     }) {
                         Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(Color(hex: "1C1C1E"))
-                            .frame(width: 34, height: 34)
-                            .background(Color.white)
-                            .clipShape(Circle())
-                            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                            .frame(width: 40, height: 40)
+                            .background(
+                                Circle()
+                                    .fill(Color.white)
+                                    .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 2)
+                                    .shadow(color: Color.black.opacity(0.04), radius: 2, x: 0, y: 1)
+                            )
                     }
                     Spacer()
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 8)
+                .padding(.top, 16)
                 
                 VStack(spacing: 4) {
                     Text("Edit mode")
@@ -111,8 +116,9 @@ struct EditModeView: View {
                 
                 VStack(spacing: 12) {
                     Button(action: {
-                        saveMode()
-                        presentationMode.wrappedValue.dismiss()
+                        if saveMode() {
+                            presentationMode.wrappedValue.dismiss()
+                        }
                     }) {
                         Text("Save")
                             .font(.system(size: 17, weight: .semibold))
@@ -152,6 +158,16 @@ struct EditModeView: View {
         .sheet(isPresented: $showAppPicker) {
             AppPickerSheet(selection: $selection)
         }
+        .alert("Duplicate Name", isPresented: $showDuplicateNameAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("A mode with the name '\(editedModeName)' already exists. Please choose a different name.")
+        }
+        .alert("Invalid Name", isPresented: $showInvalidNameAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Mode name must be between 4 and 18 characters.")
+        }
         .onAppear {
             loadModeData()
         }
@@ -164,15 +180,51 @@ struct EditModeView: View {
         }
     }
     
-    private func saveMode() {
-        if !editedModeName.isEmpty && editedModeName.count >= 4 && editedModeName.count <= 18, let encoded = try? JSONEncoder().encode(selection) {
+    @discardableResult
+    private func saveMode() -> Bool {
+        guard !editedModeName.isEmpty && editedModeName.count >= 4 && editedModeName.count <= 18 else {
+            showInvalidNameAlert = true
+            return false
+        }
+
+        guard let encoded = try? JSONEncoder().encode(selection) else {
+            return false
+        }
+
+        if editedModeName != modeName {
+            let newModeExists = UserDefaults.standard.bool(forKey: "mode_\(editedModeName)_exists")
+            if newModeExists {
+                showDuplicateNameAlert = true
+                return false
+            }
+
             UserDefaults.standard.set(encoded, forKey: "mode_\(editedModeName)_selection")
             UserDefaults.standard.set(true, forKey: "mode_\(editedModeName)_exists")
-            if editedModeName != modeName {
-                UserDefaults.standard.removeObject(forKey: "mode_\(modeName)_selection")
-                UserDefaults.standard.removeObject(forKey: "mode_\(modeName)_exists")
+
+            if let lastUsed = UserDefaults.standard.object(forKey: "mode_\(modeName)_last_used") as? Date {
+                UserDefaults.standard.set(lastUsed, forKey: "mode_\(editedModeName)_last_used")
             }
+
+            if let schedule = UserDefaults.standard.data(forKey: "mode_\(modeName)_schedule") {
+                UserDefaults.standard.set(schedule, forKey: "mode_\(editedModeName)_schedule")
+            }
+
+            let activeModeModeName = UserDefaults.standard.string(forKey: "active_mode_name")
+            if activeModeModeName == modeName {
+                UserDefaults.standard.set(editedModeName, forKey: "active_mode_name")
+            }
+
+            UserDefaults.standard.removeObject(forKey: "mode_\(modeName)_selection")
+            UserDefaults.standard.removeObject(forKey: "mode_\(modeName)_exists")
+            UserDefaults.standard.removeObject(forKey: "mode_\(modeName)_last_used")
+            UserDefaults.standard.removeObject(forKey: "mode_\(modeName)_schedule")
+
+        } else {
+            UserDefaults.standard.set(encoded, forKey: "mode_\(editedModeName)_selection")
+            UserDefaults.standard.set(true, forKey: "mode_\(editedModeName)_exists")
         }
+
+        return true
     }
     
     private func deleteMode() {
