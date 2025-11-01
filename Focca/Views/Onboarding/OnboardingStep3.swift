@@ -176,9 +176,8 @@ struct AppRow: View {
             Label(appInfo.token)
                 .labelStyle(.iconOnly)
                 .frame(width: 96, height: 96)
-                .scaleEffect(1.7)
+                .scaleEffect(2.8)
                 .frame(width: 64, height: 64)
-                .background(Color.white)
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
 
