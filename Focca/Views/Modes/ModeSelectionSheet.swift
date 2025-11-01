@@ -177,13 +177,23 @@ struct ModeRow: View {
     let isSelected: Bool
     let onEdit: () -> Void
     let onSelect: () -> Void
+    
+    private var hasSchedule: Bool {
+        let allSchedules = ScheduleManager.shared.loadAllSchedules()
+        return allSchedules.contains(where: { $0.modeName == title && $0.isActive && UserDefaults.standard.bool(forKey: "mode_\($0.modeName)_exists") })
+    }
 
     var body: some View {
         HStack(spacing: 0) {
             Button(action: onSelect) {
-                HStack {
+                HStack(spacing: 8) {
                     Text(title)
                         .foregroundColor(Color(hex: "1C1C1E"))
+                    if hasSchedule {
+                        Image(systemName: "clock.fill")
+                            .font(.system(size: 12, weight: .regular))
+                            .foregroundColor(Color(hex: "C6C6C8"))
+                    }
                     Spacer()
                 }
                 .padding(.leading, 16)
