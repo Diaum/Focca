@@ -38,6 +38,14 @@ struct NotificationContent {
         if #available(iOS 15.0, *) {
             content.interruptionLevel = .timeSensitive
         }
+        
+        // Adiciona userInfo para ativação automática em background
+        content.userInfo = [
+            "action": "ACTIVATE_SCHEDULE",
+            "scheduleId": schedule.id,
+            "scheduleModeName": schedule.modeName
+        ]
+        
         return content
     }
 }
