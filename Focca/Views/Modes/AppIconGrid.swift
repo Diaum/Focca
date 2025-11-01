@@ -20,16 +20,17 @@ struct AppIconGrid: View {
             
             LazyVGrid(
                 columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 8),
-                spacing: 0
+                spacing: 12
             ) {
                 if selection.applicationTokens.count > 0 {
-                    ForEach(Array(selection.applicationTokens.prefix(12)), id: \.hashValue) { token in
+                    ForEach(Array(selection.applicationTokens.prefix(16)), id: \.hashValue) { token in
                         Label(token)
                             .labelStyle(.iconOnly)
-                            .font(.system(size: 42))
+                            .font(.system(size: 42))             .scaleEffect(1.6)
+
                     }
                 } else {
-                    ForEach(0..<12, id: \.self) { _ in
+                    ForEach(0..<16, id: \.self) { _ in
                         Image(systemName: "app.fill")
                             .font(.system(size: 42))
                             .foregroundColor(Color(hex: "C6C6C8"))
