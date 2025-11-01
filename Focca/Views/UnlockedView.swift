@@ -9,6 +9,8 @@ struct UnlockedView: View {
     @State private var showModeSheet = false
     @State private var activeModeName = "-"
     @State private var activeModeCount = 0
+    @State private var activeCategoryCount = 0
+    @State private var activeAppCount = 0
     @State private var todayTime: String = "0h 0m"
     @State private var currentActivity: Activity<FoccaWidgetLiveAttributes>?
 
@@ -71,9 +73,26 @@ struct UnlockedView: View {
                     }
                     .buttonStyle(.plain)
                     
-                    Text("Blocking \(activeModeCount) apps")
-                        .font(.system(size: 14))
-                        .foregroundColor(Color(hex: "8E8E93"))
+                    HStack(spacing: 6) {
+                        Text("Blocking")
+                            .font(.system(size: 14))
+                            .foregroundColor(Color(hex: "8E8E93"))
+                        if activeCategoryCount > 0 {
+                            Text("\(activeCategoryCount) \(activeCategoryCount == 1 ? "category" : "categories")")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color(hex: "007AFF"))
+                        }
+                        if activeCategoryCount > 0 && activeAppCount > 0 {
+                            Text("•")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color(hex: "8E8E93"))
+                        }
+                        if activeAppCount > 0 {
+                            Text("\(activeAppCount) \(activeAppCount == 1 ? "app" : "apps")")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color(hex: "8E8E93"))
+                        }
+                    }
                 }
                 .padding(.bottom, 60)
                 
@@ -84,10 +103,9 @@ struct UnlockedView: View {
 
                     if let data = UserDefaults.standard.data(forKey: "mode_\(activeMode)_selection"),
                        let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
-                        let store = ManagedSettingsStore()
-                        let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
-                        store.application.blockedApplications = apps
-                        
+                        // Block both apps and categories
+                        CategoryExpander.blockSelection(saved)
+
                         let now = Date()
                         sharedDefaults.set(now, forKey: "blocked_start_date")
 
@@ -107,6 +125,7 @@ struct UnlockedView: View {
             let validMode = getValidActiveMode()
             activeModeName = validMode
             activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+            loadActiveModeDetails()
         }) {
             ModeSelectionSheet()
                 .presentationDetents([.large])
@@ -120,6 +139,7 @@ struct UnlockedView: View {
             let validMode = getValidActiveMode()
             activeModeName = validMode
             activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+            loadActiveModeDetails()
 
             Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
                 DispatchQueue.main.async {
@@ -166,7 +186,7 @@ struct UnlockedView: View {
 
                 if let data = UserDefaults.standard.data(forKey: "mode_\(modeName)_selection"),
                    let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
-                    UserDefaults.standard.set(saved.applicationTokens.count, forKey: "active_mode_app_count")
+                    UserDefaults.standard.set(CategoryExpander.totalItemCount(saved), forKey: "active_mode_app_count")
                 }
 
                 return modeName
@@ -174,6 +194,14 @@ struct UnlockedView: View {
         }
 
         return "default"
+    }
+
+    private func loadActiveModeDetails() {
+        if let data = UserDefaults.standard.data(forKey: "mode_\(activeModeName)_selection"),
+           let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+            activeCategoryCount = saved.categoryTokens.count
+            activeAppCount = saved.applicationTokens.count
+        }
     }
 
     private func startLiveActivity(startDate: Date) {

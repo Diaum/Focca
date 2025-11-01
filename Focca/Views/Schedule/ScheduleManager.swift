@@ -312,20 +312,19 @@ class ScheduleManager: ObservableObject {
             return
         }
         
-        print("   ✅ Modo '\(schedule.modeName)' encontrado com \(saved.applicationTokens.count) apps")
-        
-        let store = ManagedSettingsStore()
-        let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
-        store.application.blockedApplications = apps
-        
-        print("   ✅ Apps bloqueados: \(apps.count)")
-        
+        print("   ✅ Modo '\(schedule.modeName)' encontrado com \(CategoryExpander.totalItemCount(saved)) items")
+
+        // Block both apps and categories
+        CategoryExpander.blockSelection(saved)
+
+        print("   ✅ Apps e categorias bloqueados")
+
         // Marca início do bloqueio por schedule
         let now = Date()
         userDefaults.set(now, forKey: "blocked_start_date")
         userDefaults.set(true, forKey: "blocked_by_schedule")
         userDefaults.set(schedule.modeName, forKey: "active_mode_name")
-        userDefaults.set(saved.applicationTokens.count, forKey: "active_mode_app_count")
+        userDefaults.set(CategoryExpander.totalItemCount(saved), forKey: "active_mode_app_count")
         
         currentSchedule = schedule
         isBlockedBySchedule = true
@@ -347,11 +346,11 @@ class ScheduleManager: ObservableObject {
         }
         
         print("🛑 [ScheduleManager] Desativando schedule '\(schedule.modeName)'")
-        
-        let store = ManagedSettingsStore()
-        store.application.blockedApplications = nil
-        
-        print("   ✅ Apps desbloqueados")
+
+        // Unblock all apps and categories
+        CategoryExpander.unblockAll()
+
+        print("   ✅ Apps e categorias desbloqueados")
         
         // Computa o tempo no TimerStorage
         if let startDate = userDefaults.object(forKey: "blocked_start_date") as? Date {

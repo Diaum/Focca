@@ -15,7 +15,7 @@ struct CreateModeView: View {
     // Feature 1: Valida se schedule está ativo, deve ter pelo menos 1 dia selecionado
     // Feature 4: Valida se não há conflito com schedules existentes
     private var canSave: Bool {
-        let basicValidation = modeName.count >= 4 && modeName.count <= 18 && selection.applicationTokens.count > 0
+        let basicValidation = modeName.count >= 4 && modeName.count <= 18 && CategoryExpander.totalItemCount(selection) > 0
         let scheduleValidation = !isScheduled || selectedWeekdays.count >= 1
         let noConflict = !hasScheduleConflict()
         return basicValidation && scheduleValidation && noConflict
@@ -231,7 +231,7 @@ struct CreateModeView: View {
         print("📱 CreateModeView - saveMode() called")
         print("📱 Mode name: '\(modeName)'")
         print("📱 Mode name count: \(modeName.count)")
-        print("📱 Apps selected count: \(selection.applicationTokens.count)")
+        print("📱 Items selected count: \(CategoryExpander.totalItemCount(selection))")
         print("📱 Can save: \(canSave)")
         
         if canSave, let encoded = try? JSONEncoder().encode(selection) {
@@ -243,7 +243,7 @@ struct CreateModeView: View {
             UserDefaults.standard.set(Date(), forKey: "mode_\(modeName)_last_used")
             
             UserDefaults.standard.set(modeName, forKey: "active_mode_name")
-            UserDefaults.standard.set(selection.applicationTokens.count, forKey: "active_mode_app_count")
+            UserDefaults.standard.set(CategoryExpander.totalItemCount(selection), forKey: "active_mode_app_count")
             
             // Salva o schedule se ativado
             if isScheduled && selectedWeekdays.count >= 1 {

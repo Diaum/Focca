@@ -29,7 +29,7 @@ struct EditModeView: View {
         }
         
         // Validação básica da seleção de apps
-        guard selection.applicationTokens.count > 0 else {
+        guard CategoryExpander.totalItemCount(selection) > 0 else {
             return false
         }
         
