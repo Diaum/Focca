@@ -71,6 +71,7 @@ struct BlockedView: View {
                     .padding(.bottom, 0)
                 
                 TabBar(selectedTab: $selectedTab)
+                    .padding(.bottom, -50)
             }
         }
         .preferredColorScheme(.dark)

@@ -78,9 +78,8 @@ struct ActivityView: View {
 
                                 
                 WhiteRoundedBottomPlain()
-                    .padding(.bottom, -6)
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, -48)
+                    .padding(.bottom, -50)
 
                 
             }
