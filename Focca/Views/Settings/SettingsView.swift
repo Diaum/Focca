@@ -2,12 +2,20 @@ import SwiftUI
 
 struct SettingsView: View {
     @Binding var selectedTab: Int
+    let isBlocked: Bool
     @State private var showNotificationsView = false
+    
+    init(selectedTab: Binding<Int>, isBlocked: Bool = false) {
+        self._selectedTab = selectedTab
+        self.isBlocked = isBlocked
+    }
     
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [Color(hex: "F7F7F8"), Color(hex: "ECECEC")],
+                colors: isBlocked 
+                    ? [Color(hex: "0A0A0A"), Color(hex: "0A0A0A")]
+                    : [Color(hex: "F7F7F8"), Color(hex: "ECECEC")],
                 startPoint: .top,
                 endPoint: .bottom
             )
@@ -15,17 +23,17 @@ struct SettingsView: View {
 //            .overlay(ReferenceGrid(spacing: 24, color: .red.opacity(0.15)))
             
             VStack(spacing: 0) {
-                Spacer(minLength: 140)
+                Spacer(minLength: 0)
                 
                 // Header card
                 RoundedRectangle(cornerRadius: 18)
-                    .fill(Color.white.opacity(0.85))
+                    .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white.opacity(0.85))
                     .frame(height: 66)
                     .overlay(
                         HStack {
                             Text("Account")
                                 .font(.system(size: 20, weight: .semibold))
-                                .foregroundColor(Color(hex: "1C1C1E"))
+                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                             Spacer()
                         }
                         .padding(.horizontal, 18)
@@ -42,7 +50,8 @@ struct SettingsView: View {
                             SettingsItem(title: "Why Focca?", hasArrow: true),
                             SettingsItem(title: "Privacy Policy", hasArrow: true)
                         ],
-                        showNotificationsView: $showNotificationsView
+                        showNotificationsView: $showNotificationsView,
+                        isBlocked: isBlocked
                     )
                     
                     SettingsSection(
@@ -50,7 +59,8 @@ struct SettingsView: View {
                         items: [
                             SettingsItem(title: "Emergency Unblock", subtitle: "4 remaining", hasArrow: true)
                         ],
-                        showNotificationsView: $showNotificationsView
+                        showNotificationsView: $showNotificationsView,
+                        isBlocked: isBlocked
                     )
                     
                     SettingsSection(
@@ -58,7 +68,8 @@ struct SettingsView: View {
                         items: [
                             SettingsItem(title: "Strict mode", hasArrow: false)
                         ],
-                        showNotificationsView: $showNotificationsView
+                        showNotificationsView: $showNotificationsView,
+                        isBlocked: isBlocked
                     )
                     
                     SettingsSection(
@@ -66,7 +77,8 @@ struct SettingsView: View {
                         items: [
                             SettingsItem(title: "Questions", hasToggle: true, isToggledOn: true)
                         ],
-                        showNotificationsView: $showNotificationsView
+                        showNotificationsView: $showNotificationsView,
+                        isBlocked: isBlocked
                     )
                     
                     SettingsSection(
@@ -74,23 +86,24 @@ struct SettingsView: View {
                         items: [
                             SettingsItem(title: "Troubleshooting", hasArrow: true)
                         ],
-                        showNotificationsView: $showNotificationsView
+                        showNotificationsView: $showNotificationsView,
+                        isBlocked: isBlocked
                     )
                     
                 }
                 .padding(.horizontal, 16)
                 
-                Spacer(minLength: 24)
+                Spacer(minLength: 0)
             }
             
             VStack(spacing: 0) {
                 Spacer()
-                WhiteRoundedBottomPlain()
+                WhiteRoundedBottomPlain(isBlocked: isBlocked)
                 TabBar(selectedTab: $selectedTab)
                     .padding(.bottom, -50)
             }
         }
-        .preferredColorScheme(.light)
+        .preferredColorScheme(isBlocked ? .dark : .light)
         .sheet(isPresented: $showNotificationsView) {
             NotificationsView()
         }
@@ -101,6 +114,7 @@ struct SettingsSection: View {
     let title: String?
     let items: [SettingsItem]
     @Binding var showNotificationsView: Bool
+    let isBlocked: Bool
     
     var body: some View {
         VStack(spacing: 10) {
@@ -108,7 +122,7 @@ struct SettingsSection: View {
                 HStack {
                     Text(title)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(Color(hex: "1C1C1E"))
+                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                     Spacer()
                 }
                 .padding(.horizontal, 4)
@@ -116,17 +130,18 @@ struct SettingsSection: View {
             
             VStack(spacing: 0) {
                 ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-                    SettingsRow(item: item, showNotificationsView: $showNotificationsView)
+                    SettingsRow(item: item, showNotificationsView: $showNotificationsView, isBlocked: isBlocked)
                     if index < items.count - 1 {
                         Divider()
+                            .background(isBlocked ? Color(hex: "38383A") : Color(hex: "C6C6C8"))
                             .padding(.leading, 16)
                     }
                 }
             }
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.white)
-                    .shadow(color: Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
+                    .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white)
+                    .shadow(color: isBlocked ? Color.black.opacity(0.3) : Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
             )
         }
     }
@@ -135,6 +150,7 @@ struct SettingsSection: View {
 struct SettingsRow: View {
     let item: SettingsItem
     @Binding var showNotificationsView: Bool
+    let isBlocked: Bool
     
     var body: some View {
         Button(action: {
@@ -149,12 +165,12 @@ struct SettingsRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.title)
                         .font(.system(size: 17, weight: .regular))
-                        .foregroundColor(Color(hex: "1C1C1E"))
+                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                     
                     if let subtitle = item.subtitle {
                         Text(subtitle)
                             .font(.system(size: 14, weight: .regular))
-                            .foregroundColor(Color(hex: "8E8E93"))
+                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                     }
                 }
                 
@@ -167,7 +183,7 @@ struct SettingsRow: View {
                 } else if item.hasArrow {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(Color(hex: "C6C6C8"))
+                        .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8"))
                 }
             }
             .padding(.horizontal, 16)

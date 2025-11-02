@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ActivityView: View {
     @Binding var selectedTab: Int
+    let isBlocked: Bool
     @State private var showModeSheet = false
     @State private var todayTime: String = "0h 0m"
     @State private var averageTime: String = "0h 0m"
@@ -9,15 +10,18 @@ struct ActivityView: View {
     // Permite injetar dados no Preview para mostrar cards
     let initialDailyCards: [(date: Date, time: TimeInterval)]?
     
-    init(selectedTab: Binding<Int>, initialDailyCards: [(date: Date, time: TimeInterval)]? = nil) {
+    init(selectedTab: Binding<Int>, isBlocked: Bool = false, initialDailyCards: [(date: Date, time: TimeInterval)]? = nil) {
         self._selectedTab = selectedTab
+        self.isBlocked = isBlocked
         self.initialDailyCards = initialDailyCards
     }
         
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [Color(hex: "F7F7F8"), Color(hex: "ECECEC")],
+                colors: isBlocked 
+                    ? [Color(hex: "0A0A0A"), Color(hex: "0A0A0A")]
+                    : [Color(hex: "F7F7F8"), Color(hex: "ECECEC")],
                 startPoint: .top,
                 endPoint: .bottom
             )
@@ -31,21 +35,21 @@ struct ActivityView: View {
                     VStack(spacing: 4) {
                         Text("Today")
                             .font(.system(size: 15, weight: .medium))
-                            .foregroundColor(Color(hex: "8A8A8E"))
+                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8A8A8E"))
                         
                         Text(todayTime)
                             .font(.system(size: 28, weight: .medium))
-                            .foregroundColor(Color(hex: "1C1C1E"))
+                            .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                     }
                     
                     VStack(spacing: 4) {
                         Text("Average")
                             .font(.system(size: 15, weight: .medium))
-                            .foregroundColor(Color(hex: "8A8A8E"))
+                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8A8A8E"))
                         
                         Text(averageTime)
                             .font(.system(size: 28, weight: .medium))
-                            .foregroundColor(Color(hex: "1C1C1E"))
+                            .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                     }
                 }
                 .padding(.top, 0)
@@ -56,7 +60,7 @@ struct ActivityView: View {
                     
                     Text("Activities will appear after your first day using Brick")
                         .font(.system(size: 15, weight: .regular))
-                        .foregroundColor(Color(hex: "9E9EA3"))
+                        .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "9E9EA3"))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
 
@@ -68,7 +72,7 @@ struct ActivityView: View {
                             GridItem(.flexible(), spacing: 10)
                         ], spacing: 10) {
                             ForEach(dailyCards, id: \.date) { card in
-                                DailyCard(date: card.date, time: card.time)
+                                DailyCard(date: card.date, time: card.time, isBlocked: isBlocked)
                             }
                         }
                         .padding(.horizontal, 20)
@@ -77,7 +81,7 @@ struct ActivityView: View {
                 
 
                                 
-                WhiteRoundedBottomPlain()
+                WhiteRoundedBottomPlain(isBlocked: isBlocked)
                 TabBar(selectedTab: $selectedTab)
                     .padding(.bottom, -50)
 
@@ -91,7 +95,7 @@ struct ActivityView: View {
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(30)
         }
-        .preferredColorScheme(.light)
+        .preferredColorScheme(isBlocked ? .dark : .light)
         .onAppear {
             if let injected = initialDailyCards {
                 // Usa os dados de preview quando fornecidos

@@ -2,14 +2,25 @@ import SwiftUI
 
 // Versão sem botão: apenas a base arredondada branca para servir de rodapé visual
 struct WhiteRoundedBottomPlain: View {
+    let isBlocked: Bool
+    
+    init(isBlocked: Bool = false) {
+        self.isBlocked = isBlocked
+    }
+    
     var body: some View {
         RoundedRectangle(cornerRadius: 120)
             .fill(
                 LinearGradient(
-                    colors: [
-                        Color.white,
-                        Color(hex: "")
-                    ],
+                    colors: isBlocked 
+                        ? [
+                            Color(hex: "181818"),
+                            Color(hex: "")
+                        ]
+                        : [
+                            Color.white,
+                            Color(hex: "")
+                        ],
                     startPoint: .bottom,
                     endPoint: .top
                 )

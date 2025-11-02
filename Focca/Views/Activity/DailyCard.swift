@@ -3,6 +3,13 @@ import SwiftUI
 struct DailyCard: View {
     let date: Date
     let time: TimeInterval
+    let isBlocked: Bool
+    
+    init(date: Date, time: TimeInterval, isBlocked: Bool = false) {
+        self.date = date
+        self.time = time
+        self.isBlocked = isBlocked
+    }
     
     private var formattedDate: String {
         let formatter = DateFormatter()
@@ -20,19 +27,19 @@ struct DailyCard: View {
         VStack(spacing: 6) {
             Text(formattedDate)
                 .font(.system(size: 13, weight: .medium))
-                .foregroundColor(Color(hex: "8A8A8E"))
+                .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8A8A8E"))
                 .multilineTextAlignment(.center)
             
             Text(formattedTime)
                 .font(.system(size: 20, weight: .light))
-                .foregroundColor(Color(hex: "1C1C1E"))
+                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
-        .background(Color.white)
+        .background(isBlocked ? Color(hex: "1C1C1C") : Color.white)
         .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .shadow(color: isBlocked ? Color.black.opacity(0.3) : Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
 }
 

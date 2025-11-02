@@ -17,11 +17,11 @@ struct PrincipalView: View {
                     UnlockedView(isBlocked: $isBlocked, selectedTab: $selectedTab)
                 }
             case 1:
-                ActivityView(selectedTab: $selectedTab)
+                ActivityView(selectedTab: $selectedTab, isBlocked: isBlocked || scheduleManager.isBlockedBySchedule)
             case 2:
                 AwardsView(selectedTab: $selectedTab)
             case 3:
-                SettingsView(selectedTab: $selectedTab)
+                SettingsView(selectedTab: $selectedTab, isBlocked: isBlocked || scheduleManager.isBlockedBySchedule)
             default:
                 UnlockedView(isBlocked: $isBlocked, selectedTab: $selectedTab)
             }
