@@ -24,7 +24,7 @@ struct DailyCard: View {
                 .multilineTextAlignment(.center)
             
             Text(formattedTime)
-                .font(.system(size: 20, weight: .medium))
+                .font(.system(size: 20, weight: .light))
                 .foregroundColor(Color(hex: "1C1C1E"))
                 .multilineTextAlignment(.center)
         }
