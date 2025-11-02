@@ -12,8 +12,8 @@ struct TabBar: View {
             TabItem(title: "Activity", isSelected: selectedTab == 1)
                 .onTapGesture { selectedTab = 1 }
             
-            TabItem(title: "Awards", isSelected: selectedTab == 2)
-                .onTapGesture { selectedTab = 2 }
+//            TabItem(title: "Awards", isSelected: selectedTab == 2)
+//                .onTapGesture { selectedTab = 2 }
             
             TabItem(title: "Settings", isSelected: selectedTab == 3)
                 .onTapGesture { selectedTab = 3 }
