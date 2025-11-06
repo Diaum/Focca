@@ -5,6 +5,8 @@ import ManagedSettings
 struct DailyDetailView: View {
     let date: Date
     let totalTime: TimeInterval
+    let isBlocked: Bool
+    @Binding var selectedTab: Int
     @Environment(\.presentationMode) var presentationMode
     @State private var appDetails: [(tokenHash: Int, time: TimeInterval)] = []
     @State private var isLoading = true
@@ -24,13 +26,15 @@ struct DailyDetailView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [Color(hex: "F7F7F8"), Color(hex: "ECECEC")],
+                colors: isBlocked 
+                    ? [Color(hex: "0A0A0A"), Color(hex: "0A0A0A")]
+                    : [Color(hex: "F7F7F8"), Color(hex: "ECECEC")],
                 startPoint: .top,
                 endPoint: .bottom
             )
             .ignoresSafeArea()
             .onAppear {
-                print("✅ [DailyDetailView] Gradient apareceu - date: \(date), totalTime: \(totalTime)")
+                print("✅ [DailyDetailView] Gradient apareceu - date: \(date), totalTime: \(totalTime), isBlocked: \(isBlocked)")
             }
             
             VStack(spacing: 0) {
@@ -41,9 +45,9 @@ struct DailyDetailView: View {
                     }) {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(hex: "1C1C1E"))
+                            .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                             .frame(width: 44, height: 44)
-                            .background(Color.white)
+                            .background(isBlocked ? Color(hex: "1C1C1C") : Color.white)
                             .clipShape(Circle())
                             .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                     }
@@ -57,11 +61,11 @@ struct DailyDetailView: View {
                 VStack(spacing: 8) {
                     Text(formattedDate)
                         .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(Color(hex: "1C1C1E"))
+                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                     
                     Text("Total: \(formattedTotalTime)")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(Color(hex: "8E8E93"))
+                        .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                 }
                 .padding(.top, 20)
                 .padding(.bottom, 30)
@@ -76,10 +80,10 @@ struct DailyDetailView: View {
                     VStack(spacing: 12) {
                         Text("No apps blocked")
                             .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(Color(hex: "1C1C1E"))
+                            .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                         Text("No blocking data available for this day")
                             .font(.system(size: 15))
-                            .foregroundColor(Color(hex: "8E8E93"))
+                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                             .multilineTextAlignment(.center)
                     }
                     .padding(.horizontal, 40)
@@ -88,29 +92,38 @@ struct DailyDetailView: View {
                     ScrollView {
                         VStack(spacing: 0) {
                             ForEach(appDetails, id: \.tokenHash) { detail in
-                                AppBlockingRow(tokenHash: detail.tokenHash, time: detail.time)
+                                AppBlockingRow(tokenHash: detail.tokenHash, time: detail.time, isBlocked: isBlocked)
                                 
                                 if detail.tokenHash != appDetails.last?.tokenHash {
                                     Divider()
-                                        .background(Color(hex: "C6C6C8"))
+                                        .background(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "C6C6C8"))
                                         .padding(.leading, 72)
                                 }
                             }
                         }
                         .background(
                             RoundedRectangle(cornerRadius: 16)
-                                .fill(Color.white)
-                                .shadow(color: Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
+                                .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white)
+                                .shadow(color: Color.black.opacity(isBlocked ? 0.3 : 0.04), radius: 3, x: 0, y: 1)
                         )
                         .padding(.horizontal, 16)
+                        .padding(.bottom, 20)
                     }
                 }
                 
                 Spacer()
+                
+                // Bottom arredondado e TabBar
+                VStack(spacing: 0) {
+                    WhiteRoundedBottomPlain(isBlocked: isBlocked)
+                    TabBar(selectedTab: $selectedTab)
+                        .padding(.bottom, -50)
+                }
             }
         }
+        .preferredColorScheme(isBlocked ? .dark : .light)
         .onAppear {
-            print("✅ [DailyDetailView] onAppear chamado - date: \(date), totalTime: \(totalTime)")
+            print("✅ [DailyDetailView] onAppear chamado - date: \(date), totalTime: \(totalTime), isBlocked: \(isBlocked)")
             loadAppDetails()
         }
     }
@@ -170,6 +183,7 @@ struct DailyDetailView: View {
 struct AppBlockingRow: View {
     let tokenHash: Int
     let time: TimeInterval
+    let isBlocked: Bool
     
     @State private var appSelection: FamilyActivitySelection?
     
@@ -196,7 +210,7 @@ struct AppBlockingRow: View {
                     .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
             } else {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(hex: "E5E5EA"))
+                    .fill(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA"))
                     .frame(width: 48, height: 48)
             }
             
@@ -206,17 +220,17 @@ struct AppBlockingRow: View {
                     Label(token)
                         .labelStyle(.titleOnly)
                         .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(Color(hex: "1C1C1E"))
+                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                         .lineLimit(1)
                 } else {
                     Text("Unknown App")
                         .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(Color(hex: "1C1C1E"))
+                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 }
                 
                 Text("Blocked for \(formattedTime)")
                     .font(.system(size: 14, weight: .regular))
-                    .foregroundColor(Color(hex: "8E8E93"))
+                    .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
             }
             
             Spacer()
@@ -258,6 +272,6 @@ struct AppBlockingRow: View {
 }
 
 #Preview {
-    DailyDetailView(date: Date(), totalTime: 6 * 3600 + 43 * 60)
+    DailyDetailView(date: Date(), totalTime: 6 * 3600 + 43 * 60, isBlocked: false, selectedTab: .constant(1))
 }
 

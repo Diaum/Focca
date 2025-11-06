@@ -57,9 +57,17 @@ class AppBlockingTracker {
         let newHashes = Set(appHashes)
         
         // Se os mesmos apps já estão bloqueados, não faz nada (evita resetar)
+        // IMPORTANTE: Isso preserva as sessões existentes mesmo quando o app reinicia
         if activeHashes == newHashes && !activeHashes.isEmpty {
             print("📱 [AppBlockingTracker] Bloqueio já está ativo para estes apps, mantendo sessões existentes")
+            print("   - Sessões ativas: \(activeHashes.count) apps")
+            print("   - Data: \(dateKey)")
             return
+        }
+        
+        // Se há sessões ativas mas os apps mudaram, apenas atualiza (não reseta tudo)
+        if !activeHashes.isEmpty && activeHashes != newHashes {
+            print("📱 [AppBlockingTracker] Apps mudaram, atualizando sessões (mantendo histórico)")
         }
         
         // Finaliza apenas as sessões ativas de apps que não estão mais na nova lista
@@ -221,15 +229,27 @@ class AppBlockingTracker {
     private func loadDailyBlocking(for dateKey: String) -> DailyAppBlocking? {
         let key = "app_blocking_\(dateKey)"
         guard let data = userDefaults.data(forKey: key) else {
+            print("📂 [AppBlockingTracker] Nenhum dado encontrado para \(dateKey)")
             return nil
         }
-        return try? JSONDecoder().decode(DailyAppBlocking.self, from: data)
+        if let blocking = try? JSONDecoder().decode(DailyAppBlocking.self, from: data) {
+            print("📂 [AppBlockingTracker] Dados carregados para \(dateKey) - \(blocking.sessions.count) sessões")
+            return blocking
+        } else {
+            print("❌ [AppBlockingTracker] Erro ao decodificar dados para \(dateKey)")
+            return nil
+        }
     }
     
     private func saveDailyBlocking(_ blocking: DailyAppBlocking, for dateKey: String) {
         let key = "app_blocking_\(dateKey)"
         if let encoded = try? JSONEncoder().encode(blocking) {
             userDefaults.set(encoded, forKey: key)
+            // Força sincronização para garantir persistência
+            userDefaults.synchronize()
+            print("💾 [AppBlockingTracker] Dados salvos para \(dateKey) - \(blocking.sessions.count) sessões")
+        } else {
+            print("❌ [AppBlockingTracker] Erro ao codificar dados para \(dateKey)")
         }
     }
 }

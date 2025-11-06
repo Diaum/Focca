@@ -116,7 +116,7 @@ struct ActivityView: View {
         .fullScreenCover(isPresented: $showDailyDetail) {
             Group {
                 if let date = selectedDate {
-                    DailyDetailView(date: date, totalTime: selectedTime)
+                    DailyDetailView(date: date, totalTime: selectedTime, isBlocked: isBlocked, selectedTab: $selectedTab)
                         .onAppear {
                             print("✅ [ActivityView] DailyDetailView apareceu - date: \(date), time: \(selectedTime)")
                         }
