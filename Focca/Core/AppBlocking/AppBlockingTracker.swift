@@ -66,11 +66,6 @@ class AppBlockingTracker {
                 }
             }
             
-            // Log resumido apenas se houver muitas sessões ignoradas
-            if ignoredCount > 0 && sessions.count > 10 {
-                print("   ⚠️ Ignorando \(ignoredCount) sessões com duração < 5s (de \(sessions.count) total)")
-            }
-            
             return result
         }
     }
