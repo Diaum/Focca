@@ -10,6 +10,7 @@ struct ActivityView: View {
     @State private var todayTime: String = "0h 0m"
     @State private var averageTime: String = "0h 0m"
     @State private var dailyCards: [(date: Date, time: TimeInterval)] = []
+    @State private var lastLoggedAppCount: Int = -1 // Para evitar logs repetidos
     // Permite injetar dados no Preview para mostrar cards
     let initialDailyCards: [(date: Date, time: TimeInterval)]?
     
@@ -121,7 +122,6 @@ struct ActivityView: View {
                             print("✅ [ActivityView] DailyDetailView apareceu - date: \(date), time: \(selectedTime)")
                         }
                         .onDisappear {
-                            print("❌ [ActivityView] DailyDetailView desapareceu")
                             // Limpa a seleção quando a view é fechada
                             selectedDate = nil
                             selectedTime = 0
@@ -191,6 +191,21 @@ struct ActivityView: View {
         let hours = Int(totalTime) / 3600
         let minutes = (Int(totalTime) % 3600) / 60
         todayTime = String(format: "%dh %dm", hours, minutes)
+        
+        // Log para verificar quantos apps bloqueados têm tempo salvo hoje (apenas quando mudar)
+        let today = Date()
+        let appDetails = AppBlockingTracker.shared.getAppBlockingDetails(for: today)
+        let currentAppCount = appDetails.count
+        
+        // Só loga se o número de apps mudou ou se ainda não foi logado
+        if currentAppCount != lastLoggedAppCount {
+            lastLoggedAppCount = currentAppCount
+            if appDetails.isEmpty {
+                print("📱 [ActivityView] Hoje: Nenhum app bloqueado com tempo salvo")
+            } else {
+                print("📱 [ActivityView] Hoje: \(appDetails.count) apps bloqueados com tempo salvo (total: \(Int(totalTime / 60))m)")
+            }
+        }
     }
 }
 

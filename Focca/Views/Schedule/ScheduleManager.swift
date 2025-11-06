@@ -338,13 +338,19 @@ class ScheduleManager: ObservableObject {
         
         // Marca início do bloqueio por schedule
         let now = Date()
-        userDefaults.set(now, forKey: "blocked_start_date")
+        
+        // CRÍTICO: Verifica se já existe um bloqueio ativo antes de criar novo
+        // Se já existe blocked_start_date, usa essa data em vez de criar uma nova
+        let existingStartDate = userDefaults.object(forKey: "blocked_start_date") as? Date ?? now
+        
+        userDefaults.set(existingStartDate, forKey: "blocked_start_date")
         userDefaults.set(true, forKey: "blocked_by_schedule")
         userDefaults.set(schedule.modeName, forKey: "active_mode_name")
         userDefaults.set(saved.applicationTokens.count, forKey: "active_mode_app_count")
         
-        // Registra início de bloqueio por app
-        AppBlockingTracker.shared.startBlocking(selection: saved, startDate: now)
+        // Registra início de bloqueio por app usando a data existente se houver
+        // Isso previne criar novas sessões quando o app reinicia
+        AppBlockingTracker.shared.startBlocking(selection: saved, startDate: existingStartDate)
         
         currentSchedule = schedule
         isBlockedBySchedule = true
@@ -355,7 +361,7 @@ class ScheduleManager: ObservableObject {
         NotificationCenter.default.post(name: NSNotification.Name("ScheduleActivated"), object: nil)
 
         // Inicia Live Activity
-        LiveActivityManager.startIfSupported(startDate: now)
+        LiveActivityManager.startIfSupported(startDate: existingStartDate)
     }
     
     // Desativa o schedule atual (desbloqueia e computa tempo)

@@ -16,7 +16,22 @@ class TimerStorage {
     
     func getDailyTime(for date: Date) -> TimeInterval {
         let dateKey = formatDate(date)
-        return userDefaults.double(forKey: "daily_time_\(dateKey)")
+        
+        // Primeiro tenta buscar dados do AppBlockingTracker
+        let totalTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
+        
+        // Se encontrou dados do AppBlockingTracker, retorna
+        if totalTime > 0 {
+            return totalTime
+        }
+        
+        // Fallback para dados antigos de daily_time_
+        let oldTime = userDefaults.double(forKey: "daily_time_\(dateKey)")
+        if oldTime > 0 {
+            return oldTime
+        }
+        
+        return 0
     }
     
     func addDailyTime(_ timeInterval: TimeInterval, for date: Date) {
@@ -58,14 +73,48 @@ class TimerStorage {
         var result: [(date: Date, time: TimeInterval)] = []
         let allKeys = userDefaults.dictionaryRepresentation().keys
         
-        let timeKeys = allKeys.filter { $0.hasPrefix("daily_time_") }
+        // Busca dados de bloqueio de apps do AppBlockingTracker
+        let blockingKeys = allKeys.filter { $0.hasPrefix("app_blocking_") }
         
+        // Cria um conjunto de datas já processadas para evitar duplicatas
+        var processedDates = Set<String>()
+        
+        for key in blockingKeys {
+            let dateString = key.replacingOccurrences(of: "app_blocking_", with: "")
+            
+            // Evita processar a mesma data múltiplas vezes
+            if processedDates.contains(dateString) {
+                continue
+            }
+            processedDates.insert(dateString)
+            
+            if let date = parseDate(dateString) {
+                // Usa o método público do AppBlockingTracker para obter o tempo total
+                let totalTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
+                
+                if totalTime > 0 {
+                    result.append((date: date, time: totalTime))
+                }
+            }
+        }
+        
+        // Também busca dados antigos de daily_time_ para compatibilidade
+        let timeKeys = allKeys.filter { $0.hasPrefix("daily_time_") }
         for key in timeKeys {
             let time = userDefaults.double(forKey: key)
             if time > 0 {
                 let dateString = key.replacingOccurrences(of: "daily_time_", with: "")
                 if let date = parseDate(dateString) {
-                    result.append((date: date, time: time))
+                    // Verifica se já existe uma entrada para esta data
+                    if let existingIndex = result.firstIndex(where: { Calendar.current.isDate($0.date, inSameDayAs: date) }) {
+                        // Se já existe, usa o maior valor (não soma, para evitar duplicação)
+                        if time > result[existingIndex].time {
+                            result[existingIndex] = (date: result[existingIndex].date, time: time)
+                        }
+                    } else {
+                        // Se não existe, adiciona nova entrada
+                        result.append((date: date, time: time))
+                    }
                 }
             }
         }
