@@ -4,6 +4,9 @@ struct ActivityView: View {
     @Binding var selectedTab: Int
     let isBlocked: Bool
     @State private var showModeSheet = false
+    @State private var showDailyDetail = false
+    @State private var selectedDate: Date?
+    @State private var selectedTime: TimeInterval = 0
     @State private var todayTime: String = "0h 0m"
     @State private var averageTime: String = "0h 0m"
     @State private var dailyCards: [(date: Date, time: TimeInterval)] = []
@@ -72,7 +75,16 @@ struct ActivityView: View {
                             GridItem(.flexible(), spacing: 10)
                         ], spacing: 10) {
                             ForEach(dailyCards, id: \.date) { card in
-                                DailyCard(date: card.date, time: card.time, isBlocked: isBlocked)
+                                DailyCard(
+                                    date: card.date,
+                                    time: card.time,
+                                    isBlocked: isBlocked,
+                                    onTap: {
+                                        selectedDate = card.date
+                                        selectedTime = card.time
+                                        showDailyDetail = true
+                                    }
+                                )
                             }
                         }
                         .padding(.horizontal, 20)
@@ -94,6 +106,17 @@ struct ActivityView: View {
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(30)
+        }
+        .fullScreenCover(isPresented: $showDailyDetail) {
+            if let date = selectedDate {
+                DailyDetailView(date: date, totalTime: selectedTime)
+            } else {
+                // Fallback caso selectedDate seja nil
+                Color.white
+                    .onAppear {
+                        showDailyDetail = false
+                    }
+            }
         }
         .preferredColorScheme(isBlocked ? .dark : .light)
         .onAppear {

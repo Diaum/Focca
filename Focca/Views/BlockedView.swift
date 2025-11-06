@@ -1,6 +1,7 @@
 import SwiftUI
 import ManagedSettings
 import ActivityKit
+import FamilyControls
 
 struct BlockedView: View {
     @Binding var isBlocked: Bool
@@ -47,11 +48,30 @@ struct BlockedView: View {
                 
                 BlackRoundedBottom(action: {
                     // Feature 5: Desativa o schedule do dia se usuário desbloquear antes do fim
+                    // Nota: disableScheduleForToday() e manualUnblock() já chamam endBlocking() internamente,
+                    // então não precisamos chamar novamente aqui para evitar dupla contagem
                     if let currentSchedule = ScheduleManager.shared.currentSchedule {
                         ScheduleManager.shared.disableScheduleForToday(scheduleId: currentSchedule.id)
                     } else if ScheduleManager.shared.isBlockedBySchedule {
                         // Se há bloqueio por schedule mas não há schedule atual, desbloqueia manualmente
                         ScheduleManager.shared.manualUnblock()
+                    } else {
+                        // Caso não seja um schedule, precisa desbloquear manualmente e registrar fim
+                        // Obtém os apps bloqueados antes de desbloquear
+                        var blockedSelection: FamilyActivitySelection?
+                        if let modeName = UserDefaults.standard.string(forKey: "active_mode_name"),
+                           let data = UserDefaults.standard.data(forKey: "mode_\(modeName)_selection"),
+                           let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+                            blockedSelection = saved
+                        } else if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
+                                   let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+                            blockedSelection = saved
+                        }
+                        
+                        // Finaliza bloqueio por app apenas se não foi chamado por schedule
+                        if let selection = blockedSelection {
+                            AppBlockingTracker.shared.endBlocking(selection: selection, endDate: Date())
+                        }
                     }
                     
                     // Desbloqueia os apps

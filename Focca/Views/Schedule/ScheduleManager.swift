@@ -174,6 +174,22 @@ class ScheduleManager: ObservableObject {
     
     // Desbloqueia manualmente quando o usuário clica em "Unbrick"
     func manualUnblock() {
+        // Obtém os apps bloqueados antes de desbloquear
+        var blockedSelection: FamilyActivitySelection?
+        if let currentSchedule = currentSchedule,
+           let data = userDefaults.data(forKey: "mode_\(currentSchedule.modeName)_selection"),
+           let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+            blockedSelection = saved
+        } else if let modeName = userDefaults.string(forKey: "active_mode_name"),
+                  let data = userDefaults.data(forKey: "mode_\(modeName)_selection"),
+                  let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+            blockedSelection = saved
+        }
+        
+        // Finaliza bloqueio por app
+        if let selection = blockedSelection {
+            AppBlockingTracker.shared.endBlocking(selection: selection, endDate: Date())
+        }
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             // Se havia um schedule atual, marca como desativado para hoje para evitar reativação
@@ -327,6 +343,9 @@ class ScheduleManager: ObservableObject {
         userDefaults.set(schedule.modeName, forKey: "active_mode_name")
         userDefaults.set(saved.applicationTokens.count, forKey: "active_mode_app_count")
         
+        // Registra início de bloqueio por app
+        AppBlockingTracker.shared.startBlocking(selection: saved, startDate: now)
+        
         currentSchedule = schedule
         isBlockedBySchedule = true
         
@@ -348,10 +367,22 @@ class ScheduleManager: ObservableObject {
         
         print("🛑 [ScheduleManager] Desativando schedule '\(schedule.modeName)'")
         
+        // Obtém os apps bloqueados antes de desbloquear
+        var blockedSelection: FamilyActivitySelection?
+        if let data = userDefaults.data(forKey: "mode_\(schedule.modeName)_selection"),
+           let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+            blockedSelection = saved
+        }
+        
         let store = ManagedSettingsStore()
         store.application.blockedApplications = nil
         
         print("   ✅ Apps desbloqueados")
+        
+        // Finaliza bloqueio por app
+        if let selection = blockedSelection {
+            AppBlockingTracker.shared.endBlocking(selection: selection, endDate: Date())
+        }
         
         // Computa o tempo no TimerStorage
         if let startDate = userDefaults.object(forKey: "blocked_start_date") as? Date {
