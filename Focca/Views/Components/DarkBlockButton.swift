@@ -20,8 +20,8 @@ struct DarkBlockButton: View {
                             .stroke(
                                 LinearGradient(
                                     colors: [
-                                        Color.white.opacity(0.20),
-                                        Color.white.opacity(0.05)
+                                        Color.white.opacity(0.10),  // Reduzido de 0.20 para 0.10
+                                        Color.white.opacity(0.02)   // Reduzido de 0.05 para 0.02
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
@@ -89,7 +89,7 @@ struct DarkBlockButton: View {
                         .stroke(
                             LinearGradient(
                                 colors: [
-                                    Color.white.opacity(0.08),
+                                    Color.white.opacity(0.04),  // Reduzido de 0.08 para 0.04
                                     Color.black.opacity(0.6)
                                 ],
                                 startPoint: .top,
