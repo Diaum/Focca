@@ -26,7 +26,16 @@ jobs:
       # Step 3: Instalar dependências do projeto (Gems do Fastlane)
       - name: Install dependencies
         run: |
-          bundle install
+          if [ -f "Gemfile" ]; then
+            bundle install
+          else
+            echo "⚠️ Gemfile não encontrado. Criando Gemfile básico..."
+            cat > Gemfile << EOF
+          source "https://rubygems.org"
+          gem "fastlane"
+          EOF
+            bundle install
+          fi
       
       # Step 4: Executar o Fastlane para buildar e enviar ao TestFlight
       # O comando 'fastlane beta' deve estar configurado no Fastfile do projeto
