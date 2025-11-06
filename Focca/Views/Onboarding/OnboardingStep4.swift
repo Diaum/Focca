@@ -95,6 +95,13 @@ struct OnboardingStep4: View {
                         UserDefaults.standard.set("default", forKey: "active_mode_name")
                         UserDefaults.standard.set(saved.applicationTokens.count, forKey: "active_mode_app_count")
 
+                        // Marca o onboarding como completo
+                        UserDefaults.standard.set(true, forKey: "has_completed_onboarding")
+                        UserDefaults.standard.synchronize()
+                        
+                        // Notifica que o onboarding foi completado
+                        NotificationCenter.default.post(name: NSNotification.Name("OnboardingCompleted"), object: nil)
+
                         // Inicia timer
                         let now = Date()
                         sharedDefaults.set(now, forKey: "blocked_start_date")
