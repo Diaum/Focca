@@ -23,8 +23,6 @@ struct SettingsView: View {
 //            .overlay(ReferenceGrid(spacing: 24, color: .red.opacity(0.15)))
             
             VStack(spacing: 0) {
-                Spacer(minLength: 0)
-                
                 // Header card
                 RoundedRectangle(cornerRadius: 18)
                     .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white.opacity(0.85))
@@ -40,6 +38,7 @@ struct SettingsView: View {
                     )
                     .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
                     .padding(.horizontal, 16)
+                    .padding(.top, 16)
                     .padding(.bottom, 18)
                 
                 VStack(spacing: 14) {
