@@ -1,0 +1,46 @@
+name: Deploy to TestFlight
+
+# Trigger: Executa automaticamente quando há push na branch main
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Build and Deploy to TestFlight
+    runs-on: macos-latest
+    
+    steps:
+      # Step 1: Checkout do código do repositório
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      # Step 2: Configurar Ruby e instalar dependências do Bundler
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true # Cache automático do Gemfile.lock
+      
+      # Step 3: Instalar dependências do projeto (Gems do Fastlane)
+      - name: Install dependencies
+        run: |
+          bundle install
+      
+      # Step 4: Executar o Fastlane para buildar e enviar ao TestFlight
+      # O comando 'fastlane beta' deve estar configurado no Fastfile do projeto
+      # As variáveis de ambiente são passadas diretamente para o Fastlane
+      # O Fastlane detecta automaticamente essas variáveis para autenticação com App Store Connect
+      - name: Build and Upload to TestFlight
+        env:
+          # Variáveis de ambiente para autenticação com App Store Connect API
+          # Essas variáveis são configuradas como GitHub Secrets
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+          # Alternativamente, você pode usar o caminho do arquivo se preferir:
+          # APP_STORE_CONNECT_API_KEY_PATH: ${{ secrets.APP_STORE_CONNECT_API_KEY_PATH }}
+        run: |
+          bundle exec fastlane beta
+
