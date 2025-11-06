@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UserNotifications
+import FamilyControls
 
 @main
 struct FoccaApp: App {
@@ -32,6 +33,17 @@ struct FoccaApp: App {
                 print("✅ [FoccaApp] Permissão de notificações concedida")
             } else {
                 print("⚠️ [FoccaApp] Permissão de notificações negada")
+            }
+        }
+        
+        // Solicita permissão de Screen Time logo no início
+        Task {
+            let screenTimePermissions = ScreenTimePermissions()
+            let granted = await screenTimePermissions.requestAuthorization()
+            if granted {
+                print("✅ [FoccaApp] Permissão de Screen Time concedida")
+            } else {
+                print("⚠️ [FoccaApp] Permissão de Screen Time negada ou não determinada")
             }
         }
     }

@@ -1,8 +1,10 @@
 import SwiftUI
+import FamilyControls
 
 struct OnboardingStep1: View {
     @State private var showStep2 = false
     @State private var showStep3 = false
+    @State private var isRequestingPermission = false
     
     var body: some View {
         ZStack {
@@ -46,9 +48,11 @@ struct OnboardingStep1: View {
                             .padding(.bottom, 10)
 
                         Button(action: {
-                            showStep2 = true
+                            Task {
+                                await requestScreenTimePermission()
+                            }
                         }) {
-                            Text("Select apps to limit")
+                            Text(isRequestingPermission ? "Requesting permission..." : "Select apps to limit")
                                 .font(.system(size: 15, weight: .medium))
                                 .foregroundColor(.black)
                                 .frame(width: 200)
@@ -57,6 +61,7 @@ struct OnboardingStep1: View {
                                 .cornerRadius(25)
                                 .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
                         }
+                        .disabled(isRequestingPermission)
                         .padding(.bottom, 50)
                     }
                 }
@@ -73,6 +78,34 @@ struct OnboardingStep1: View {
         }
         .fullScreenCover(isPresented: $showStep3) {
             OnboardingStep3()
+        }
+    }
+    
+    private func requestScreenTimePermission() async {
+        isRequestingPermission = true
+        
+        let screenTimePermissions = ScreenTimePermissions()
+        
+        // Verifica o status atual
+        let status = screenTimePermissions.checkAuthorizationStatus()
+        
+        // Se não estiver autorizado, solicita permissão
+        if status != .approved {
+            let granted = await screenTimePermissions.requestAuthorization()
+            await MainActor.run {
+                isRequestingPermission = false
+                if granted {
+                    showStep2 = true
+                } else {
+                    // Permite abrir mesmo sem permissão, mas o OnboardingStep2 vai bloquear
+                    showStep2 = true
+                }
+            }
+        } else {
+            await MainActor.run {
+                isRequestingPermission = false
+                showStep2 = true
+            }
         }
     }
 }
