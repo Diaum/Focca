@@ -37,7 +37,19 @@ jobs:
             bundle install
           fi
       
-      # Step 4: Verificar e criar estrutura do Fastlane se necessário
+      # Step 4: Corrigir deployment target se necessário
+      # O iOS deployment target deve estar entre 12.0 e 18.5.99
+      - name: Fix iOS Deployment Target
+        run: |
+          # Corrige o deployment target para 18.5 (máximo suportado)
+          # Isso corrige o warning sobre IPHONEOS_DEPLOYMENT_TARGET = 18.6
+          if [ -f "Focca.xcodeproj/project.pbxproj" ]; then
+            # Usa perl para substituição portável (funciona em macOS e Linux)
+            perl -i -pe 's/IPHONEOS_DEPLOYMENT_TARGET = 18\.6/IPHONEOS_DEPLOYMENT_TARGET = 18.5/g' Focca.xcodeproj/project.pbxproj || true
+            echo "✅ Deployment target corrigido para 18.5"
+          fi
+      
+      # Step 5: Verificar e criar estrutura do Fastlane se necessário
       - name: Setup Fastlane
         run: |
           if [ ! -d "fastlane" ]; then
@@ -70,7 +82,7 @@ jobs:
           FASTFILE_EOF
           fi
       
-      # Step 5: Executar o Fastlane para buildar e enviar ao TestFlight
+      # Step 6: Executar o Fastlane para buildar e enviar ao TestFlight
       # O comando 'fastlane beta' deve estar configurado no Fastfile do projeto
       # As variáveis de ambiente são passadas diretamente para o Fastlane
       # O Fastlane detecta automaticamente essas variáveis para autenticação com App Store Connect

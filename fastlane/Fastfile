@@ -14,17 +14,27 @@ platform :ios do
     )
     
     # Builda o app usando xcodebuild
+    # IMPORTANTE: allowProvisioningUpdates permite que o Xcode gere/atualize profiles automaticamente
     build_app(
       scheme: "Focca",
+      project: "Focca.xcodeproj",
       export_method: "app-store",
       export_options: {
-        method: "app-store"
-        # Os provisioning profiles serão detectados automaticamente
+        method: "app-store",
+        signingStyle: "automatic",
+        teamID: "SKHUBRDPGV" # Seu Development Team ID
+        # O Fastlane detectará automaticamente os provisioning profiles
         # ou você pode especificar manualmente se necessário:
         # provisioningProfiles: {
-        #   "com.seuapp.bundleid" => "match AppStore com.seuapp.bundleid"
+        #   "focca.app.Focca" => "match AppStore focca.app.Focca",
+        #   "focca.app.Focca.FoccaWidgetLive" => "match AppStore focca.app.Focca.FoccaWidgetLive"
         # }
-      }
+      },
+      # Permite que o Xcode atualize provisioning profiles automaticamente
+      # Necessário para CI/CD onde não há acesso interativo ao Xcode
+      xcodebuild_args: [
+        "-allowProvisioningUpdates"
+      ]
     )
     
     # Faz upload para TestFlight usando App Store Connect API
