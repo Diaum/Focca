@@ -32,9 +32,8 @@ platform :ios do
       },
       # Permite que o Xcode atualize provisioning profiles automaticamente
       # Necessário para CI/CD onde não há acesso interativo ao Xcode
-      xcodebuild_args: [
-        "-allowProvisioningUpdates"
-      ]
+      # xcargs passa argumentos diretamente para o comando xcodebuild
+      xcargs: "-allowProvisioningUpdates"
     )
     
     # Faz upload para TestFlight usando App Store Connect API
