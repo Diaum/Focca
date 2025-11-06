@@ -123,6 +123,12 @@ struct UnlockedView: View {
             activeModeName = validMode
             activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ModeSaved"))) { _ in
+            // Atualiza quando um modo é criado
+            let validMode = getValidActiveMode()
+            activeModeName = validMode
+            activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+        }
         .onAppear {
             TimerStorage.shared.initializeFirstLaunch()
             updateTodayTime()

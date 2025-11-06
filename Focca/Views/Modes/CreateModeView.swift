@@ -204,7 +204,6 @@ struct CreateModeView: View {
                 
                 Button(action: {
                     saveMode()
-                    presentationMode.wrappedValue.dismiss()
                 }) {
                     Text("Save mode")
                         .font(.system(size: 17, weight: .semibold))
@@ -268,6 +267,23 @@ struct CreateModeView: View {
                         isActive: true
                     )
                     ScheduleManager.shared.saveSchedule(schedule)
+                    
+                    // Agenda notificações normais
+                    NotificationManager.shared.scheduleNotification(for: schedule)
+                    
+                    // Verifica se o schedule começa em menos de 10 minutos
+                    let now = Date()
+                    let scheduleStartToday = calendar.date(bySettingHour: startComps.hour ?? 0, minute: startComps.minute ?? 0, second: 0, of: now)
+                    if let startDate = scheduleStartToday, startDate > now {
+                        let minutesUntilStart = startDate.timeIntervalSince(now) / 60.0
+                        // Se começa em menos de 10 minutos mas mais de 3 minutos, agenda notificação para 3 minutos
+                        if minutesUntilStart < 10 && minutesUntilStart > 3 {
+                            Task {
+                                await NotificationManager.shared.scheduleNotificationIn3Minutes(for: schedule)
+                            }
+                        }
+                    }
+                    
                     print("✅ Schedule salvo para o modo '\(modeName)'")
                 } else {
                     print("⚠️ Schedule inválido: duração mínima de 5 minutos não atendida")
@@ -280,14 +296,11 @@ struct CreateModeView: View {
             
             UserDefaults.standard.synchronize()
             
-            if let verifyData = UserDefaults.standard.data(forKey: selectionKey) {
-                print("✅ Verification: Data exists for '\(selectionKey)', size: \(verifyData.count) bytes")
-            } else {
-                print("❌ Verification: NO data found for '\(selectionKey)'")
-            }
+            // Envia notificação para fechar o sheet e navegar para UnlockedView
+            NotificationCenter.default.post(name: NSNotification.Name("ModeSaved"), object: nil)
             
-            let verifyExists = UserDefaults.standard.bool(forKey: existsKey)
-            print("✅ Verification: exists flag = \(verifyExists)")
+            // Fecha o CreateModeView
+            presentationMode.wrappedValue.dismiss()
         } else {
             print("❌ Failed to save mode")
             if !canSave {
@@ -295,8 +308,6 @@ struct CreateModeView: View {
             }
         }
     }
-    
-    // Feature 3: Verifica se o schedule cruza meia-noite
     private func crossesMidnight() -> Bool {
         let calendar = Calendar.current
         let startComps = calendar.dateComponents([.hour, .minute], from: startTime)
