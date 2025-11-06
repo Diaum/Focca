@@ -73,8 +73,7 @@ struct NotificationContent {
                     identifier: "appIcon",
                     url: imageURL,
                     options: [
-                        .thumbnailHidden: false,
-                        .thumbnailClippingRect: CGRect(x: 0, y: 0, width: 1, height: 1)
+                        UNNotificationAttachmentOptionsTypeHintKey: "public.png"
                     ]
                 ) {
                     content.attachments = [attachment]

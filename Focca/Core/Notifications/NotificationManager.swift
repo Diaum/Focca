@@ -1,5 +1,6 @@
 import Foundation
 import UserNotifications
+import UIKit
 
 /// Gerenciador principal de notificações
 /// Orquestra os componentes para agendar, cancelar e gerenciar notificações
@@ -89,8 +90,7 @@ class NotificationManager {
                         identifier: "appIcon",
                         url: imageURL,
                         options: [
-                            .thumbnailHidden: false,
-                            .thumbnailClippingRect: CGRect(x: 0, y: 0, width: 1, height: 1)
+                            UNNotificationAttachmentOptionsTypeHintKey: "public.png"
                         ]
                     ) {
                         content.attachments = [attachment]
