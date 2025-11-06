@@ -29,9 +29,6 @@ struct DailyDetailView: View {
                 endPoint: .bottom
             )
             .ignoresSafeArea()
-            .onAppear {
-                print("✅ [DailyDetailView] Gradient apareceu - date: \(date), totalTime: \(totalTime)")
-            }
             
             VStack(spacing: 0) {
                 // Header com botão de voltar
@@ -110,7 +107,6 @@ struct DailyDetailView: View {
             }
         }
         .onAppear {
-            print("✅ [DailyDetailView] onAppear chamado - date: \(date), totalTime: \(totalTime)")
             loadAppDetails()
         }
     }

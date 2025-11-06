@@ -80,15 +80,11 @@ struct ActivityView: View {
                                     time: card.time,
                                     isBlocked: isBlocked,
                                     onTap: {
-                                        print("🖱️ [ActivityView] DailyCard clicado - date: \(card.date), time: \(card.time)")
                                         // Define os valores primeiro de forma síncrona
                                         selectedDate = card.date
                                         selectedTime = card.time
-                                        print("✅ [ActivityView] selectedDate definido: \(selectedDate?.description ?? "nil")")
-                                        print("✅ [ActivityView] selectedTime definido: \(selectedTime)")
                                         // Aciona o fullScreenCover imediatamente após definir os valores
                                         showDailyDetail = true
-                                        print("✅ [ActivityView] showDailyDetail = true")
                                     }
                                 )
                             }
@@ -114,50 +110,14 @@ struct ActivityView: View {
                 .presentationCornerRadius(30)
         }
         .fullScreenCover(isPresented: $showDailyDetail) {
-            Group {
-                if let date = selectedDate {
-                    DailyDetailView(date: date, totalTime: selectedTime)
-                        .onAppear {
-                            print("✅ [ActivityView] DailyDetailView apareceu - date: \(date), time: \(selectedTime)")
-                        }
-                        .onDisappear {
-                            print("❌ [ActivityView] DailyDetailView desapareceu")
-                            // Limpa a seleção quando a view é fechada
-                            selectedDate = nil
-                            selectedTime = 0
-                        }
-                } else {
-                    // Fallback: mostra uma view vazia se selectedDate for nil
-                    VStack {
-                        Text("Erro: selectedDate é nil")
-                            .foregroundColor(.red)
-                            .padding()
-                        Text("showDailyDetail: \(showDailyDetail ? "true" : "false")")
-                            .foregroundColor(.red)
-                            .padding()
+            if let date = selectedDate {
+                DailyDetailView(date: date, totalTime: selectedTime)
+                    .onDisappear {
+                        // Limpa a seleção quando a view é fechada
+                        selectedDate = nil
+                        selectedTime = 0
                     }
-                    .background(Color.white)
-                    .onAppear {
-                        print("⚠️ [ActivityView] Fallback apareceu - selectedDate é nil, showDailyDetail: \(showDailyDetail)")
-                        // Se selectedDate ainda for nil, fecha a view imediatamente
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                            if selectedDate == nil {
-                                print("❌ [ActivityView] Fechando fullScreenCover porque selectedDate é nil")
-                                showDailyDetail = false
-                            }
-                        }
-                    }
-                }
             }
-            .onAppear {
-                print("📱 [ActivityView] fullScreenCover apareceu - showDailyDetail: \(showDailyDetail), selectedDate: \(selectedDate != nil ? "definido" : "nil")")
-            }
-        }
-        .onChange(of: showDailyDetail) { newValue in
-            print("🔄 [ActivityView] showDailyDetail mudou para: \(newValue)")
-        }
-        .onChange(of: selectedDate) { newValue in
-            print("🔄 [ActivityView] selectedDate mudou para: \(newValue?.description ?? "nil")")
         }
         .preferredColorScheme(isBlocked ? .dark : .light)
         .onAppear {
