@@ -253,6 +253,8 @@ struct EditModeView: View {
                 VStack(spacing: 12) {
                     Button(action: {
                         if saveMode() {
+                            // Notifica que o modo foi salvo e deve fechar o ModeSelectionSheet também
+                            NotificationCenter.default.post(name: NSNotification.Name("ModeSaved"), object: nil)
                             presentationMode.wrappedValue.dismiss()
                         }
                     }) {

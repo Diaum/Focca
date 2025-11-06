@@ -118,6 +118,11 @@ struct ModeSelectionSheet: View {
                     NotificationCenter.default.post(name: NSNotification.Name("ModeDataUpdated"), object: nil)
                 }
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ModeSaved"))) { _ in
+            // Quando um modo é salvo, fecha o ModeSelectionSheet também
+            print("📥 [ModeSelectionSheet] Modo salvo, fechando sheet")
+            presentationMode.wrappedValue.dismiss()
+        }
         .onAppear {
             loadModeNames()
             loadSelectedMode()
