@@ -113,6 +113,9 @@ struct ModeSelectionSheet: View {
                 .presentationCornerRadius(30)
                 .onDisappear {
                     loadModeNames()
+                    loadSelectedMode()
+                    // Notifica que os dados foram atualizados
+                    NotificationCenter.default.post(name: NSNotification.Name("ModeDataUpdated"), object: nil)
                 }
         }
         .onAppear {
@@ -135,15 +138,31 @@ struct ModeSelectionSheet: View {
             }
         }
         
+        // Obtém o modo selecionado
+        let selectedMode = UserDefaults.standard.string(forKey: "active_mode_name") ?? ""
+        
         var modes: [(name: String, lastUsed: Date)] = []
         for name in names {
             let lastUsed = UserDefaults.standard.object(forKey: "mode_\(name)_last_used") as? Date ?? Date.distantPast
             modes.append((name: name, lastUsed: lastUsed))
             print("   - Mode '\(name)' last used: \(lastUsed)")
         }
-        modes.sort { $0.lastUsed > $1.lastUsed }
+        
+        // Ordena: primeiro o modo selecionado (se existir), depois por uso (mais recente primeiro)
+        modes.sort { mode1, mode2 in
+            // Se um deles é o modo selecionado, ele vem primeiro
+            if mode1.name == selectedMode && mode2.name != selectedMode {
+                return true
+            }
+            if mode2.name == selectedMode && mode1.name != selectedMode {
+                return false
+            }
+            // Se ambos são ou não são selecionados, ordena por uso
+            return mode1.lastUsed > mode2.lastUsed
+        }
+        
         modeNames = modes.map { $0.name }
-        print("🔄 ModeSelectionSheet - Loaded \(modeNames.count) modes")
+        print("🔄 ModeSelectionSheet - Loaded \(modeNames.count) modes (selected: '\(selectedMode)')")
     }
     
     private var canCreateMode: Bool {

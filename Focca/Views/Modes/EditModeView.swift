@@ -474,6 +474,13 @@ struct EditModeView: View {
                 ScheduleManager.shared.saveSchedule(schedule)
             }
         }
+        
+        // Atualiza o contador de apps se este modo estiver ativo
+        let activeModeName = UserDefaults.standard.string(forKey: "active_mode_name")
+        if activeModeName == finalModeName {
+            UserDefaults.standard.set(selection.applicationTokens.count, forKey: "active_mode_app_count")
+            print("✅ [EditModeView] Atualizado contador de apps para modo ativo: \(selection.applicationTokens.count) apps")
+        }
 
         return true
     }

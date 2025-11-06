@@ -6,6 +6,8 @@ import FamilyControls
 struct BlockedView: View {
     @Binding var isBlocked: Bool
     @Binding var selectedTab: Int
+    @State private var activeModeName: String = "-"
+    @State private var activeModeCount: Int = 0
 
     private let sharedDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
     
@@ -33,12 +35,12 @@ struct BlockedView: View {
                 
                 VStack(spacing: 6) {
                     HStack(spacing: 6) {
-                        Text("Mode : \(UserDefaults.standard.string(forKey: "active_mode_name") ?? "-")")
+                        Text("Mode : \(activeModeName)")
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.white)
                     }
                     
-                    Text("Blocking \(UserDefaults.standard.integer(forKey: "active_mode_app_count")) apps")
+                    Text("Blocking \(activeModeCount) apps")
                         .font(.system(size: 13))
                         .foregroundColor(Color(hex: "8A8A8E"))
                 }
@@ -95,6 +97,18 @@ struct BlockedView: View {
             }
         }
         .preferredColorScheme(.dark)
+        .onAppear {
+            updateModeInfo()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ModeDataUpdated"))) { _ in
+            // Atualiza o contador quando um modo é editado
+            updateModeInfo()
+        }
+    }
+    
+    private func updateModeInfo() {
+        activeModeName = UserDefaults.standard.string(forKey: "active_mode_name") ?? "-"
+        activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
     }
 
     private func stopLiveActivity() {

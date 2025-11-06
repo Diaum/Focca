@@ -117,6 +117,12 @@ struct UnlockedView: View {
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(30)
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ModeDataUpdated"))) { _ in
+            // Atualiza o contador quando um modo é editado
+            let validMode = getValidActiveMode()
+            activeModeName = validMode
+            activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+        }
         .onAppear {
             TimerStorage.shared.initializeFirstLaunch()
             updateTodayTime()

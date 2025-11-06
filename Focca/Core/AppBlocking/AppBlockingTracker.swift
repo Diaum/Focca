@@ -52,26 +52,47 @@ class AppBlockingTracker {
             sessions: []
         )
         
-        // Finaliza todas as sessões ativas (endDate == nil) antes de criar novas
-        // Isso garante que não haja sessões duplicadas ou órfãs
+        // Verifica quais apps já têm sessões ativas
+        let activeHashes = Set(dailyBlocking.sessions.filter { $0.endDate == nil }.map { $0.appTokenHash })
+        let newHashes = Set(appHashes)
+        
+        // Se os mesmos apps já estão bloqueados, não faz nada (evita resetar)
+        if activeHashes == newHashes && !activeHashes.isEmpty {
+            print("📱 [AppBlockingTracker] Bloqueio já está ativo para estes apps, mantendo sessões existentes")
+            return
+        }
+        
+        // Finaliza apenas as sessões ativas de apps que não estão mais na nova lista
+        // ou se a lista de apps mudou
+        let hashesToRemove = activeHashes.subtracting(newHashes)
         for index in dailyBlocking.sessions.indices {
             if dailyBlocking.sessions[index].endDate == nil {
-                dailyBlocking.sessions[index] = AppBlockingSession(
-                    appTokenHash: dailyBlocking.sessions[index].appTokenHash,
-                    startDate: dailyBlocking.sessions[index].startDate,
-                    endDate: startDate // Finaliza no momento do novo bloqueio
-                )
+                let hash = dailyBlocking.sessions[index].appTokenHash
+                // Se o app não está mais na nova lista, finaliza a sessão
+                if hashesToRemove.contains(hash) {
+                    dailyBlocking.sessions[index] = AppBlockingSession(
+                        appTokenHash: hash,
+                        startDate: dailyBlocking.sessions[index].startDate,
+                        endDate: startDate
+                    )
+                }
             }
         }
         
-        // Cria uma nova sessão para cada app
+        // Cria uma nova sessão apenas para apps que não têm sessão ativa
         for hash in appHashes {
-            let session = AppBlockingSession(
-                appTokenHash: hash,
-                startDate: startDate,
-                endDate: nil
-            )
-            dailyBlocking.sessions.append(session)
+            let hasActiveSession = dailyBlocking.sessions.contains { 
+                $0.appTokenHash == hash && $0.endDate == nil 
+            }
+            
+            if !hasActiveSession {
+                let session = AppBlockingSession(
+                    appTokenHash: hash,
+                    startDate: startDate,
+                    endDate: nil
+                )
+                dailyBlocking.sessions.append(session)
+            }
         }
         
         saveDailyBlocking(dailyBlocking, for: dateKey)
