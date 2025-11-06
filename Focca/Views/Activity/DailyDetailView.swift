@@ -185,7 +185,7 @@ struct AppBlockingRow: View {
     let time: TimeInterval
     let isBlocked: Bool
     
-    @State private var appSelection: FamilyActivitySelection?
+    @State private var appToken: ApplicationToken?
     
     private var formattedTime: String {
         let hours = Int(time) / 3600
@@ -199,8 +199,7 @@ struct AppBlockingRow: View {
     
     var body: some View {
         HStack(spacing: 16) {
-            if let selection = appSelection,
-               let token = selection.applicationTokens.first(where: { $0.hashValue == tokenHash }) {
+            if let token = appToken {
                 Label(token)
                     .labelStyle(.iconOnly)
                     .frame(width: 48, height: 48)
@@ -215,17 +214,18 @@ struct AppBlockingRow: View {
             }
             
             VStack(alignment: .leading, spacing: 4) {
-                if let selection = appSelection,
-                   let token = selection.applicationTokens.first(where: { $0.hashValue == tokenHash }) {
+                if let token = appToken {
                     Label(token)
                         .labelStyle(.titleOnly)
                         .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                        .foregroundColor(isBlocked ? Color.white : Color(hex: "1C1C1E"))
+                        .tint(isBlocked ? Color.white : Color(hex: "1C1C1E"))
                         .lineLimit(1)
+                        .colorScheme(isBlocked ? .dark : .light)
                 } else {
                     Text("Unknown App")
                         .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                        .foregroundColor(isBlocked ? Color.white : Color(hex: "1C1C1E"))
                 }
                 
                 Text("Blocked for \(formattedTime)")
@@ -250,10 +250,11 @@ struct AppBlockingRow: View {
         for key in modeKeys {
             if let data = UserDefaults.standard.data(forKey: key),
                let selection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
-                if selection.applicationTokens.contains(where: { $0.hashValue == tokenHash }) {
+                if let token = selection.applicationTokens.first(where: { $0.hashValue == tokenHash }) {
                     DispatchQueue.main.async {
-                        self.appSelection = selection
+                        self.appToken = token
                     }
+                    print("✅ [AppBlockingRow] Token encontrado para hash \(tokenHash) no modo \(key)")
                     return
                 }
             }
@@ -262,12 +263,16 @@ struct AppBlockingRow: View {
         // Também verifica a seleção padrão
         if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
            let selection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
-            if selection.applicationTokens.contains(where: { $0.hashValue == tokenHash }) {
+            if let token = selection.applicationTokens.first(where: { $0.hashValue == tokenHash }) {
                 DispatchQueue.main.async {
-                    self.appSelection = selection
+                    self.appToken = token
                 }
+                print("✅ [AppBlockingRow] Token encontrado para hash \(tokenHash) na seleção padrão")
+                return
             }
         }
+        
+        print("⚠️ [AppBlockingRow] Token não encontrado para hash \(tokenHash)")
     }
 }
 
