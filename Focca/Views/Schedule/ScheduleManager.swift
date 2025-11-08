@@ -16,6 +16,9 @@ class ScheduleManager: ObservableObject {
     private init() {
         print("📅 [ScheduleManager] Inicializando ScheduleManager...")
         startMonitoring()
+        
+        // Verifica se há um schedule pendente para ativação (quando notificação foi entregue em background)
+        checkPendingScheduleActivation()
     }
     
     // Inicia o monitoramento de schedules (verifica a cada minuto)
@@ -36,6 +39,28 @@ class ScheduleManager: ObservableObject {
     func stopMonitoring() {
         timer?.invalidate()
         timer = nil
+    }
+    
+    // Verifica se há um schedule pendente para ativação (quando notificação foi entregue em background)
+    private func checkPendingScheduleActivation() {
+        let userDefaults = UserDefaults.standard
+        guard userDefaults.bool(forKey: "pending_schedule_activation") else {
+            return
+        }
+        
+        // Limpa a flag pendente
+        userDefaults.removeObject(forKey: "pending_schedule_activation")
+        userDefaults.removeObject(forKey: "pending_schedule_id")
+        userDefaults.removeObject(forKey: "pending_schedule_timestamp")
+        userDefaults.removeObject(forKey: "should_check_schedules_on_launch")
+        userDefaults.synchronize()
+        
+        print("📅 [ScheduleManager] Schedule pendente detectado, verificando schedules...")
+        
+        // Verifica e ativa schedules imediatamente
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.checkSchedules()
+        }
     }
     
     // Carrega todos os schedules salvos (incluindo inativos)

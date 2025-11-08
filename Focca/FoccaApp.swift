@@ -26,6 +26,15 @@ struct FoccaApp: App {
         
         print("🔔 [FoccaApp] NotificationDelegate configurado")
         
+        // Verifica se há um schedule pendente para ativação (quando notificação foi entregue em background)
+        let userDefaults = UserDefaults.standard
+        if userDefaults.bool(forKey: "should_check_schedules_on_launch") {
+            print("📱 [FoccaApp] Verificando schedules pendentes na inicialização...")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                ScheduleManager.shared.checkSchedules()
+            }
+        }
+        
         // Solicita permissão para notificações
         Task {
             let granted = await NotificationManager.shared.requestAuthorization()

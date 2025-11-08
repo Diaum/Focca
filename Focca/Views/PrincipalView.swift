@@ -41,6 +41,14 @@ struct PrincipalView: View {
             let groupBlocked = appGroupDefaults.object(forKey: "blocked_start_date") != nil
             isBlocked = scheduleManager.isBlockedBySchedule || stdBlocked || groupBlocked
             
+            // Verifica se há um schedule pendente para ativação (quando notificação foi entregue em background)
+            let userDefaults = UserDefaults.standard
+            if userDefaults.bool(forKey: "should_check_schedules_on_launch") {
+                print("📱 [PrincipalView] Verificando schedules pendentes ao abrir o app...")
+                userDefaults.removeObject(forKey: "should_check_schedules_on_launch")
+                userDefaults.synchronize()
+            }
+            
             // Verifica e ativa schedules que deveriam estar ativos (ativação automática em background)
             // Isso garante que mesmo se a notificação não for processada, o schedule será ativado ao abrir o app
             scheduleManager.checkSchedules()
@@ -49,8 +57,15 @@ struct PrincipalView: View {
             LiveActivityManager.checkAndStartPendingLiveActivity()
         }
         .onChange(of: scenePhase) { newPhase in
-            // Quando o app volta ao foreground, verifica e inicia Live Activity pendente
+            // Quando o app volta ao foreground, verifica schedules pendentes e inicia Live Activity pendente
             if newPhase == .active {
+                let userDefaults = UserDefaults.standard
+                if userDefaults.bool(forKey: "should_check_schedules_on_launch") {
+                    print("📱 [PrincipalView] Verificando schedules pendentes ao voltar ao foreground...")
+                    userDefaults.removeObject(forKey: "should_check_schedules_on_launch")
+                    userDefaults.synchronize()
+                    scheduleManager.checkSchedules()
+                }
                 LiveActivityManager.checkAndStartPendingLiveActivity()
             }
         }
