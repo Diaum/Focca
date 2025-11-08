@@ -19,10 +19,12 @@ struct DailyCard: View {
         return formatter.string(from: date).uppercased()
     }
     
-    private var formattedTime: String {
-        let hours = Int(time) / 3600
-        let minutes = (Int(time) % 3600) / 60
-        return String(format: "%dh\n%02dm", hours, minutes)
+    private var hours: Int {
+        Int(time) / 3600
+    }
+    
+    private var minutes: Int {
+        (Int(time) % 3600) / 60
     }
     
     var body: some View {
@@ -35,10 +37,16 @@ struct DailyCard: View {
                     .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8A8A8E"))
                     .multilineTextAlignment(.center)
                 
-                Text(formattedTime)
-                    .font(.system(size: 20, weight: .light))
-                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
-                    .multilineTextAlignment(.center)
+                VStack(spacing: 0) {
+                    Text("\(hours)h")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                    
+                    Text(String(format: "%02dm", minutes))
+                        .font(.system(size: 20, weight: .light))
+                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                }
+                .multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 20)

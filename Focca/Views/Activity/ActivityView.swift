@@ -35,7 +35,7 @@ struct ActivityView: View {
             VStack(spacing: 0) {
                 Spacer(minLength: 30)
                 
-                HStack(spacing: 40) {
+                HStack(spacing: 80) {
                     VStack(spacing: 4) {
                         Text("Today")
                             .font(.system(size: 15, weight: .medium))
@@ -60,13 +60,12 @@ struct ActivityView: View {
                 .padding(.bottom, 60)
                 
                 if dailyCards.isEmpty {
-                    Spacer()
-                    
                     Text("Activities will appear after your first day using Brick")
                         .font(.system(size: 15, weight: .regular))
                         .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "9E9EA3"))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
+                        .padding(.top, 40)
 
                 } else {
                     ScrollView {

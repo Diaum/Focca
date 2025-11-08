@@ -36,7 +36,18 @@ class TimerStorage {
     
     func addDailyTime(_ timeInterval: TimeInterval, for date: Date) {
         let dateKey = formatDate(date)
-        let currentTime = getDailyTime(for: date)
+        
+        // CRÍTICO: Se o AppBlockingTracker já tem dados para esta data,
+        // NÃO adiciona tempo ao daily_time_ para evitar duplicação.
+        // O AppBlockingTracker é a fonte principal de verdade.
+        let appBlockingTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
+        if appBlockingTime > 0 {
+            print("⚠️ [TimerStorage] AppBlockingTracker já tem dados para \(dateKey), ignorando addDailyTime para evitar duplicação")
+            return
+        }
+        
+        // Só adiciona ao daily_time_ se o AppBlockingTracker não tem dados (fallback para dados antigos)
+        let currentTime = userDefaults.double(forKey: "daily_time_\(dateKey)")
         let newTime = currentTime + timeInterval
         userDefaults.set(newTime, forKey: "daily_time_\(dateKey)")
     }

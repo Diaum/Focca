@@ -230,17 +230,81 @@ class AppBlockingTracker {
         print("📱 [AppBlockingTracker] Finalizado bloqueio para \(appHashes.count) apps")
     }
     
-    /// Retorna o tempo total bloqueado em uma data específica (soma de todos os apps)
+    /// Retorna o tempo total bloqueado em uma data específica
+    /// IMPORTANTE: Calcula o tempo de bloqueio geral (união de todos os períodos de bloqueio),
+    /// não a soma dos tempos de cada app individualmente.
+    /// Se múltiplos apps estão bloqueados ao mesmo tempo, conta apenas uma vez.
     func getTotalBlockingTime(for date: Date) -> TimeInterval {
         let dateKey = formatDate(date)
         guard let dailyBlocking = loadDailyBlocking(for: dateKey) else {
             return 0
         }
         
-        // Calcula o tempo total diretamente sem limpeza automática
-        // (a limpeza deve ser feita manualmente quando necessário)
-        let timesByApp = dailyBlocking.totalTimeByApp
-        let totalTime = timesByApp.values.reduce(0, +)
+        // Calcula o tempo total baseado na união de todos os períodos de bloqueio
+        // Isso garante que se múltiplos apps estão bloqueados ao mesmo tempo,
+        // o tempo total seja o período de bloqueio geral, não a soma dos tempos individuais
+        let calendar = Calendar.current
+        let dayStart = calendar.startOfDay(for: date)
+        let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart)!
+        let now = Date()
+        
+        // Cria uma lista de intervalos de bloqueio (start, end) para todas as sessões
+        var blockingIntervals: [(start: Date, end: Date)] = []
+        
+        for session in dailyBlocking.sessions {
+            // Ignora sessões muito curtas (< 5 segundos)
+            let sessionStart = session.startDate
+            let sessionEnd = session.endDate ?? now
+            
+            // Ajusta para o início e fim do dia
+            let adjustedStart = max(sessionStart, dayStart)
+            let adjustedEnd = min(sessionEnd, dayEnd)
+            
+            // Só adiciona se a sessão tem duração válida e está dentro do dia
+            if adjustedEnd > adjustedStart {
+                let duration = adjustedEnd.timeIntervalSince(adjustedStart)
+                if duration >= 5.0 {
+                    blockingIntervals.append((start: adjustedStart, end: adjustedEnd))
+                }
+            }
+        }
+        
+        // Se não há intervalos, retorna 0
+        guard !blockingIntervals.isEmpty else {
+            return 0
+        }
+        
+        // Ordena os intervalos por data de início
+        blockingIntervals.sort { $0.start < $1.start }
+        
+        // Calcula a união de todos os intervalos (merge de intervalos sobrepostos)
+        var mergedIntervals: [(start: Date, end: Date)] = []
+        var currentInterval = blockingIntervals[0]
+        
+        for i in 1..<blockingIntervals.count {
+            let nextInterval = blockingIntervals[i]
+            
+            // Se o próximo intervalo se sobrepõe ou é adjacente ao atual, merge
+            if nextInterval.start <= currentInterval.end {
+                // Merge: estende o intervalo atual até o fim do próximo
+                currentInterval = (
+                    start: currentInterval.start,
+                    end: max(currentInterval.end, nextInterval.end)
+                )
+            } else {
+                // Não se sobrepõe: adiciona o intervalo atual e começa um novo
+                mergedIntervals.append(currentInterval)
+                currentInterval = nextInterval
+            }
+        }
+        
+        // Adiciona o último intervalo
+        mergedIntervals.append(currentInterval)
+        
+        // Calcula o tempo total somando a duração de todos os intervalos mesclados
+        let totalTime = mergedIntervals.reduce(0.0) { total, interval in
+            total + interval.end.timeIntervalSince(interval.start)
+        }
         
         return totalTime
     }
