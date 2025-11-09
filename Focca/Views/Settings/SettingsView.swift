@@ -20,10 +20,8 @@ struct SettingsView: View {
                 endPoint: .bottom
             )
             .ignoresSafeArea()
-//            .overlay(ReferenceGrid(spacing: 24, color: .red.opacity(0.15)))
             
             VStack(spacing: 0) {
-                // Header card
                 RoundedRectangle(cornerRadius: 18)
                     .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white.opacity(0.85))
                     .frame(height: 66)
@@ -50,6 +48,17 @@ struct SettingsView: View {
                             SettingsItem(title: "Privacy Policy", hasArrow: true)
                         ],
                         showNotificationsView: $showNotificationsView,
+                        selectedTab: $selectedTab,
+                        isBlocked: isBlocked
+                    )
+                    
+                    SettingsSection(
+                        title: nil,
+                        items: [
+                            SettingsItem(title: "Awards", hasArrow: true, action: .awards)
+                        ],
+                        showNotificationsView: $showNotificationsView,
+                        selectedTab: $selectedTab,
                         isBlocked: isBlocked
                     )
                     
@@ -59,6 +68,7 @@ struct SettingsView: View {
                             SettingsItem(title: "Emergency Unblock", subtitle: "4 remaining", hasArrow: true)
                         ],
                         showNotificationsView: $showNotificationsView,
+                        selectedTab: $selectedTab,
                         isBlocked: isBlocked
                     )
                     
@@ -68,6 +78,7 @@ struct SettingsView: View {
                             SettingsItem(title: "Strict mode", hasArrow: false)
                         ],
                         showNotificationsView: $showNotificationsView,
+                        selectedTab: $selectedTab,
                         isBlocked: isBlocked
                     )
                     
@@ -77,6 +88,7 @@ struct SettingsView: View {
                             SettingsItem(title: "Questions", hasToggle: true, isToggledOn: true)
                         ],
                         showNotificationsView: $showNotificationsView,
+                        selectedTab: $selectedTab,
                         isBlocked: isBlocked
                     )
                     
@@ -86,6 +98,7 @@ struct SettingsView: View {
                             SettingsItem(title: "Troubleshooting", hasArrow: true)
                         ],
                         showNotificationsView: $showNotificationsView,
+                        selectedTab: $selectedTab,
                         isBlocked: isBlocked
                     )
                     
@@ -113,6 +126,7 @@ struct SettingsSection: View {
     let title: String?
     let items: [SettingsItem]
     @Binding var showNotificationsView: Bool
+    @Binding var selectedTab: Int
     let isBlocked: Bool
     
     var body: some View {
@@ -129,7 +143,7 @@ struct SettingsSection: View {
             
             VStack(spacing: 0) {
                 ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-                    SettingsRow(item: item, showNotificationsView: $showNotificationsView, isBlocked: isBlocked)
+                    SettingsRow(item: item, showNotificationsView: $showNotificationsView, selectedTab: $selectedTab, isBlocked: isBlocked)
                     if index < items.count - 1 {
                         Divider()
                             .background(isBlocked ? Color(hex: "38383A") : Color(hex: "C6C6C8"))
@@ -149,6 +163,7 @@ struct SettingsSection: View {
 struct SettingsRow: View {
     let item: SettingsItem
     @Binding var showNotificationsView: Bool
+    @Binding var selectedTab: Int
     let isBlocked: Bool
     
     var body: some View {
@@ -156,6 +171,8 @@ struct SettingsRow: View {
             switch item.action {
             case .notifications:
                 showNotificationsView = true
+            case .awards:
+                selectedTab = 2
             case .none:
                 break
             }
@@ -195,6 +212,7 @@ struct SettingsRow: View {
 enum SettingsAction {
     case none
     case notifications
+    case awards
 }
 
 struct SettingsItem {

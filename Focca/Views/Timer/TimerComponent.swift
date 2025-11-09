@@ -83,6 +83,15 @@ class TimerManager: ObservableObject {
         DispatchQueue.main.async { [weak self] in
             guard let self = self, newTime != self.elapsedTime else { return }
             self.elapsedTime = newTime
+            
+            let hours = Int(elapsed) / 3600
+            let minutes = (Int(elapsed) % 3600) / 60
+            
+            if hours >= 1 {
+                AwardManager.shared.checkFocusDurationAward(duration: elapsed, awardId: "1_hour_focus")
+            } else if minutes >= 30 {
+                AwardManager.shared.checkFocusDurationAward(duration: elapsed, awardId: "30_min_focus")
+            }
         }
     }
     

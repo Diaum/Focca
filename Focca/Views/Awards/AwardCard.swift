@@ -1,16 +1,22 @@
 import SwiftUI
 
 struct AwardCard: View {
+    let awardId: String
     let icon: String
     let title: String
     let subtitle: String
     let tint: Color
+    @ObservedObject private var awardManager = AwardManager.shared
+
+    var isUnlocked: Bool {
+        awardManager.isAwardUnlocked(awardId)
+    }
 
     var body: some View {
         HStack(spacing: 14) {
             ZStack {
                 Circle()
-                    .fill(tint.opacity(0.12))
+                    .fill(tint.opacity(isUnlocked ? 0.2 : 0.12))
                     .frame(width: 44, height: 44)
                 Image(systemName: icon)
                     .font(.system(size: 18, weight: .semibold))
@@ -29,12 +35,12 @@ struct AwardCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             Capsule()
-                .fill(Color(hex: "E5E5EA"))
+                .fill(isUnlocked ? Color(hex: "34C759") : Color(hex: "E5E5EA"))
                 .frame(width: 74, height: 26)
                 .overlay(
-                    Text("Locked")
+                    Text(isUnlocked ? "Unlocked" : "Locked")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(Color(hex: "6B7280"))
+                        .foregroundColor(isUnlocked ? .white : Color(hex: "6B7280"))
                 )
         }
         .padding(.vertical, 12)
@@ -51,12 +57,14 @@ struct AwardCard_Previews: PreviewProvider {
     static var previews: some View {
         VStack(spacing: 14) {
             AwardCard(
+                awardId: "30_min_focus",
                 icon: "timer",
                 title: "30 minutes focused",
                 subtitle: "Stay focused for 30 minutes in a single session",
                 tint: Color(hex: "1C1C1E")
             )
             AwardCard(
+                awardId: "7_day_streak",
                 icon: "flame",
                 title: "7-day streak",
                 subtitle: "Use Focca seven days in a row",

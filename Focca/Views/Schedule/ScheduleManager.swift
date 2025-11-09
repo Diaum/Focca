@@ -380,12 +380,12 @@ class ScheduleManager: ObservableObject {
         currentSchedule = schedule
         isBlockedBySchedule = true
         
+        AwardManager.shared.markScheduleActivated()
+        
         print("   ✅ Schedule ativado com sucesso!")
         
-        // Notifica o app para mudar para BlockedView
         NotificationCenter.default.post(name: NSNotification.Name("ScheduleActivated"), object: nil)
 
-        // Inicia Live Activity
         LiveActivityManager.startIfSupported(startDate: existingStartDate)
     }
     
