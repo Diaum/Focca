@@ -87,113 +87,50 @@ class AppBlockingTracker {
             sessions: []
         )
         
-        print("📱 [AppBlockingTracker] startBlocking chamado para \(appHashes.count) apps na data \(dateKey)")
-        print("   - Sessões existentes (TODAS): \(dailyBlocking.sessions.count)")
-        print("   - Sessões ativas: \(dailyBlocking.sessions.filter { $0.endDate == nil }.count)")
-        print("   - Sessões finalizadas: \(dailyBlocking.sessions.filter { $0.endDate != nil }.count)")
-        
-        // Verifica quais apps já têm sessões ativas
         let activeHashes = Set(dailyBlocking.sessions.filter { $0.endDate == nil }.map { $0.appTokenHash })
         let newHashes = Set(appHashes)
         
-        // CRÍTICO: Preserva TODAS as sessões finalizadas ANTES de fazer qualquer alteração
-        // Isso garante que os dados históricos nunca sejam perdidos
         let finalizedSessions = dailyBlocking.sessions.filter { $0.endDate != nil }
-        let finalizedHashes = Set(finalizedSessions.map { $0.appTokenHash })
         
-        print("   - Apps com sessões ativas: \(activeHashes)")
-        print("   - Novos apps para bloquear: \(newHashes)")
-        print("   - Preservando \(finalizedSessions.count) sessões finalizadas (CRÍTICO)")
-        print("   - Apps com sessões finalizadas: \(finalizedHashes.count)")
-        
-        // CRÍTICO: Se os mesmos apps já estão bloqueados (sessões ativas), NÃO faz NADA
         if activeHashes == newHashes && !activeHashes.isEmpty {
-            print("📱 [AppBlockingTracker] ✅ Bloqueio já está ativo para estes apps, PRESERVANDO todas as sessões")
-            print("   - Sessões ativas: \(activeHashes.count) apps")
-            print("   - Total de sessões preservadas: \(dailyBlocking.sessions.count)")
             saveDailyBlocking(dailyBlocking, for: dateKey)
             return
         }
         
-        // CRÍTICO: Se não há sessões ativas mas há sessões finalizadas para TODOS os apps solicitados,
-        // preserva tudo e NÃO cria novas sessões (isso previne resetar o tempo quando o app reinicia)
-        if activeHashes.isEmpty && !finalizedHashes.isEmpty {
-            if finalizedHashes.isSuperset(of: newHashes) {
-                print("📱 [AppBlockingTracker] ✅ TODOS os apps já têm sessões finalizadas hoje, PRESERVANDO histórico")
-                print("   - Apps com sessões finalizadas: \(finalizedHashes.count)")
-                print("   - Novos apps solicitados: \(newHashes.count)")
-                print("   - Total de sessões preservadas: \(dailyBlocking.sessions.count)")
-                saveDailyBlocking(dailyBlocking, for: dateKey)
-                return
-            }
-        }
-        
-        // Se há sessões ativas mas os apps mudaram, apenas atualiza (não reseta tudo)
-        if !activeHashes.isEmpty && activeHashes != newHashes {
-            print("📱 [AppBlockingTracker] Apps mudaram, atualizando sessões (mantendo histórico)")
-        }
-        
-        // Finaliza apenas as sessões ativas de apps que não estão mais na nova lista
         let hashesToRemove = activeHashes.subtracting(newHashes)
-        var updatedSessions: [AppBlockingSession] = finalizedSessions // SEMPRE começa com sessões finalizadas
+        var updatedSessions: [AppBlockingSession] = finalizedSessions
         
-        // Processa sessões ativas existentes
         for session in dailyBlocking.sessions {
             if session.endDate == nil {
                 let hash = session.appTokenHash
                 if hashesToRemove.contains(hash) {
-                    // Finaliza sessão de app que não está mais na lista
-                    // CRÍTICO: Usa Date() em vez de startDate para evitar criar sessões com duração muito pequena
                     updatedSessions.append(AppBlockingSession(
                         appTokenHash: hash,
                         startDate: session.startDate,
                         endDate: Date()
                     ))
-                    print("   - Finalizando sessão ativa para hash \(hash)")
                 } else if newHashes.contains(hash) {
-                    // Mantém sessão ativa se o app ainda está na lista
                     updatedSessions.append(session)
-                    print("   - Mantendo sessão ativa para hash \(hash)")
                 }
             }
         }
         
-        // CRÍTICO: Cria uma nova sessão APENAS para apps que:
-        // 1. Não têm sessão ativa
-        // 2. Não têm sessão finalizada hoje
-        // 3. Estão na lista de novos apps solicitados
         for hash in newHashes {
             let hasActiveSession = updatedSessions.contains { 
                 $0.appTokenHash == hash && $0.endDate == nil 
             }
             
-            // CRÍTICO: Se já existe uma sessão finalizada para este app hoje, NÃO cria nova sessão
-            let hasFinalizedSessionToday = finalizedHashes.contains(hash)
-            
-            if !hasActiveSession && !hasFinalizedSessionToday {
-                // Apenas cria nova sessão se não há sessão ativa E não há sessão finalizada
+            if !hasActiveSession {
                 let session = AppBlockingSession(
                     appTokenHash: hash,
                     startDate: startDate,
                     endDate: nil
                 )
                 updatedSessions.append(session)
-                print("   - ✅ Criando nova sessão ativa para hash \(hash)")
-            } else if hasFinalizedSessionToday {
-                print("   - ⚠️ Hash \(hash) já tem sessão finalizada hoje, NÃO criando nova sessão (preservando histórico)")
-            } else if hasActiveSession {
-                print("   - ℹ️ Hash \(hash) já tem sessão ativa, mantendo existente")
             }
         }
         
-        // CRÍTICO: Atualiza o dailyBlocking com todas as sessões preservadas
         dailyBlocking.sessions = updatedSessions
-        
-        print("📱 [AppBlockingTracker] ✅ Bloqueio atualizado:")
-        print("   - Total de sessões: \(dailyBlocking.sessions.count)")
-        print("   - Sessões finalizadas preservadas: \(dailyBlocking.sessions.filter { $0.endDate != nil }.count)")
-        print("   - Sessões ativas: \(dailyBlocking.sessions.filter { $0.endDate == nil }.count)")
-        
         saveDailyBlocking(dailyBlocking, for: dateKey)
     }
     
@@ -208,13 +145,10 @@ class AppBlockingTracker {
     private func endBlocking(appHashes: [Int], endDate: Date) {
         let dateKey = formatDate(endDate)
         guard var dailyBlocking = loadDailyBlocking(for: dateKey) else {
-            print("⚠️ [AppBlockingTracker] Nenhum bloqueio encontrado para finalizar")
             return
         }
         
-        // Finaliza sessões ativas para os apps fornecidos
         for hash in appHashes {
-            // Encontra a última sessão ativa para este app
             if let index = dailyBlocking.sessions.lastIndex(where: { 
                 $0.appTokenHash == hash && $0.endDate == nil 
             }) {
@@ -227,7 +161,6 @@ class AppBlockingTracker {
         }
         
         saveDailyBlocking(dailyBlocking, for: dateKey)
-        print("📱 [AppBlockingTracker] Finalizado bloqueio para \(appHashes.count) apps")
     }
     
     /// Retorna o tempo total bloqueado em uma data específica
@@ -384,7 +317,6 @@ class AppBlockingTracker {
         let removedCount = originalCount - dailyBlocking.sessions.count
         if removedCount > 0 {
             saveDailyBlocking(dailyBlocking, for: dateKey)
-            print("🧹 [AppBlockingTracker] Removidas \(removedCount) sessões inválidas de \(dateKey)")
         }
     }
     
@@ -398,30 +330,22 @@ class AppBlockingTracker {
         for key in blockingKeys {
             userDefaults.removeObject(forKey: key)
         }
-        
-        print("🗑️ [AppBlockingTracker] Todos os dados de bloqueio foram resetados")
     }
     
-    /// Reseta os dados de bloqueio de uma data específica
     func resetBlockingData(for date: Date) {
         let dateKey = formatDate(date)
         let key = "app_blocking_\(dateKey)"
         userDefaults.removeObject(forKey: key)
-        print("🗑️ [AppBlockingTracker] Dados de bloqueio resetados para \(dateKey)")
     }
     
-    /// Reseta apenas as sessões ativas (endDate == nil) de uma data específica
     func resetActiveSessions(for date: Date) {
         let dateKey = formatDate(date)
         guard var dailyBlocking = loadDailyBlocking(for: dateKey) else {
             return
         }
         
-        // Remove todas as sessões ativas
         dailyBlocking.sessions = dailyBlocking.sessions.filter { $0.endDate != nil }
-        
         saveDailyBlocking(dailyBlocking, for: dateKey)
-        print("🗑️ [AppBlockingTracker] Sessões ativas resetadas para \(dateKey)")
     }
     
     // MARK: - Helpers
@@ -440,7 +364,6 @@ class AppBlockingTracker {
         if let blocking = try? JSONDecoder().decode(DailyAppBlocking.self, from: data) {
             return blocking
         } else {
-            print("❌ [AppBlockingTracker] Erro ao decodificar dados para \(dateKey)")
             return nil
         }
     }
@@ -449,10 +372,7 @@ class AppBlockingTracker {
         let key = "app_blocking_\(dateKey)"
         if let encoded = try? JSONEncoder().encode(blocking) {
             userDefaults.set(encoded, forKey: key)
-            // Força sincronização para garantir persistência
             userDefaults.synchronize()
-        } else {
-            print("❌ [AppBlockingTracker] Erro ao codificar dados para \(dateKey)")
         }
     }
 }

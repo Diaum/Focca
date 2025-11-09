@@ -8,6 +8,10 @@ class TimerManager: ObservableObject {
     private let sharedDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
 
     func start() {
+        // Invalida o timer anterior se existir
+        timer?.invalidate()
+        timer = nil
+        
         let blockedDate = sharedDefaults.object(forKey: "blocked_start_date") as? Date
         if let startDate = blockedDate {
             self.startDate = startDate
@@ -17,7 +21,6 @@ class TimerManager: ObservableObject {
             sharedDefaults.set(now, forKey: "blocked_start_date")
         }
         
-        // Garante que o timer roda na thread principal e no RunLoop comum
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
@@ -50,14 +53,12 @@ class TimerManager: ObservableObject {
     }
     
     private func updateTime() {
-        // Se não há startDate local, tenta recuperar do UserDefaults (caso o timer tenha sido recriado)
         var dateToUse = startDate
         if dateToUse == nil {
-            if let blockedDate = UserDefaults.standard.object(forKey: "blocked_start_date") as? Date {
+            if let blockedDate = sharedDefaults.object(forKey: "blocked_start_date") as? Date {
                 dateToUse = blockedDate
-                self.startDate = blockedDate // Restaura o startDate local
+                self.startDate = blockedDate
             } else {
-                // Se não há bloqueio ativo, zera o timer
                 let currentTime = elapsedTime
                 if currentTime != "0h 0m 0s" {
                     DispatchQueue.main.async { [weak self] in
@@ -79,7 +80,6 @@ class TimerManager: ObservableObject {
         
         let newTime = String(format: "%dh %dm %ds", hours, minutes, seconds)
         
-        // Atualiza apenas na thread principal e apenas se mudou
         DispatchQueue.main.async { [weak self] in
             guard let self = self, newTime != self.elapsedTime else { return }
             self.elapsedTime = newTime
