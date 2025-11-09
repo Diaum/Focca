@@ -7,11 +7,9 @@ extension String: Identifiable {
 
 struct ModeSelectionSheet: View {
     @Environment(\.presentationMode) var presentationMode
-    @State private var showCreateMode = false
     @State private var editModeName: String?
     @State private var modeNames: [String] = []
     @State private var selectedModeName: String = ""
-    @State private var shouldDismissParent = false
     
     var body: some View {
         ZStack {
@@ -67,10 +65,14 @@ struct ModeSelectionSheet: View {
                     }
                     
                     if canCreateMode {
-                        
                         CreateModeRow(
-                            showCreateMode: $showCreateMode,
-                            isDisabled: !canCreateMode
+                            canCreate: canCreateMode,
+                            onTap: {
+                                presentationMode.wrappedValue.dismiss()
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    NotificationCenter.default.post(name: NSNotification.Name("OpenCreateMode"), object: nil)
+                                }
+                            }
                         )
                     } else {
                         MaxModesReachedRow()
@@ -95,19 +97,6 @@ struct ModeSelectionSheet: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
             }
-        }
-        .sheet(isPresented: $showCreateMode, onDismiss: {
-            print("📥 ModeSelectionSheet - CreateModeView dismissed")
-            loadModeNames()
-            if shouldDismissParent {
-                presentationMode.wrappedValue.dismiss()
-            }
-            shouldDismissParent = false
-        }) {
-            CreateModeView()
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
-                .presentationCornerRadius(30)
         }
         .sheet(item: $editModeName) { modeName in
             EditModeView(modeName: modeName)
@@ -243,21 +232,21 @@ struct ModeRow: View {
 }
 
 private struct CreateModeRow: View {
-    @Binding var showCreateMode: Bool
-    let isDisabled: Bool
+    let canCreate: Bool
+    let onTap: () -> Void
 
     var body: some View {
         Button(action: {
-            if !isDisabled {
-                showCreateMode = true
+            if canCreate {
+                onTap()
             }
         }) {
             HStack {
                 Text("Create new mode")
-                    .foregroundColor(isDisabled ? Color(hex: "9E9EA3") : Color(hex: "1C1C1E"))
+                    .foregroundColor(canCreate ? Color(hex: "1C1C1E") : Color(hex: "9E9EA3"))
                 Spacer()
                 Image(systemName: "plus")
-                    .foregroundColor(isDisabled ? Color(hex: "9E9EA3") : Color(hex: "1C1C1E"))
+                    .foregroundColor(canCreate ? Color(hex: "1C1C1E") : Color(hex: "9E9EA3"))
             }
             .padding(.horizontal, 16)
             .frame(height: 84)
@@ -266,7 +255,7 @@ private struct CreateModeRow: View {
                     .fill(Color(hex: "EDEBEA"))
             )
         }
-        .disabled(isDisabled)
+        .disabled(!canCreate)
     }
 }
 

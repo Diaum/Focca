@@ -9,6 +9,7 @@ struct UnlockedView: View {
     @State private var showModeSheet = false
     @State private var showEditMode = false
     @State private var modeToEdit: String?
+    @State private var showCreateMode = false
     @State private var activeModeName = "-"
     @State private var activeModeCount = 0
     @State private var todayTime: String = "0h 0m"
@@ -147,10 +148,19 @@ struct UnlockedView: View {
             activeModeName = validMode
             activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
         }
+        .sheet(isPresented: $showCreateMode) {
+            CreateModeView()
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(30)
+        }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("OpenEditMode"))) { notification in
             if let modeName = notification.object as? String {
                 modeToEdit = modeName
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("OpenCreateMode"))) { _ in
+            showCreateMode = true
         }
         .onAppear {
             TimerStorage.shared.initializeFirstLaunch()
