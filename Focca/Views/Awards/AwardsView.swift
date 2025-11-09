@@ -1,11 +1,5 @@
 import SwiftUI
 
-enum AwardFilter: String, CaseIterable {
-    case all = "All"
-    case completed = "Completed"
-    case incomplete = "Incomplete"
-}
-
 struct AwardsView: View {
     @Binding var selectedTab: Int
     @ObservedObject private var awardManager = AwardManager.shared
@@ -25,13 +19,26 @@ struct AwardsView: View {
     ]
     
     var filteredAwards: [(id: String, icon: String, title: String, subtitle: String, tint: String)] {
+        let filtered: [(id: String, icon: String, title: String, subtitle: String, tint: String)]
+        
         switch selectedFilter {
         case .all:
-            return awards
+            filtered = awards
         case .completed:
-            return awards.filter { awardManager.isAwardUnlocked($0.id) }
+            filtered = awards.filter { awardManager.isAwardUnlocked($0.id) }
         case .incomplete:
-            return awards.filter { !awardManager.isAwardUnlocked($0.id) }
+            filtered = awards.filter { !awardManager.isAwardUnlocked($0.id) }
+        }
+        
+        return filtered.sorted { award1, award2 in
+            let isUnlocked1 = awardManager.isAwardUnlocked(award1.id)
+            let isUnlocked2 = awardManager.isAwardUnlocked(award2.id)
+            
+            if isUnlocked1 == isUnlocked2 {
+                return false
+            }
+            
+            return !isUnlocked1 && isUnlocked2
         }
     }
 
@@ -55,27 +62,8 @@ struct AwardsView: View {
                 .padding(.top, 0)
                 .padding(.bottom, 12)
                 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(AwardFilter.allCases, id: \.self) { filter in
-                            Button(action: {
-                                selectedFilter = filter
-                            }) {
-                                Text(filter.rawValue)
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(selectedFilter == filter ? .white : Color(hex: "1C1C1E"))
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 8)
-                                    .background(
-                                        Capsule()
-                                            .fill(selectedFilter == filter ? Color(hex: "1C1C1E") : Color.white)
-                                    )
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                }
-                .padding(.bottom, 22)
+                AwardFilterView(selectedFilter: $selectedFilter)
+                    .padding(.bottom, 22)
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 12) {
