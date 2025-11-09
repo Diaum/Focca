@@ -16,12 +16,10 @@ struct ContentView: View {
                 // Se o onboarding já foi completado, mostra a view principal
                 PrincipalView()
             } else {
-                // Se ainda não completou, mostra o onboarding
                 NavigationView {
-                    OnboardingStep1()
+                    OnboardingStep0()
                         .navigationBarHidden(true)
                 }
-                .preferredColorScheme(.light)
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("OnboardingCompleted"))) { _ in

@@ -5,6 +5,8 @@ struct OnboardingStep1: View {
     @State private var showStep2 = false
     @State private var showStep3 = false
     @State private var isRequestingPermission = false
+    @State private var isRequestingNotification = false
+    @State private var notificationPermissionGranted = false
     
     var body: some View {
         ZStack {
@@ -49,10 +51,10 @@ struct OnboardingStep1: View {
 
                         Button(action: {
                             Task {
-                                await requestScreenTimePermission()
+                                await requestPermissions()
                             }
                         }) {
-                            Text(isRequestingPermission ? "Requesting permission..." : "Select apps to limit")
+                            Text(getButtonText())
                                 .font(.system(size: 15, weight: .medium))
                                 .foregroundColor(.black)
                                 .frame(width: 200)
@@ -61,7 +63,7 @@ struct OnboardingStep1: View {
                                 .cornerRadius(25)
                                 .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
                         }
-                        .disabled(isRequestingPermission)
+                        .disabled(isRequestingPermission || isRequestingNotification)
                         .padding(.bottom, 50)
                     }
                 }
@@ -81,15 +83,51 @@ struct OnboardingStep1: View {
         }
     }
     
-    private func requestScreenTimePermission() async {
+    private func getButtonText() -> String {
+        if isRequestingNotification {
+            return "Requesting notification permission..."
+        } else if isRequestingPermission {
+            return "Requesting permission..."
+        } else if !notificationPermissionGranted {
+            return "Enable permissions"
+        } else {
+            return "Select apps to limit"
+        }
+    }
+    
+    private func requestPermissions() async {
+        // Primeiro, verifica se precisa pedir permissão de notificações
+        let notificationGranted = UserDefaults.standard.bool(forKey: "notification_permission_granted")
+        
+        if !notificationGranted {
+            // Verifica o status atual de notificações
+            let notificationStatus = await NotificationManager.shared.checkAuthorizationStatus()
+            
+            if notificationStatus != .authorized {
+                isRequestingNotification = true
+                let granted = await NotificationManager.shared.requestAuthorization()
+                await MainActor.run {
+                    isRequestingNotification = false
+                    notificationPermissionGranted = granted
+                    UserDefaults.standard.set(granted, forKey: "notification_permission_granted")
+                }
+            } else {
+                await MainActor.run {
+                    notificationPermissionGranted = true
+                }
+            }
+        } else {
+            await MainActor.run {
+                notificationPermissionGranted = true
+            }
+        }
+        
+        // Depois, pede permissão de Screen Time
         isRequestingPermission = true
         
         let screenTimePermissions = ScreenTimePermissions()
-        
-        // Verifica o status atual
         let status = screenTimePermissions.checkAuthorizationStatus()
         
-        // Se não estiver autorizado, solicita permissão
         if status != .approved {
             let granted = await screenTimePermissions.requestAuthorization()
             await MainActor.run {
@@ -97,7 +135,6 @@ struct OnboardingStep1: View {
                 if granted {
                     showStep2 = true
                 } else {
-                    // Permite abrir mesmo sem permissão, mas o OnboardingStep2 vai bloquear
                     showStep2 = true
                 }
             }
