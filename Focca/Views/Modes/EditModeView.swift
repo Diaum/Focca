@@ -14,6 +14,7 @@ struct EditModeView: View {
     @State private var startTime: Date = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date()) ?? Date()
     @State private var endTime: Date = Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: Date()) ?? Date()
     @State private var hasLoadedSchedule: Bool = false
+    @State private var showLiveActivity: Bool = true // Por padrão ativado
     @Environment(\.presentationMode) var presentationMode
     
     private var canDelete: Bool {
@@ -241,6 +242,24 @@ struct EditModeView: View {
                         RoundedRectangle(cornerRadius: 14)
                             .fill(Color.white)
                     )
+                    
+                    // Toggle para display na tela bloqueada
+                    VStack(spacing: 12) {
+                        HStack {
+                            Text("Display on Lock Screen")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color(hex: "1C1C1E"))
+                            Spacer()
+                            Toggle("", isOn: $showLiveActivity)
+                                .labelsHidden()
+                        }
+                        .padding(.horizontal, 16)
+                    }
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color.white)
+                    )
                 }
                 .padding(.horizontal, 20)
                 
@@ -322,6 +341,9 @@ struct EditModeView: View {
             endTime = existingSchedule.endTime
             hasLoadedSchedule = true
         }
+        
+        // Carrega preferência de Live Activity (por padrão true se não existir)
+        showLiveActivity = UserDefaults.standard.object(forKey: "mode_\(modeName)_show_live_activity") as? Bool ?? true
     }
     
     private func crossesMidnight() -> Bool {
@@ -423,6 +445,10 @@ struct EditModeView: View {
             if let schedule = UserDefaults.standard.data(forKey: "mode_\(modeName)_schedule") {
                 UserDefaults.standard.set(schedule, forKey: "mode_\(editedModeName)_schedule")
             }
+            
+            if let showLiveActivity = UserDefaults.standard.object(forKey: "mode_\(modeName)_show_live_activity") as? Bool {
+                UserDefaults.standard.set(showLiveActivity, forKey: "mode_\(editedModeName)_show_live_activity")
+            }
 
             let activeModeModeName = UserDefaults.standard.string(forKey: "active_mode_name")
             if activeModeModeName == modeName {
@@ -433,6 +459,7 @@ struct EditModeView: View {
             UserDefaults.standard.removeObject(forKey: "mode_\(modeName)_exists")
             UserDefaults.standard.removeObject(forKey: "mode_\(modeName)_last_used")
             UserDefaults.standard.removeObject(forKey: "mode_\(modeName)_schedule")
+            UserDefaults.standard.removeObject(forKey: "mode_\(modeName)_show_live_activity")
 
         } else {
             UserDefaults.standard.set(encoded, forKey: "mode_\(editedModeName)_selection")
@@ -441,6 +468,9 @@ struct EditModeView: View {
         
         // Salva ou remove o schedule
         let finalModeName = editedModeName != modeName ? editedModeName : modeName
+        
+        // Salva preferência de Live Activity
+        UserDefaults.standard.set(showLiveActivity, forKey: "mode_\(finalModeName)_show_live_activity")
         
         // Remove schedule antigo do modo original se o nome mudou
         if editedModeName != modeName {

@@ -386,7 +386,11 @@ class ScheduleManager: ObservableObject {
         
         NotificationCenter.default.post(name: NSNotification.Name("ScheduleActivated"), object: nil)
 
-        LiveActivityManager.startIfSupported(startDate: existingStartDate)
+        // Inicia Live Activity apenas se o modo permitir
+        let showLiveActivity = UserDefaults.standard.object(forKey: "mode_\(schedule.modeName)_show_live_activity") as? Bool ?? true
+        if showLiveActivity {
+            LiveActivityManager.startIfSupported(startDate: existingStartDate)
+        }
     }
     
     // Desativa o schedule atual (desbloqueia e computa tempo)

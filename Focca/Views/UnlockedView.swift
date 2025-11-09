@@ -97,8 +97,12 @@ struct UnlockedView: View {
                         // Registra início de bloqueio por app
                         AppBlockingTracker.shared.startBlocking(selection: saved, startDate: now)
 
-                        // Start Live Activity
-                        startLiveActivity(startDate: now)
+                        // Start Live Activity apenas se o modo permitir
+                        let modeName = UserDefaults.standard.string(forKey: "active_mode_name") ?? ""
+                        let showLiveActivity = UserDefaults.standard.object(forKey: "mode_\(modeName)_show_live_activity") as? Bool ?? true
+                        if showLiveActivity {
+                            startLiveActivity(startDate: now)
+                        }
 
                         isBlocked = true
                     }

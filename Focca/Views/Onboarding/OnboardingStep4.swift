@@ -109,7 +109,7 @@ struct OnboardingStep4: View {
                         // Registra início de bloqueio por app
                         AppBlockingTracker.shared.startBlocking(selection: saved, startDate: now)
 
-                        // Start Live Activity
+                        // Start Live Activity (no onboarding sempre mostra, pois é o primeiro uso)
                         startLiveActivity(startDate: now)
 
                         showBlockedView = true

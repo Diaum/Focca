@@ -11,6 +11,7 @@ struct CreateModeView: View {
     @State private var selectedWeekdays: Set<Int> = [] // 1=Sun ... 7=Sat (Calendar.component)
     @State private var startTime: Date = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date()) ?? Date()
     @State private var endTime: Date = Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: Date()) ?? Date()
+    @State private var showLiveActivity: Bool = true // Por padrão ativado
     
     // Feature 1: Valida se schedule está ativo, deve ter pelo menos 1 dia selecionado
     // Feature 4: Valida se não há conflito com schedules existentes
@@ -167,6 +168,24 @@ struct CreateModeView: View {
                         RoundedRectangle(cornerRadius: 14)
                             .fill(Color.white)
                     )
+                    
+                    // Toggle para display na tela bloqueada
+                    VStack(spacing: 12) {
+                        HStack {
+                            Text("Display on Lock Screen")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color(hex: "1C1C1E"))
+                            Spacer()
+                            Toggle("", isOn: $showLiveActivity)
+                                .labelsHidden()
+                        }
+                        .padding(.horizontal, 16)
+                    }
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color.white)
+                    )
                     .onChange(of: isScheduled) { newValue in
                         // Quando o toggle é ativado, define horário de início como 10 minutos à frente
                         if newValue {
@@ -221,6 +240,7 @@ struct CreateModeView: View {
             
             UserDefaults.standard.set(encoded, forKey: selectionKey)
             UserDefaults.standard.set(true, forKey: existsKey)
+            UserDefaults.standard.set(showLiveActivity, forKey: "mode_\(modeName)_show_live_activity")
             UserDefaults.standard.set(Date(), forKey: "mode_\(modeName)_last_used")
             
             UserDefaults.standard.set(modeName, forKey: "active_mode_name")

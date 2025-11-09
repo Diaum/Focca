@@ -55,6 +55,7 @@ struct LiveActivityManager {
     }
     
     /// Verifica e inicia Live Activity pendente (chamado quando app entra em foreground)
+    /// Verifica a preferência do modo antes de iniciar
     static func checkAndStartPendingLiveActivity() {
         let userDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
         
@@ -67,8 +68,17 @@ struct LiveActivityManager {
             return
         }
         
-        print("🔄 [LiveActivity] Iniciando Live Activity pendente...")
-        startLiveActivityNow(startDate: startDate)
+        // Verifica se o modo permite Live Activity
+        let modeName = UserDefaults.standard.string(forKey: "active_mode_name") ?? ""
+        let showLiveActivity = UserDefaults.standard.object(forKey: "mode_\(modeName)_show_live_activity") as? Bool ?? true
+        if showLiveActivity {
+            print("🔄 [LiveActivity] Iniciando Live Activity pendente...")
+            startLiveActivityNow(startDate: startDate)
+        } else {
+            print("⏸️ [LiveActivity] Live Activity desativada para o modo '\(modeName)'")
+            userDefaults.removeObject(forKey: "pending_live_activity_start")
+            userDefaults.removeObject(forKey: "pending_live_activity_start_date")
+        }
     }
 
     static func endAll() {
