@@ -2,6 +2,7 @@ import SwiftUI
 import FamilyControls
 import ManagedSettings
 import ActivityKit
+import WidgetKit
 
 struct UnlockedView: View {
     @Binding var isBlocked: Bool
@@ -93,6 +94,11 @@ struct UnlockedView: View {
                         
                         let now = Date()
                         sharedDefaults.set(now, forKey: "blocked_start_date")
+                        sharedDefaults.synchronize()
+                        
+                        // Salva também no standardDefaults para garantir acesso
+                        UserDefaults.standard.set(now, forKey: "blocked_start_date")
+                        UserDefaults.standard.synchronize()
                         
                         // Registra início de bloqueio por app
                         AppBlockingTracker.shared.startBlocking(selection: saved, startDate: now)
@@ -102,6 +108,14 @@ struct UnlockedView: View {
                         let showLiveActivity = UserDefaults.standard.object(forKey: "mode_\(modeName)_show_live_activity") as? Bool ?? true
                         if showLiveActivity {
                             startLiveActivity(startDate: now)
+                        }
+                        
+                        // Atualiza o widget imediatamente
+                        WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
+                        
+                        // Força uma atualização adicional após um pequeno delay
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
                         }
 
                         isBlocked = true

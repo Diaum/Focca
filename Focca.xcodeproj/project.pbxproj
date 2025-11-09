@@ -42,6 +42,7 @@
 		3165B7C02EB3C4390090176D /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		3165B7C22EB3C4390090176D /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		3165B7DA2EB3C44B0090176D /* FoccaWidgetLiveExtensionDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FoccaWidgetLiveExtensionDebug.entitlements; sourceTree = "<group>"; };
+		317220662EC1291C00669A76 /* FoccaWidgetLiveExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FoccaWidgetLiveExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -112,6 +113,7 @@
 		315E416C2EB03EB500CBD0C8 = {
 			isa = PBXGroup;
 			children = (
+				317220662EC1291C00669A76 /* FoccaWidgetLiveExtension.entitlements */,
 				3165B7DA2EB3C44B0090176D /* FoccaWidgetLiveExtensionDebug.entitlements */,
 				315E41772EB03EB500CBD0C8 /* Focca */,
 				3165B7C42EB3C43A0090176D /* FoccaWidgetLive */,
@@ -502,6 +504,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = FoccaWidgetLiveExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = SKHUBRDPGV;

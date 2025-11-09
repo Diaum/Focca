@@ -38,15 +38,10 @@ struct FoccaWidgetLiveLiveActivity: Widget {
             .background(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .fill(Color(hex: "1C1C1E")) // tom uniforme escuro
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .stroke(Color(hex: "2C2C2E"), lineWidth: 1.2) // borda sutil
-                    )
                     .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
             )
             .activityBackgroundTint(Color.clear)
             .activitySystemActionForegroundColor(Color.white)
-
         } dynamicIsland: { _ in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.center) {

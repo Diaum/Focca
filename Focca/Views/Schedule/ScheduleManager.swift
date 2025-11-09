@@ -2,6 +2,7 @@ import Foundation
 import Combine
 import ManagedSettings
 import FamilyControls
+import WidgetKit
 
 // Gerenciador de schedules: verifica horários e ativa/desativa bloqueios automaticamente
 class ScheduleManager: ObservableObject {
@@ -229,6 +230,9 @@ class ScheduleManager: ObservableObject {
             // Notifica o app para mudar para UnlockedView
             NotificationCenter.default.post(name: NSNotification.Name("ScheduleDeactivated"), object: nil)
             
+            // Atualiza o widget
+            WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
+            
             print("🔓 [ScheduleManager] Desbloqueio manual executado")
         }
     }
@@ -240,7 +244,7 @@ class ScheduleManager: ObservableObject {
         let key = "schedule_\(scheduleId)_disabled_\(today.timeIntervalSince1970)"
         return userDefaults.bool(forKey: key)
     }
-
+    
     // Marca um schedule como desativado para o dia atual (sem efeitos colaterais)
     private func markScheduleDisabledForToday(scheduleId: String) {
         let calendar = Calendar.current
@@ -385,12 +389,15 @@ class ScheduleManager: ObservableObject {
         print("   ✅ Schedule ativado com sucesso!")
         
         NotificationCenter.default.post(name: NSNotification.Name("ScheduleActivated"), object: nil)
-
+        
         // Inicia Live Activity apenas se o modo permitir
         let showLiveActivity = UserDefaults.standard.object(forKey: "mode_\(schedule.modeName)_show_live_activity") as? Bool ?? true
         if showLiveActivity {
             LiveActivityManager.startIfSupported(startDate: existingStartDate)
         }
+        
+        // Atualiza o widget
+        WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
     }
     
     // Desativa o schedule atual (desbloqueia e computa tempo)
@@ -437,9 +444,13 @@ class ScheduleManager: ObservableObject {
         
         // Notifica o app para mudar para UnlockedView
         NotificationCenter.default.post(name: NSNotification.Name("ScheduleDeactivated"), object: nil)
-
+        
         // Encerra Live Activity
         LiveActivityManager.endAll()
+        
+        // Atualiza o widget
+        WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
     }
+    
 }
 

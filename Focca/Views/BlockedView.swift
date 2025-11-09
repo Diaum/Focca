@@ -2,6 +2,7 @@ import SwiftUI
 import ManagedSettings
 import ActivityKit
 import FamilyControls
+import WidgetKit
 
 struct BlockedView: View {
     @Binding var isBlocked: Bool
@@ -84,9 +85,22 @@ struct BlockedView: View {
                         TimerStorage.shared.splitOvernightTime(from: startDate, to: Date())
                     }
                     sharedDefaults.removeObject(forKey: "blocked_start_date")
+                    sharedDefaults.synchronize()
+                    
+                    // Remove também do standardDefaults
+                    UserDefaults.standard.removeObject(forKey: "blocked_start_date")
+                    UserDefaults.standard.synchronize()
 
                     // Stop Live Activity
                     stopLiveActivity()
+                    
+                    // Atualiza o widget imediatamente
+                    WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
+                    
+                    // Força uma atualização adicional após um pequeno delay
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
+                    }
 
                     isBlocked = false
                 })
