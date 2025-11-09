@@ -8,9 +8,11 @@ class AwardManager: ObservableObject {
     private let awardsKey = "unlocked_awards"
     
     @Published var unlockedAwards: Set<String> = []
+    @Published var hasNewAwards: Bool = false
     
     private init() {
         loadUnlockedAwards()
+        checkNewAwards()
     }
     
     func loadUnlockedAwards() {
@@ -30,6 +32,38 @@ class AwardManager: ObservableObject {
         unlockedAwards.insert(awardId)
         saveUnlockedAwards()
         
+        // Marca que há novos awards não visualizados
+        markNewAward()
+        
+        DispatchQueue.main.async {
+            self.objectWillChange.send()
+        }
+    }
+    
+    private func markNewAward() {
+        let lastViewedCount = userDefaults.integer(forKey: "awards_last_viewed_count")
+        let currentCount = unlockedAwards.count
+        
+        if currentCount > lastViewedCount {
+            hasNewAwards = true
+            userDefaults.set(true, forKey: "has_new_awards")
+            DispatchQueue.main.async {
+                self.objectWillChange.send()
+            }
+        }
+    }
+    
+    private func checkNewAwards() {
+        let lastViewedCount = userDefaults.integer(forKey: "awards_last_viewed_count")
+        let currentCount = unlockedAwards.count
+        hasNewAwards = currentCount > lastViewedCount || userDefaults.bool(forKey: "has_new_awards")
+    }
+    
+    func markAwardsAsViewed() {
+        let currentCount = unlockedAwards.count
+        userDefaults.set(currentCount, forKey: "awards_last_viewed_count")
+        userDefaults.set(false, forKey: "has_new_awards")
+        hasNewAwards = false
         DispatchQueue.main.async {
             self.objectWillChange.send()
         }

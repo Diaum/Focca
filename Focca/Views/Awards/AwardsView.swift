@@ -94,6 +94,7 @@ struct AwardsView: View {
         .preferredColorScheme(.light)
         .onAppear {
             AwardManager.shared.checkAllAwards()
+            AwardManager.shared.markAwardsAsViewed()
         }
     }
 }

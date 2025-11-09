@@ -4,6 +4,7 @@ struct SettingsView: View {
     @Binding var selectedTab: Int
     let isBlocked: Bool
     @State private var showNotificationsView = false
+    @ObservedObject private var awardManager = AwardManager.shared
     
     init(selectedTab: Binding<Int>, isBlocked: Bool = false) {
         self._selectedTab = selectedTab
@@ -165,6 +166,7 @@ struct SettingsRow: View {
     @Binding var showNotificationsView: Bool
     @Binding var selectedTab: Int
     let isBlocked: Bool
+    @ObservedObject private var awardManager = AwardManager.shared
     
     var body: some View {
         Button(action: {
@@ -173,15 +175,24 @@ struct SettingsRow: View {
                 showNotificationsView = true
             case .awards:
                 selectedTab = 2
+                AwardManager.shared.markAwardsAsViewed()
             case .none:
                 break
             }
         }) {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(item.title)
-                        .font(.system(size: 17, weight: .regular))
-                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                    HStack(spacing: 8) {
+                        Text(item.title)
+                            .font(.system(size: 17, weight: .regular))
+                            .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                        
+                        if item.action == .awards && awardManager.hasNewAwards {
+                            Circle()
+                                .fill(Color.red)
+                                .frame(width: 8, height: 8)
+                        }
+                    }
                     
                     if let subtitle = item.subtitle {
                         Text(subtitle)
