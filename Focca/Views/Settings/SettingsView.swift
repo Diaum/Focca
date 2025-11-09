@@ -204,6 +204,8 @@ struct SettingsRow: View {
             }
             .padding(.horizontal, 16)
             .frame(height: item.subtitle != nil ? 56 : 44)
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
     }
