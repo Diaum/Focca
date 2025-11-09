@@ -111,29 +111,42 @@ struct EditModeView: View {
                 }
                 
                 VStack(spacing: 16) {
-                    HStack {
-                        Text("Mode name")
-                            .font(.system(size: 15, weight: .regular))
-                            .foregroundColor(Color(hex: "8E8E93"))
-                        Spacer()
-                        TextField("e.g. Work, Family Time", text: Binding(
-                            get: { editedModeName },
-                            set: { newValue in
-                                if newValue.count <= 18 {
-                                    editedModeName = newValue
-                                }
+                    VStack(spacing: 4) {
+                        HStack {
+                            Text("Mode name")
+                                .font(.system(size: 15, weight: .regular))
+                                .foregroundColor(Color(hex: "8E8E93"))
+                            Spacer()
+                            TextField("e.g. Work, Family Time", text: $editedModeName)
+                                .font(.system(size: 17, weight: .regular))
+                                .foregroundColor(Color(hex: "1C1C1E"))
+                                .multilineTextAlignment(.trailing)
+                        }
+                        .padding(.horizontal, 20)
+                        .frame(height: 56)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(Color.white)
+                        )
+                        
+                        if !editedModeName.isEmpty && editedModeName.count < 4 {
+                            HStack {
+                                Spacer()
+                                Text("Mode name must be at least 4 characters")
+                                    .font(.system(size: 12, weight: .regular))
+                                    .foregroundColor(.red.opacity(0.7))
                             }
-                        ))
-                        .font(.system(size: 17, weight: .regular))
-                        .foregroundColor(Color(hex: "1C1C1E"))
-                        .multilineTextAlignment(.trailing)
+                            .padding(.horizontal, 20)
+                        } else if editedModeName.count > 18 {
+                            HStack {
+                                Spacer()
+                                Text("Mode name must be at most 18 characters")
+                                    .font(.system(size: 12, weight: .regular))
+                                    .foregroundColor(.red.opacity(0.7))
+                            }
+                            .padding(.horizontal, 20)
+                        }
                     }
-                    .padding(.horizontal, 20)
-                    .frame(height: 56)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(Color.white)
-                    )
                     
                     AppIconGrid(selection: selection) {
                         showAppPicker = true

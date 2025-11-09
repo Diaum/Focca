@@ -48,6 +48,8 @@ struct AppIconGrid: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
             }
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
         .background(

@@ -54,24 +54,37 @@ struct CreateModeView: View {
                     .foregroundColor(Color(hex: "1C1C1E"))
                 
                 VStack(spacing: 16) {
-                    HStack {
-                        TextField("e.g. Work, Family Time", text: Binding(
-                            get: { modeName },
-                            set: { newValue in
-                                if newValue.count <= 18 {
-                                    modeName = newValue
-                                }
+                    VStack(spacing: 4) {
+                        HStack {
+                            TextField("e.g. Work, Family Time", text: $modeName)
+                                .font(.system(size: 16, weight: .regular))
+                                .foregroundColor(Color(hex: "1C1C1E"))
+                        }
+                        .padding(.horizontal, 20)
+                        .frame(height: 56)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(Color.white)
+                        )
+                        
+                        if !modeName.isEmpty && modeName.count < 4 {
+                            HStack {
+                                Text("Mode name must be at least 4 characters")
+                                    .font(.system(size: 12, weight: .regular))
+                                    .foregroundColor(.red.opacity(0.7))
+                                Spacer()
                             }
-                        ))
-                        .font(.system(size: 16, weight: .regular))
-                        .foregroundColor(Color(hex: "1C1C1E"))
+                            .padding(.horizontal, 20)
+                        } else if modeName.count > 18 {
+                            HStack {
+                                Text("Mode name must be at most 18 characters")
+                                    .font(.system(size: 12, weight: .regular))
+                                    .foregroundColor(.red.opacity(0.7))
+                                Spacer()
+                            }
+                            .padding(.horizontal, 20)
+                        }
                     }
-                    .padding(.horizontal, 20)
-                    .frame(height: 56)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(Color.white)
-                    )
                     
                     AppIconGrid(selection: selection) {
                         showAppPicker = true

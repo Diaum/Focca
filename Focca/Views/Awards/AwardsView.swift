@@ -53,6 +53,24 @@ struct AwardsView: View {
             
             VStack(spacing: 0) {
                 HStack {
+                    Button(action: {
+                        selectedTab = 3
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color(hex: "1C1C1E"))
+                            .frame(width: 44, height: 44)
+                            .background(Color.white)
+                            .clipShape(Circle())
+                            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                    }
+                    .padding(.leading, 16)
+                    .padding(.top, 8)
+                    
+                    Spacer()
+                }
+                
+                HStack {
                     Text("Awards")
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(Color(hex: "1C1C1E"))
