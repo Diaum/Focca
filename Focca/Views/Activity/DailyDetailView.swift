@@ -97,7 +97,7 @@ struct DailyDetailView: View {
                                 if detail.tokenHash != appDetails.last?.tokenHash {
                                     Divider()
                                         .background(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "C6C6C8"))
-                                        .padding(.leading, 72)
+                                        .padding(.leading, 64)
                                 }
                             }
                         }
@@ -202,29 +202,29 @@ struct AppBlockingRow: View {
             if let token = appToken {
                 Label(token)
                     .labelStyle(.iconOnly)
-                    .frame(width: 48, height: 48)
-                    .scaleEffect(2.0)
-                    .frame(width: 48, height: 48)
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .frame(width: 40, height: 40)
+                    .scaleEffect(1.3)
+                    .frame(width: 40, height: 40)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                     .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
             } else {
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: 10)
                     .fill(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA"))
-                    .frame(width: 48, height: 48)
+                    .frame(width: 40, height: 40)
             }
             
             VStack(alignment: .leading, spacing: 4) {
                 if let token = appToken {
                     Label(token)
                         .labelStyle(.titleOnly)
-                        .font(.system(size: 17, weight: .semibold))
+                        .font(.system(size: 9, weight: .semibold))
                         .foregroundColor(isBlocked ? Color.white : Color(hex: "1C1C1E"))
                         .tint(isBlocked ? Color.white : Color(hex: "1C1C1E"))
                         .lineLimit(1)
                         .colorScheme(isBlocked ? .dark : .light)
                 } else {
                     Text("Unknown App")
-                        .font(.system(size: 17, weight: .semibold))
+                        .font(.system(size: 9, weight: .semibold))
                         .foregroundColor(isBlocked ? Color.white : Color(hex: "1C1C1E"))
                 }
                 
