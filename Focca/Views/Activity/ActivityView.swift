@@ -33,7 +33,7 @@ struct ActivityView: View {
 //            .overlay(ReferenceGrid(spacing: 24, color: .red.opacity(0.15)))
             
             VStack(spacing: 0) {
-                Spacer(minLength: 30)
+                Spacer(minLength: 20)
                 
                 HStack(spacing: 80) {
                     VStack(spacing: 4) {
@@ -80,20 +80,15 @@ struct ActivityView: View {
                                     time: card.time,
                                     isBlocked: isBlocked,
                                     onTap: {
-                                        print("🖱️ [ActivityView] DailyCard clicado - date: \(card.date), time: \(card.time)")
-                                        // Define os valores primeiro de forma síncrona
                                         selectedDate = card.date
                                         selectedTime = card.time
-                                        print("✅ [ActivityView] selectedDate definido: \(selectedDate?.description ?? "nil")")
-                                        print("✅ [ActivityView] selectedTime definido: \(selectedTime)")
-                                        // Aciona o fullScreenCover imediatamente após definir os valores
                                         showDailyDetail = true
-                                        print("✅ [ActivityView] showDailyDetail = true")
                                     }
                                 )
                             }
                         }
                         .padding(.horizontal, 20)
+                        .padding(.top, 0)
                     }
                 }
                 
