@@ -13,6 +13,7 @@ struct EditModeView: View {
     @State private var selectedWeekdays: Set<Int> = []
     @State private var startTime: Date = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date()) ?? Date()
     @State private var endTime: Date = Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: Date()) ?? Date()
+    @State private var hasLoadedSchedule: Bool = false
     @Environment(\.presentationMode) var presentationMode
     
     private var canDelete: Bool {
@@ -166,6 +167,19 @@ struct EditModeView: View {
                                 .labelsHidden()
                         }
                         .padding(.horizontal, 16)
+                        .onChange(of: isScheduled) { newValue in
+                            if newValue {
+                                if !hasLoadedSchedule {
+                                    let now = Date()
+                                    if let newStartTime = Calendar.current.date(byAdding: .minute, value: 10, to: now) {
+                                        startTime = newStartTime
+                                        if let newEndTime = Calendar.current.date(byAdding: .hour, value: 1, to: newStartTime) {
+                                            endTime = newEndTime
+                                        }
+                                    }
+                                }
+                            }
+                        }
 
                         if isScheduled {
                             // Seleção de dias da semana
@@ -325,6 +339,7 @@ struct EditModeView: View {
             selectedWeekdays = existingSchedule.weekdays
             startTime = existingSchedule.startTime
             endTime = existingSchedule.endTime
+            hasLoadedSchedule = true
         }
     }
     
