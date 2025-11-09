@@ -134,27 +134,9 @@ struct EditModeView: View {
                             .fill(Color.white)
                     )
                     
-                    Button(action: {
+                    AppIconGrid(selection: selection) {
                         showAppPicker = true
-                    }) {
-                        HStack {
-                            Text("Select Apps")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color(hex: "1C1C1E"))
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(Color(hex: "C6C6C8"))
-                        }
-                        .padding(.horizontal, 20)
-                        .frame(height: 56)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14)
-                                .fill(Color.white)
-                        )
                     }
-                    
-                    AppIconGrid(selection: selection)
                     
                     // Seção de Schedule (dias/horários) — opcional
                     VStack(spacing: 12) {

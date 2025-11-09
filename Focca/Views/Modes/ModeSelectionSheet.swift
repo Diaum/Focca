@@ -54,7 +54,10 @@ struct ModeSelectionSheet: View {
                             title: modeName,
                             isSelected: selectedModeName == modeName,
                             onEdit: {
-                                editModeName = modeName
+                                presentationMode.wrappedValue.dismiss()
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                    NotificationCenter.default.post(name: NSNotification.Name("OpenEditMode"), object: modeName)
+                                }
                             },
                             onSelect: {
                                 selectedModeName = modeName

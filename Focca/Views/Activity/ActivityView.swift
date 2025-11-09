@@ -4,6 +4,8 @@ struct ActivityView: View {
     @Binding var selectedTab: Int
     let isBlocked: Bool
     @State private var showModeSheet = false
+    @State private var showEditMode = false
+    @State private var modeToEdit: String?
     @State private var showDailyDetail = false
     @State private var selectedDate: Date?
     @State private var selectedTime: TimeInterval = 0
@@ -107,6 +109,20 @@ struct ActivityView: View {
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(30)
+        }
+        .sheet(item: Binding(
+            get: { modeToEdit },
+            set: { modeToEdit = $0 }
+        )) { modeName in
+            EditModeView(modeName: modeName)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(30)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("OpenEditMode"))) { notification in
+            if let modeName = notification.object as? String {
+                modeToEdit = modeName
+            }
         }
         .fullScreenCover(isPresented: $showDailyDetail) {
             Group {

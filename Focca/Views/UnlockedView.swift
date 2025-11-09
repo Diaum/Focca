@@ -7,6 +7,8 @@ struct UnlockedView: View {
     @Binding var isBlocked: Bool
     @Binding var selectedTab: Int
     @State private var showModeSheet = false
+    @State private var showEditMode = false
+    @State private var modeToEdit: String?
     @State private var activeModeName = "-"
     @State private var activeModeCount = 0
     @State private var todayTime: String = "0h 0m"
@@ -117,6 +119,22 @@ struct UnlockedView: View {
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(30)
         }
+        .sheet(item: Binding(
+            get: { modeToEdit },
+            set: { newValue in
+                if newValue == nil {
+                    let validMode = getValidActiveMode()
+                    activeModeName = validMode
+                    activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+                }
+                modeToEdit = newValue
+            }
+        )) { modeName in
+            EditModeView(modeName: modeName)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(30)
+        }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ModeDataUpdated"))) { _ in
             // Atualiza o contador quando um modo é editado
             let validMode = getValidActiveMode()
@@ -128,6 +146,11 @@ struct UnlockedView: View {
             let validMode = getValidActiveMode()
             activeModeName = validMode
             activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("OpenEditMode"))) { notification in
+            if let modeName = notification.object as? String {
+                modeToEdit = modeName
+            }
         }
         .onAppear {
             TimerStorage.shared.initializeFirstLaunch()
