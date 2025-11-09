@@ -52,9 +52,8 @@ struct AwardsView: View {
                     Spacer()
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 20)
+                .padding(.top, 0)
                 .padding(.bottom, 12)
-                .allowsHitTesting(false)
                 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
@@ -76,7 +75,7 @@ struct AwardsView: View {
                     }
                     .padding(.horizontal, 20)
                 }
-                .padding(.bottom, 12)
+                .padding(.bottom, 22)
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 12) {
@@ -95,18 +94,16 @@ struct AwardsView: View {
                 }
             }
             .padding(.bottom, 105)
-            .clipped()
 
             VStack(spacing: 0) {
                 Spacer()
                 WhiteRoundedBottomPlain()
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, -18)
+                    .padding(.bottom, -48)
             }
             .zIndex(1)
         }
         .preferredColorScheme(.light)
-        .clipped()
         .onAppear {
             AwardManager.shared.checkAllAwards()
         }
