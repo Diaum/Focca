@@ -63,39 +63,41 @@ struct ModeSelectionSheet: View {
                             }
                         )
                     }
-                    
-                    if canCreateMode {
-                        CreateModeRow(
-                            canCreate: canCreateMode,
-                            onTap: {
-                                presentationMode.wrappedValue.dismiss()
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                    NotificationCenter.default.post(name: NSNotification.Name("OpenCreateMode"), object: nil)
-                                }
-                            }
-                        )
-                    } else {
-                        MaxModesReachedRow()
-                    }
-                    
                 }
                 .padding(.horizontal, 20)
 
                 Spacer()
 
-                Button(action: {
-                    presentationMode.wrappedValue.dismiss()
-                }) {
-                    Text("Done")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(Color(hex: "1C1C1E"))
+                if canCreateMode {
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            NotificationCenter.default.post(name: NSNotification.Name("OpenCreateMode"), object: nil)
+                        }
+                    }) {
+                        Text("Create new mode")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(Color(hex: "2C2C2E"))
+                            .cornerRadius(20)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 24)
+                } else {
+                    Text("Maximum number of modes reached (6)")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Color(hex: "FF6B6B"))
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 16)
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
-                        .background(Color(hex: "DAD7D6"))
+                        .background(Color(hex: "FFEBEE"))
                         .cornerRadius(20)
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 24)
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 24)
             }
         }
         .sheet(item: $editModeName) { modeName in
@@ -163,7 +165,7 @@ struct ModeSelectionSheet: View {
     }
     
     private var canCreateMode: Bool {
-        modeNames.count < 4
+        modeNames.count < 6
     }
     
     private func loadSelectedMode() {
@@ -231,48 +233,6 @@ struct ModeRow: View {
     }
 }
 
-private struct CreateModeRow: View {
-    let canCreate: Bool
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: {
-            if canCreate {
-                onTap()
-            }
-        }) {
-            HStack {
-                Text("Create new mode")
-                    .foregroundColor(canCreate ? Color(hex: "1C1C1E") : Color(hex: "9E9EA3"))
-                Spacer()
-                Image(systemName: "plus")
-                    .foregroundColor(canCreate ? Color(hex: "1C1C1E") : Color(hex: "9E9EA3"))
-            }
-            .padding(.horizontal, 16)
-            .frame(height: 84)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color(hex: "EDEBEA"))
-            )
-        }
-        .disabled(!canCreate)
-    }
-}
-
-struct MaxModesReachedRow: View {
-    var body: some View {
-        Text("Maximum number of modes reached (4)")
-            .font(.system(size: 14, weight: .medium))
-            .foregroundColor(Color(hex: "FF6B6B"))
-            .padding(.horizontal, 16)
-            .padding(.vertical, 16)
-            .frame(height: 56)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(Color(hex: "FFEBEE"))
-            )
-    }
-}
 #Preview {
     let defaults = UserDefaults.standard
 
