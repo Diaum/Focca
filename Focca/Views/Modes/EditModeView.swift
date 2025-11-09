@@ -264,7 +264,7 @@ struct EditModeView: View {
                 
                 Spacer()
                 
-                VStack(spacing: 12) {
+                HStack(spacing: 12) {
                     Button(action: {
                         if saveMode() {
                             // Notifica que o modo foi salvo e deve fechar o ModeSelectionSheet também
@@ -277,7 +277,7 @@ struct EditModeView: View {
                             .foregroundColor(canSave ? .white : Color(hex: "9E9EA3"))
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
-                            .background(canSave ? Color(hex: "1C1C1E") : Color(hex: "EDEBEA"))
+                            .background(canSave ? Color(hex: "2C2C2E") : Color(hex: "EDEBEA"))
                             .cornerRadius(14)
                     }
                     .disabled(!canSave)
@@ -285,11 +285,10 @@ struct EditModeView: View {
                     Button(action: {
                         showDeleteConfirmation = true
                     }) {
-                        Text("Delete Mode")
-                            .font(.system(size: 17, weight: .medium))
+                        Image(systemName: "trash")
+                            .font(.system(size: 16, weight: .medium))
                             .foregroundColor(canDelete ? .white : Color(hex: "9E9EA3"))
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
+                            .frame(width: 56, height: 56)
                             .background(canDelete ? Color.red : Color(hex: "EDEBEA"))
                             .cornerRadius(14)
                     }
