@@ -2,8 +2,8 @@ import SwiftUI
 
 enum AwardFilter: String, CaseIterable {
     case all = "All"
-    case incomplete = "Incomplete"
     case completed = "Completed"
+    case incomplete = "Incomplete"
 }
 
 struct AwardFilterView: View {
