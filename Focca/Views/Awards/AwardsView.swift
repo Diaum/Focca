@@ -2,11 +2,17 @@ import SwiftUI
 
 struct AwardsView: View {
     @Binding var selectedTab: Int
+    let isBlocked: Bool
     @ObservedObject private var awardManager = AwardManager.shared
     @State private var selectedFilter: AwardFilter = .all
     
+    init(selectedTab: Binding<Int>, isBlocked: Bool = false) {
+        self._selectedTab = selectedTab
+        self.isBlocked = isBlocked
+    }
+    
     let awards: [(id: String, icon: String, title: String, subtitle: String, tint: String)] = [
-        ("30_min_focus", "timer", "30 minutes focused", "Stay focused for 30 minutes in a single session", "1C1C1E"),
+        ("30_min_focus", "clock.fill", "30 minutes focused", "Stay focused for 30 minutes in a single session", "1C1C1E"),
         ("1_hour_focus", "star.fill", "1 hour focused", "Stay focused for 1 hour in a single session", "FFD700"),
         ("7_day_streak", "flame", "7-day streak", "Use Focca seven days in a row with at least 1 hour per day", "FF6B6B"),
         ("10_hours_total", "hourglass", "10 hours total", "Accumulate ten hours of focused time", "0EA5E9"),
@@ -45,7 +51,9 @@ struct AwardsView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [Color(hex: "F7F7F8"), Color(hex: "ECECEC")],
+                colors: isBlocked 
+                    ? [Color(hex: "0A0A0A"), Color(hex: "0A0A0A")]
+                    : [Color(hex: "F7F7F8"), Color(hex: "ECECEC")],
                 startPoint: .top,
                 endPoint: .bottom
             )
@@ -58,9 +66,9 @@ struct AwardsView: View {
                     }) {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(hex: "1C1C1E"))
+                            .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                             .frame(width: 44, height: 44)
-                            .background(Color.white)
+                            .background(isBlocked ? Color(hex: "1C1C1C") : Color.white)
                             .clipShape(Circle())
                             .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                     }
@@ -73,14 +81,14 @@ struct AwardsView: View {
                 HStack {
                     Text("Awards")
                         .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(Color(hex: "1C1C1E"))
+                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                     Spacer()
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 0)
                 .padding(.bottom, 12)
                 
-                AwardFilterView(selectedFilter: $selectedFilter)
+                AwardFilterView(selectedFilter: $selectedFilter, isBlocked: isBlocked)
                     .padding(.bottom, 22)
 
                 ScrollView(showsIndicators: false) {
@@ -91,7 +99,8 @@ struct AwardsView: View {
                                 icon: award.icon,
                                 title: award.title,
                                 subtitle: award.subtitle,
-                                tint: Color(hex: award.tint)
+                                tint: Color(hex: award.tint),
+                                isBlocked: isBlocked
                             )
                         }
                     }
@@ -103,13 +112,13 @@ struct AwardsView: View {
 
             VStack(spacing: 0) {
                 Spacer()
-                WhiteRoundedBottomPlain()
+                WhiteRoundedBottomPlain(isBlocked: isBlocked)
                 TabBar(selectedTab: $selectedTab)
                     .padding(.bottom, -48)
             }
             .zIndex(1)
         }
-        .preferredColorScheme(.light)
+        .preferredColorScheme(isBlocked ? .dark : .light)
         .onAppear {
             AwardManager.shared.checkAllAwards()
             AwardManager.shared.markAwardsAsViewed()
@@ -119,7 +128,7 @@ struct AwardsView: View {
 
 struct AwardsView_Previews: PreviewProvider {
     static var previews: some View {
-        AwardsView(selectedTab: .constant(2))
+        AwardsView(selectedTab: .constant(2), isBlocked: false)
             .preferredColorScheme(.light)
     }
 }

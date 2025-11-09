@@ -19,7 +19,7 @@ struct PrincipalView: View {
             case 1:
                 ActivityView(selectedTab: $selectedTab, isBlocked: isBlocked || scheduleManager.isBlockedBySchedule)
             case 2:
-                AwardsView(selectedTab: $selectedTab)
+                AwardsView(selectedTab: $selectedTab, isBlocked: isBlocked || scheduleManager.isBlockedBySchedule)
             case 3:
                 SettingsView(selectedTab: $selectedTab, isBlocked: isBlocked || scheduleManager.isBlockedBySchedule)
             default:

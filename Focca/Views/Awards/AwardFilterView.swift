@@ -8,6 +8,7 @@ enum AwardFilter: String, CaseIterable {
 
 struct AwardFilterView: View {
     @Binding var selectedFilter: AwardFilter
+    let isBlocked: Bool
     
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -18,12 +19,16 @@ struct AwardFilterView: View {
                     }) {
                         Text(filter.rawValue)
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(selectedFilter == filter ? .white : Color(hex: "1C1C1E"))
+                            .foregroundColor(
+                                selectedFilter == filter 
+                                    ? (isBlocked ? Color(hex: "1C1C1E") : .white)
+                                    : (isBlocked ? .white : Color(hex: "1C1C1E"))
+                            )
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
                             .background(
                                 Capsule()
-                                    .fill(selectedFilter == filter ? Color(hex: "1C1C1E") : Color.white)
+                                    .fill(selectedFilter == filter ? (isBlocked ? Color.white : Color(hex: "1C1C1E")) : (isBlocked ? Color(hex: "1C1C1C") : Color.white))
                             )
                     }
                 }
