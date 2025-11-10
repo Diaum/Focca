@@ -81,9 +81,18 @@ class AppBlockingTracker {
     
     /// Versão interna que trabalha apenas com hashes
     private func startBlocking(appHashes: [Int], startDate: Date) {
-        let dateKey = formatDate(startDate)
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let startDay = calendar.startOfDay(for: startDate)
+        
+        // Se o bloqueio começou em um dia anterior e ainda está ativo, divide entre os dias
+        if startDay < today {
+            splitOvernightSessions(from: startDay, to: today)
+        }
+        
+        let dateKey = formatDate(Date())
         var dailyBlocking = loadDailyBlocking(for: dateKey) ?? DailyAppBlocking(
-            date: Calendar.current.startOfDay(for: startDate),
+            date: today,
             sessions: []
         )
         
@@ -121,9 +130,11 @@ class AppBlockingTracker {
             }
             
             if !hasActiveSession {
+                // Se o bloqueio começou em um dia anterior, a sessão do dia atual começa à meia-noite
+                let sessionStartDate = startDay < today ? today : startDate
                 let session = AppBlockingSession(
                     appTokenHash: hash,
-                    startDate: startDate,
+                    startDate: sessionStartDate,
                     endDate: nil
                 )
                 updatedSessions.append(session)
@@ -168,6 +179,23 @@ class AppBlockingTracker {
     /// não a soma dos tempos de cada app individualmente.
     /// Se múltiplos apps estão bloqueados ao mesmo tempo, conta apenas uma vez.
     func getTotalBlockingTime(for date: Date) -> TimeInterval {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let dateDay = calendar.startOfDay(for: date)
+        
+        // Se estamos consultando o dia atual e há sessões ativas do dia anterior, divide-as
+        if dateDay == today {
+            // Verifica se há sessões ativas do dia anterior que precisam ser divididas
+            let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
+            let yesterdayKey = formatDate(yesterday)
+            if let yesterdayBlocking = loadDailyBlocking(for: yesterdayKey) {
+                let hasActiveSessions = yesterdayBlocking.sessions.contains { $0.endDate == nil }
+                if hasActiveSessions {
+                    splitOvernightSessions(from: yesterday, to: today)
+                }
+            }
+        }
+        
         let dateKey = formatDate(date)
         guard let dailyBlocking = loadDailyBlocking(for: dateKey) else {
             return 0
@@ -176,7 +204,6 @@ class AppBlockingTracker {
         // Calcula o tempo total baseado na união de todos os períodos de bloqueio
         // Isso garante que se múltiplos apps estão bloqueados ao mesmo tempo,
         // o tempo total seja o período de bloqueio geral, não a soma dos tempos individuais
-        let calendar = Calendar.current
         let dayStart = calendar.startOfDay(for: date)
         let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart)!
         let now = Date()
@@ -349,6 +376,74 @@ class AppBlockingTracker {
     }
     
     // MARK: - Helpers
+    
+    /// Divide sessões que atravessam a meia-noite entre os dias
+    /// Pode ser chamada publicamente para garantir que sessões sejam divididas corretamente
+    func splitOvernightSessions(from startDay: Date, to endDay: Date) {
+        let calendar = Calendar.current
+        var currentDay = startDay
+        
+        while currentDay < endDay {
+            let dateKey = formatDate(currentDay)
+            guard var dailyBlocking = loadDailyBlocking(for: dateKey) else {
+                currentDay = calendar.date(byAdding: .day, value: 1, to: currentDay)!
+                continue
+            }
+            
+            let nextDayStart = calendar.date(byAdding: .day, value: 1, to: currentDay)!
+            var updatedSessions: [AppBlockingSession] = []
+            var sessionsToCarryOver: [AppBlockingSession] = []
+            
+            for session in dailyBlocking.sessions {
+                if session.endDate == nil {
+                    // Sessão ativa que atravessa a meia-noite
+                    // Finaliza no fim do dia atual
+                    updatedSessions.append(AppBlockingSession(
+                        appTokenHash: session.appTokenHash,
+                        startDate: session.startDate,
+                        endDate: nextDayStart
+                    ))
+                    
+                    // Cria uma nova sessão para o próximo dia
+                    sessionsToCarryOver.append(AppBlockingSession(
+                        appTokenHash: session.appTokenHash,
+                        startDate: nextDayStart,
+                        endDate: nil
+                    ))
+                } else {
+                    // Sessão já finalizada, mantém como está
+                    updatedSessions.append(session)
+                }
+            }
+            
+            // Salva as sessões atualizadas do dia atual
+            dailyBlocking.sessions = updatedSessions
+            saveDailyBlocking(dailyBlocking, for: dateKey)
+            
+            // Salva as sessões para o próximo dia
+            if !sessionsToCarryOver.isEmpty {
+                let nextDateKey = formatDate(nextDayStart)
+                var nextDailyBlocking = loadDailyBlocking(for: nextDateKey) ?? DailyAppBlocking(
+                    date: nextDayStart,
+                    sessions: []
+                )
+                
+                // Adiciona as sessões do próximo dia, evitando duplicatas
+                for session in sessionsToCarryOver {
+                    let hasExisting = nextDailyBlocking.sessions.contains { 
+                        $0.appTokenHash == session.appTokenHash && $0.endDate == nil 
+                    }
+                    if !hasExisting {
+                        nextDailyBlocking.sessions.append(session)
+                    }
+                }
+                
+                saveDailyBlocking(nextDailyBlocking, for: nextDateKey)
+            }
+            
+            currentDay = nextDayStart
+        }
+    }
     
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()

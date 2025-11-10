@@ -41,6 +41,17 @@ struct PrincipalView: View {
             let groupBlocked = appGroupDefaults.object(forKey: "blocked_start_date") != nil
             isBlocked = scheduleManager.isBlockedBySchedule || stdBlocked || groupBlocked
             
+            // Divide sessões que atravessam a meia-noite entre os dias
+            let calendar = Calendar.current
+            let today = calendar.startOfDay(for: Date())
+            if let blockedStartDate = appGroupDefaults.object(forKey: "blocked_start_date") as? Date {
+                let startDay = calendar.startOfDay(for: blockedStartDate)
+                if startDay < today {
+                    // Há um bloqueio que começou em um dia anterior, divide entre os dias
+                    AppBlockingTracker.shared.splitOvernightSessions(from: startDay, to: today)
+                }
+            }
+            
             // Verifica se há um schedule pendente para ativação (quando notificação foi entregue em background)
             let userDefaults = UserDefaults.standard
             if userDefaults.bool(forKey: "should_check_schedules_on_launch") {
@@ -59,6 +70,17 @@ struct PrincipalView: View {
         .onChange(of: scenePhase) { newPhase in
             // Quando o app volta ao foreground, verifica schedules pendentes e inicia Live Activity pendente
             if newPhase == .active {
+                // Divide sessões que atravessam a meia-noite entre os dias
+                let calendar = Calendar.current
+                let today = calendar.startOfDay(for: Date())
+                if let blockedStartDate = appGroupDefaults.object(forKey: "blocked_start_date") as? Date {
+                    let startDay = calendar.startOfDay(for: blockedStartDate)
+                    if startDay < today {
+                        // Há um bloqueio que começou em um dia anterior, divide entre os dias
+                        AppBlockingTracker.shared.splitOvernightSessions(from: startDay, to: today)
+                    }
+                }
+                
                 let userDefaults = UserDefaults.standard
                 if userDefaults.bool(forKey: "should_check_schedules_on_launch") {
                     print("📱 [PrincipalView] Verificando schedules pendentes ao voltar ao foreground...")
