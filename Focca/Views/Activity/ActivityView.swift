@@ -71,7 +71,7 @@ struct ActivityView: View {
                         .padding(.top, 40)
 
                 } else {
-                    ScrollView {
+                    ScrollView(showsIndicators: false) {
                         LazyVGrid(columns: [
                             GridItem(.flexible(), spacing: 10),
                             GridItem(.flexible(), spacing: 10),
@@ -92,17 +92,19 @@ struct ActivityView: View {
                         }
                         .padding(.horizontal, 20)
                         .padding(.top, 0)
+                        .padding(.bottom, 250)
                     }
                 }
-                
+            }
+            .padding(.bottom, 105)
 
-                                
+            VStack(spacing: 0) {
+                Spacer()
                 WhiteRoundedBottomPlain(isBlocked: isBlocked)
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, -50)
-
-                
+                    .padding(.bottom, -48)
             }
+            .zIndex(1)
             
         }
         .sheet(isPresented: $showModeSheet) {
