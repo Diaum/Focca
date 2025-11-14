@@ -8,6 +8,7 @@ struct ActivityView: View {
     @State private var modeToEdit: String?
     @State private var showCreateMode = false
     @State private var showDailyDetail = false
+    @State private var showAdvancedStats = false
     @State private var selectedDate: Date?
     @State private var selectedTime: TimeInterval = 0
     @State private var todayTime: String = "0h 0m"
@@ -36,6 +37,24 @@ struct ActivityView: View {
 //            .overlay(ReferenceGrid(spacing: 24, color: .red.opacity(0.15)))
             
             VStack(spacing: 0) {
+                // Header com ícone de estatísticas
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        showAdvancedStats = true
+                    }) {
+                        Image(systemName: "chart.bar.fill")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                            .frame(width: 44, height: 44)
+                            .background(isBlocked ? Color(hex: "1C1C1C") : Color.white)
+                            .clipShape(Circle())
+                            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                    }
+                    .padding(.trailing, 16)
+                    .padding(.top, 8)
+                }
+                
                 Spacer(minLength: 20)
                 
                 HStack(spacing: 80) {
@@ -180,6 +199,9 @@ struct ActivityView: View {
         }
         .onChange(of: selectedDate) { newValue in
             print("🔄 [ActivityView] selectedDate mudou para: \(newValue?.description ?? "nil")")
+        }
+        .fullScreenCover(isPresented: $showAdvancedStats) {
+            AdvancedStatsView(selectedTab: $selectedTab, isBlocked: isBlocked)
         }
         .preferredColorScheme(isBlocked ? .dark : .light)
         .onAppear {
