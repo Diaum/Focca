@@ -1,14 +1,17 @@
 {
   "images" : [
     {
+      "filename" : "focca-rectangle-white.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
+      "filename" : "focca-rectangle-white.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
+      "filename" : "focca-rectangle-white.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

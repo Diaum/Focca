@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "focca-rectangle-yellow.png",
+      "filename" : "focca-rectangle-purple.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "focca-rectangle-yellow.png",
+      "filename" : "focca-rectangle-purple.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "focca-rectangle-yellow.png",
+      "filename" : "focca-rectangle-purple.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
