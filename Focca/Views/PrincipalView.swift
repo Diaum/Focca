@@ -70,6 +70,11 @@ struct PrincipalView: View {
         .onChange(of: scenePhase) { newPhase in
             // Quando o app volta ao foreground, verifica schedules pendentes e inicia Live Activity pendente
             if newPhase == .active {
+                // Atualiza o estado de bloqueio ao voltar ao foreground (pode ter mudado enquanto estava em background)
+                let stdBlocked = UserDefaults.standard.object(forKey: "blocked_start_date") != nil
+                let groupBlocked = appGroupDefaults.object(forKey: "blocked_start_date") != nil
+                isBlocked = scheduleManager.isBlockedBySchedule || stdBlocked || groupBlocked
+                
                 // Divide sessões que atravessam a meia-noite entre os dias
                 let calendar = Calendar.current
                 let today = calendar.startOfDay(for: Date())

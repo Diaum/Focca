@@ -45,26 +45,46 @@ struct DailyCard: View {
     // Cor de fundo do card
     private var cardBackgroundColor: Color {
         if isBlocked {
-            return Color(hex: "1C1C1C")
-        } else if isZeroTime {
-            // Cinza mais claro para 0h 0m
-            return Color(hex: "F5F5F5")
-        } else if isLessThanOneMinute {
-            // Cinza para menos de 1 minuto
-            return Color(hex: "E5E5E5")
+            // Dark mode
+            if isZeroTime {
+                // Cinza mais claro no dark mode para 0h 0m
+                return Color(hex: "2C2C2E")
+            } else if isLessThanOneMinute {
+                // Cinza no dark mode para menos de 1 minuto
+                return Color(hex: "2A2A2C")
+            } else {
+                return Color(hex: "1C1C1C")
+            }
         } else {
-            return Color.white
+            // Light mode
+            if isZeroTime {
+                // Cinza mais claro para 0h 0m
+                return Color(hex: "F5F5F5")
+            } else if isLessThanOneMinute {
+                // Cinza para menos de 1 minuto
+                return Color(hex: "E5E5E5")
+            } else {
+                return Color.white
+            }
         }
     }
     
     // Cor do texto de horas e minutos
     private var timeTextColor: Color {
         if isBlocked {
-            return .white
-        } else if shouldShowGray {
-            return Color(hex: "8A8A8E")
+            // Dark mode
+            if shouldShowGray {
+                return Color(hex: "6A6A6E")
+            } else {
+                return .white
+            }
         } else {
-            return Color(hex: "1C1C1E")
+            // Light mode
+            if shouldShowGray {
+                return Color(hex: "8A8A8E")
+            } else {
+                return Color(hex: "1C1C1E")
+            }
         }
     }
     
@@ -93,7 +113,7 @@ struct DailyCard: View {
             .padding(.vertical, 20)
             .background(cardBackgroundColor)
             .cornerRadius(16)
-            .shadow(color: isBlocked ? Color.black.opacity(0.3) : Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+            .shadow(color: isBlocked ? (shouldShowGray ? Color.black.opacity(0.2) : Color.black.opacity(0.3)) : Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(PlainButtonStyle())
     }

@@ -126,6 +126,12 @@ struct TimerComponent: View {
                     timerManager.finalize()
                 }
             }
+            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("BlockingStarted"))) { _ in
+                // Inicia o timer quando o bloqueio começa (incluindo quando schedule ativa em background)
+                if isActive {
+                    timerManager.start()
+                }
+            }
     }
 }
 

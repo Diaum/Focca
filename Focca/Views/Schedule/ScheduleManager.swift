@@ -13,6 +13,7 @@ class ScheduleManager: ObservableObject {
     
     private var timer: Timer?
     private let userDefaults = UserDefaults.standard
+    private let sharedDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
     
     private init() {
         print("📅 [ScheduleManager] Inicializando ScheduleManager...")
@@ -370,9 +371,15 @@ class ScheduleManager: ObservableObject {
         
         // CRÍTICO: Verifica se já existe um bloqueio ativo antes de criar novo
         // Se já existe blocked_start_date, usa essa data em vez de criar uma nova
-        let existingStartDate = userDefaults.object(forKey: "blocked_start_date") as? Date ?? now
+        let existingStartDate = userDefaults.object(forKey: "blocked_start_date") as? Date ?? 
+                                 sharedDefaults.object(forKey: "blocked_start_date") as? Date ?? now
         
+        // Salva em ambos os UserDefaults para garantir que o timer funcione
         userDefaults.set(existingStartDate, forKey: "blocked_start_date")
+        userDefaults.synchronize()
+        sharedDefaults.set(existingStartDate, forKey: "blocked_start_date")
+        sharedDefaults.synchronize()
+        
         userDefaults.set(true, forKey: "blocked_by_schedule")
         userDefaults.set(schedule.modeName, forKey: "active_mode_name")
         userDefaults.set(saved.applicationTokens.count, forKey: "active_mode_app_count")
@@ -388,7 +395,11 @@ class ScheduleManager: ObservableObject {
         
         print("   ✅ Schedule ativado com sucesso!")
         
+        // Notifica que o schedule foi ativado (para atualizar UI)
         NotificationCenter.default.post(name: NSNotification.Name("ScheduleActivated"), object: nil)
+        
+        // Notifica que o bloqueio iniciou (para o timer iniciar)
+        NotificationCenter.default.post(name: NSNotification.Name("BlockingStarted"), object: nil)
         
         // Inicia Live Activity apenas se o modo permitir
         let showLiveActivity = UserDefaults.standard.object(forKey: "mode_\(schedule.modeName)_show_live_activity") as? Bool ?? true

@@ -105,9 +105,17 @@ struct OnboardingStep4: View {
                         // Inicia timer
                         let now = Date()
                         sharedDefaults.set(now, forKey: "blocked_start_date")
+                        sharedDefaults.synchronize()
+                        
+                        // Salva também no standardDefaults para garantir acesso
+                        UserDefaults.standard.set(now, forKey: "blocked_start_date")
+                        UserDefaults.standard.synchronize()
                         
                         // Registra início de bloqueio por app
                         AppBlockingTracker.shared.startBlocking(selection: saved, startDate: now)
+                        
+                        // Notifica que o bloqueio iniciou (para o timer iniciar)
+                        NotificationCenter.default.post(name: NSNotification.Name("BlockingStarted"), object: nil)
 
                         // Start Live Activity (no onboarding sempre mostra, pois é o primeiro uso)
                         startLiveActivity(startDate: now)

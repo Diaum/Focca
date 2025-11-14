@@ -117,6 +117,9 @@ struct UnlockedView: View {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                             WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
                         }
+                        
+                        // Notifica que o bloqueio iniciou (para o timer iniciar)
+                        NotificationCenter.default.post(name: NSNotification.Name("BlockingStarted"), object: nil)
 
                         isBlocked = true
                     }
