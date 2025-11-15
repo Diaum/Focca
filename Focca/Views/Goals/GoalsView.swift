@@ -246,106 +246,6 @@ struct GoalsView: View {
     }
 }
 
-struct WeeklyGoalCard: View {
-    @Binding var hours: Int
-    @Binding var minutes: Int
-    let isBlocked: Bool
-    @Binding var hasGoal: Bool
-    @Binding var isEditing: Bool
-    let startDate: Date?
-    let onSave: () -> Void
-    
-    private var periodText: String? {
-        guard let start = startDate else { return nil }
-        let calendar = Calendar.current
-        let endDate = calendar.date(byAdding: .day, value: 7, to: start)!
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d"
-        return "\(formatter.string(from: start)) - \(formatter.string(from: endDate))"
-    }
-    
-    var body: some View {
-        VStack(spacing: 20) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Image(systemName: "calendar")
-                        .font(.system(size: 18))
-                        .foregroundColor(.blue)
-                    
-                    Text("Weekly Goal")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
-                    
-                    Spacer()
-                }
-                
-                Text("The minimum weekly time you ideally want to stay away from your apps.")
-                    .font(.system(size: 13, weight: .regular))
-                    .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            
-            if hasGoal && !isEditing {
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Current Goal")
-                                .font(.system(size: 13, weight: .medium))
-                                .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
-                            
-                            Text(formatTime(hours: hours, minutes: minutes))
-                                .font(.system(size: 24, weight: .semibold))
-                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
-                        }
-                        
-                        Spacer()
-                        
-                        Button(action: {
-                            isEditing = true
-                        }) {
-                            Text("Edit")
-                                .font(.system(size: 15, weight: .semibold))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 20)
-                                .padding(.vertical, 10)
-                                .background(Color.blue)
-                                .cornerRadius(10)
-                        }
-                    }
-                    
-                    if let period = periodText {
-                        Text("Period: \(period)")
-                            .font(.system(size: 11, weight: .regular))
-                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
-                    }
-                }
-            } else {
-                TimeInputView(
-                    hours: $hours,
-                    minutes: $minutes,
-                    isBlocked: isBlocked,
-                    maxHours: 167
-                )
-                
-                Button(action: onSave) {
-                    Text(hasGoal ? "Update Goal" : "Save Goal")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(Color.blue)
-                        .cornerRadius(12)
-                }
-            }
-        }
-        .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white)
-                .shadow(color: Color.black.opacity(isBlocked ? 0.3 : 0.04), radius: 3, x: 0, y: 1)
-        )
-    }
-}
 
 struct MonthlyGoalCard: View {
     @Binding var hours: Int
@@ -406,10 +306,10 @@ struct MonthlyGoalCard: View {
                         }) {
                             Text("Edit")
                                 .font(.system(size: 15, weight: .semibold))
-                                .foregroundColor(.white)
+                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                                 .padding(.horizontal, 20)
                                 .padding(.vertical, 10)
-                                .background(Color.blue)
+                                .background(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "1C1C1E"))
                                 .cornerRadius(10)
                         }
                     }
@@ -431,10 +331,10 @@ struct MonthlyGoalCard: View {
                 Button(action: onSave) {
                     Text(hasGoal ? "Update Goal" : "Save Goal")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.white)
+                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
-                        .background(Color.blue)
+                        .background(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "1C1C1E"))
                         .cornerRadius(12)
                 }
             }
