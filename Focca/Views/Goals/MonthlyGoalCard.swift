@@ -151,6 +151,9 @@ struct MonthlyGoalCard: View {
         .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { _ in
             updateProgress()
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("UpdateMonthlyGoalProgress"))) { _ in
+            updateProgress()
+        }
     }
     
     private func updateProgress() {
@@ -161,23 +164,41 @@ struct MonthlyGoalCard: View {
         }
         
         let calendar = Calendar.current
-        let endDate = calendar.date(byAdding: .day, value: 30, to: start)!
+        let startDay = calendar.startOfDay(for: start)
+        let endDate = calendar.date(byAdding: .day, value: 30, to: startDay)!
         let today = calendar.startOfDay(for: Date())
+        let now = Date()
         
         // Calculate goal time in seconds
         goalTime = TimeInterval(hours * 3600 + minutes * 60)
         
         // Calculate current progress by summing daily times in the period
         var totalTime: TimeInterval = 0
-        var currentDate = start
+        var currentDate = startDay
+        var dayCount = 0
         
-        while currentDate <= endDate && currentDate <= today {
+        // Include today if we're still within the period
+        let maxDate = min(endDate, today)
+        
+        print("📊 [MonthlyGoal] Calculating progress from \(formatDate(startDay)) to \(formatDate(maxDate))")
+        
+        while currentDate <= maxDate {
             let dailyTime = TimerStorage.shared.getDailyTime(for: currentDate)
             totalTime += dailyTime
-            currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate)!
+            
+            // Debug log for all days
+            let formatter = DateFormatter()
+            formatter.dateFormat = "MMM d"
+            print("📊 [MonthlyGoal] Day \(dayCount): \(formatter.string(from: currentDate)) - \(Int(dailyTime / 60))m (total so far: \(Int(totalTime / 60))m)")
+            
+            dayCount += 1
+            guard let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) else { break }
+            currentDate = nextDate
         }
         
         currentProgress = totalTime
+        
+        print("📊 [MonthlyGoal] Progress: \(Int(totalTime / 60))m / \(Int(goalTime / 60))m (Period: \(formatDate(start)) to \(formatDate(endDate)))")
     }
     
     private func formatTimeInterval(_ interval: TimeInterval) -> String {
@@ -205,6 +226,12 @@ struct MonthlyGoalCard: View {
         } else {
             return "0m"
         }
+    }
+    
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d, yyyy"
+        return formatter.string(from: date)
     }
 }
 

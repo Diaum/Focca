@@ -172,10 +172,16 @@ struct GoalsView: View {
         hasWeeklyGoal = true
         isEditingWeekly = false
         
+        // Force update progress after saving
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            // Trigger progress update by notifying the card
+            NotificationCenter.default.post(name: NSNotification.Name("UpdateWeeklyGoalProgress"), object: nil)
+        }
+        
         if isNew {
-            print("✅ [Goals] Weekly goal created - \(weeklyGoalHours)h \(weeklyGoalMinutes)m")
+            print("✅ [Goals] Weekly goal created - \(weeklyGoalHours)h \(weeklyGoalMinutes)m, start date: \(formatDate(weeklyGoalStartDate ?? today))")
         } else {
-            print("✏️ [Goals] Weekly goal updated - \(weeklyGoalHours)h \(weeklyGoalMinutes)m")
+            print("✏️ [Goals] Weekly goal updated - \(weeklyGoalHours)h \(weeklyGoalMinutes)m, start date: \(formatDate(weeklyGoalStartDate ?? today))")
         }
     }
     
@@ -206,10 +212,16 @@ struct GoalsView: View {
         hasMonthlyGoal = true
         isEditingMonthly = false
         
+        // Force update progress after saving
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            // Trigger progress update by notifying the card
+            NotificationCenter.default.post(name: NSNotification.Name("UpdateMonthlyGoalProgress"), object: nil)
+        }
+        
         if isNew {
-            print("✅ [Goals] Monthly goal created - \(monthlyGoalHours)h \(monthlyGoalMinutes)m")
+            print("✅ [Goals] Monthly goal created - \(monthlyGoalHours)h \(monthlyGoalMinutes)m, start date: \(formatDate(monthlyGoalStartDate ?? today))")
         } else {
-            print("✏️ [Goals] Monthly goal updated - \(monthlyGoalHours)h \(monthlyGoalMinutes)m")
+            print("✏️ [Goals] Monthly goal updated - \(monthlyGoalHours)h \(monthlyGoalMinutes)m, start date: \(formatDate(monthlyGoalStartDate ?? today))")
         }
     }
     
