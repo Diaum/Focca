@@ -36,7 +36,7 @@ struct WeeklyGoalCard: View {
                 HStack {
                     Image(systemName: "calendar")
                         .font(.system(size: 18))
-                        .foregroundColor(.blue)
+                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                     
                     Text("Weekly Goal")
                         .font(.system(size: 20, weight: .semibold))
@@ -128,7 +128,8 @@ struct WeeklyGoalCard: View {
                     hours: $hours,
                     minutes: $minutes,
                     isBlocked: isBlocked,
-                    maxHours: 167
+                    maxHours: 167,
+                    minHours: 7
                 )
                 
                 HStack(spacing: 12) {
@@ -199,6 +200,29 @@ struct WeeklyGoalCard: View {
         }
         .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { _ in
             updateProgress()
+            // Check progress notifications periodically
+            if hasGoal, let start = startDate {
+                Task {
+                    await GoalsNotificationManager.shared.checkAndSendProgressNotifications(
+                        goalType: .weekly,
+                        hours: hours,
+                        minutes: minutes,
+                        startDate: start
+                    )
+                    // Check smart notification every 5 minutes
+                    let now = Date()
+                    let calendar = Calendar.current
+                    let currentMinutes = calendar.component(.minute, from: now)
+                    if currentMinutes % 5 == 0 {
+                        await GoalsNotificationManager.shared.checkAndSendSmartNotification(
+                            goalType: .weekly,
+                            hours: hours,
+                            minutes: minutes,
+                            startDate: start
+                        )
+                    }
+                }
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("UpdateWeeklyGoalProgress"))) { _ in
             DispatchQueue.main.async {
@@ -256,7 +280,22 @@ struct WeeklyGoalCard: View {
         
         currentProgress = totalTime
         
-        print("📊 [WeeklyGoal] Progress: \(Int(totalTime / 60))m / \(Int(goalTime / 60))m (Period: \(formatDate(start)) to \(formatDate(endDate)))")
+        // Format for console log
+        let totalMinutes = Int(totalTime / 60)
+        let goalMinutes = Int(goalTime / 60)
+        let totalFormatted = totalMinutes >= 60 ? "\(totalMinutes / 60)h \(totalMinutes % 60)m" : "\(totalMinutes)m"
+        let goalFormatted = goalMinutes >= 60 ? "\(goalMinutes / 60)h \(goalMinutes % 60)m" : "\(goalMinutes)m"
+        print("📊 [WeeklyGoal] Progress: \(totalFormatted) / \(goalFormatted) (Period: \(formatDate(start)) to \(formatDate(endDate)))")
+        
+        // Check and send progress notifications
+        Task {
+            await GoalsNotificationManager.shared.checkAndSendProgressNotifications(
+                goalType: .weekly,
+                hours: hours,
+                minutes: minutes,
+                startDate: start
+            )
+        }
     }
     
     private func formatTimeInterval(_ interval: TimeInterval) -> String {

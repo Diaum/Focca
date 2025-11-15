@@ -19,10 +19,11 @@ struct MonthlyGoalCard: View {
     private var periodText: String? {
         guard let start = startDate else { return nil }
         let calendar = Calendar.current
-        let endDate = calendar.date(byAdding: .day, value: 30, to: start)!
+        let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: start))!
+        let monthEnd = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: monthStart)!
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d"
-        return "\(formatter.string(from: start)) - \(formatter.string(from: endDate))"
+        return "\(formatter.string(from: monthStart)) - \(formatter.string(from: monthEnd))"
     }
     
     private var progressPercentage: Double {
@@ -36,7 +37,7 @@ struct MonthlyGoalCard: View {
                 HStack {
                     Image(systemName: "calendar.badge.clock")
                         .font(.system(size: 18))
-                        .foregroundColor(.purple)
+                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                     
                     Text("Monthly Goal")
                         .font(.system(size: 20, weight: .semibold))
@@ -199,6 +200,29 @@ struct MonthlyGoalCard: View {
         }
         .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { _ in
             updateProgress()
+            // Check progress notifications periodically
+            if hasGoal, let start = startDate {
+                Task {
+                    await GoalsNotificationManager.shared.checkAndSendProgressNotifications(
+                        goalType: .monthly,
+                        hours: hours,
+                        minutes: minutes,
+                        startDate: start
+                    )
+                    // Check smart notification every 5 minutes
+                    let now = Date()
+                    let calendar = Calendar.current
+                    let currentMinutes = calendar.component(.minute, from: now)
+                    if currentMinutes % 5 == 0 {
+                        await GoalsNotificationManager.shared.checkAndSendSmartNotification(
+                            goalType: .monthly,
+                            hours: hours,
+                            minutes: minutes,
+                            startDate: start
+                        )
+                    }
+                }
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("UpdateMonthlyGoalProgress"))) { _ in
             DispatchQueue.main.async {
@@ -222,23 +246,25 @@ struct MonthlyGoalCard: View {
         }
         
         let calendar = Calendar.current
-        let startDay = calendar.startOfDay(for: start)
-        let endDate = calendar.date(byAdding: .day, value: 30, to: startDay)!
         let today = calendar.startOfDay(for: Date())
-        let now = Date()
+        
+        // Get the month start and end for the month of the start date
+        let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: start))!
+        let monthEnd = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: monthStart)!
+        let monthEndDay = calendar.startOfDay(for: monthEnd)
         
         // Calculate goal time in seconds
         goalTime = TimeInterval(hours * 3600 + minutes * 60)
         
-        // Calculate current progress by summing daily times in the period
+        // Calculate current progress by summing daily times in the month
         var totalTime: TimeInterval = 0
-        var currentDate = startDay
+        var currentDate = monthStart
         var dayCount = 0
         
-        // Include today if we're still within the period
-        let maxDate = min(endDate, today)
+        // Include today if we're still within the month
+        let maxDate = min(monthEndDay, today)
         
-        print("📊 [MonthlyGoal] Calculating progress from \(formatDate(startDay)) to \(formatDate(maxDate))")
+        print("📊 [MonthlyGoal] Calculating progress from \(formatDate(monthStart)) to \(formatDate(maxDate))")
         
         while currentDate <= maxDate {
             let dailyTime = TimerStorage.shared.getDailyTime(for: currentDate)
@@ -256,7 +282,35 @@ struct MonthlyGoalCard: View {
         
         currentProgress = totalTime
         
-        print("📊 [MonthlyGoal] Progress: \(Int(totalTime / 60))m / \(Int(goalTime / 60))m (Period: \(formatDate(start)) to \(formatDate(endDate)))")
+        // Format for console log
+        let totalMinutes = Int(totalTime / 60)
+        let goalMinutes = Int(goalTime / 60)
+        let totalFormatted = totalMinutes >= 60 ? "\(totalMinutes / 60)h \(totalMinutes % 60)m" : "\(totalMinutes)m"
+        let goalFormatted = goalMinutes >= 60 ? "\(goalMinutes / 60)h \(goalMinutes % 60)m" : "\(goalMinutes)m"
+        // Reuse monthEnd from above
+        print("📊 [MonthlyGoal] Progress: \(totalFormatted) / \(goalFormatted) (Period: \(formatDate(monthStart)) to \(formatDate(monthEnd)))")
+        
+        // Check and send progress notifications
+        Task {
+            // Reuse monthStart from above
+            await GoalsNotificationManager.shared.checkAndSendProgressNotifications(
+                goalType: .monthly,
+                hours: hours,
+                minutes: minutes,
+                startDate: monthStart
+            )
+            // Check smart notification every 5 minutes
+            let now = Date()
+            let currentMinutes = calendar.component(.minute, from: now)
+            if currentMinutes % 5 == 0 {
+                await GoalsNotificationManager.shared.checkAndSendSmartNotification(
+                    goalType: .monthly,
+                    hours: hours,
+                    minutes: minutes,
+                    startDate: monthStart
+                )
+            }
+        }
     }
     
     private func formatTimeInterval(_ interval: TimeInterval) -> String {

@@ -19,6 +19,8 @@ struct GoalsView: View {
     @State private var monthlyGoalStartDate: Date?
     @State private var showEditWarning: Bool = false
     @State private var pendingEditType: EditType? = nil
+    @State private var showValidationError: Bool = false
+    @State private var validationErrorMessage: String = ""
     
     enum EditType {
         case weekly
@@ -122,6 +124,11 @@ struct GoalsView: View {
                     } message: {
                         Text("Editing a goal is irreversible. All progress accumulated for the current period will be lost and a new period will start from today. Are you sure you want to continue?")
                     }
+                    .alert("Invalid Goal", isPresented: $showValidationError) {
+                        Button("OK", role: .cancel) {}
+                    } message: {
+                        Text(validationErrorMessage)
+                    }
                 } else {
                     VStack(spacing: 20) {
                         // Disabled Weekly Goal Card
@@ -223,6 +230,41 @@ struct GoalsView: View {
             // Force update progress when app comes to foreground
             NotificationCenter.default.post(name: NSNotification.Name("UpdateWeeklyGoalProgress"), object: nil)
             NotificationCenter.default.post(name: NSNotification.Name("UpdateMonthlyGoalProgress"), object: nil)
+            
+            // Check progress notifications and smart notifications
+            Task {
+                if hasWeeklyGoal, let startDate = weeklyGoalStartDate {
+                    await GoalsNotificationManager.shared.checkAndSendProgressNotifications(
+                        goalType: .weekly,
+                        hours: weeklyGoalHours,
+                        minutes: weeklyGoalMinutes,
+                        startDate: startDate
+                    )
+                    await GoalsNotificationManager.shared.checkAndSendSmartNotification(
+                        goalType: .weekly,
+                        hours: weeklyGoalHours,
+                        minutes: weeklyGoalMinutes,
+                        startDate: startDate
+                    )
+                }
+                
+                if hasMonthlyGoal, let startDate = monthlyGoalStartDate {
+                    let calendar = Calendar.current
+                    let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: startDate))!
+                    await GoalsNotificationManager.shared.checkAndSendProgressNotifications(
+                        goalType: .monthly,
+                        hours: monthlyGoalHours,
+                        minutes: monthlyGoalMinutes,
+                        startDate: monthStart
+                    )
+                    await GoalsNotificationManager.shared.checkAndSendSmartNotification(
+                        goalType: .monthly,
+                        hours: monthlyGoalHours,
+                        minutes: monthlyGoalMinutes,
+                        startDate: monthStart
+                    )
+                }
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("GoalsEnabledChanged"))) { _ in
             // Reload goals state when enabled/disabled
@@ -258,6 +300,14 @@ struct GoalsView: View {
         if hasWeeklyGoal {
             weeklyGoalHours = userDefaults.integer(forKey: "weekly_goal_hours")
             weeklyGoalMinutes = userDefaults.integer(forKey: "weekly_goal_minutes")
+            // Ensure minimum of 7 hours
+            let totalMinutes = weeklyGoalHours * 60 + weeklyGoalMinutes
+            if totalMinutes < 420 { // 7 hours = 420 minutes
+                weeklyGoalHours = 7
+                weeklyGoalMinutes = 0
+                userDefaults.set(7, forKey: "weekly_goal_hours")
+                userDefaults.set(0, forKey: "weekly_goal_minutes")
+            }
             let startDateTimestamp = userDefaults.double(forKey: "weekly_goal_start_date")
             if startDateTimestamp > 0 {
                 weeklyGoalStartDate = Date(timeIntervalSince1970: startDateTimestamp)
@@ -293,6 +343,16 @@ struct GoalsView: View {
     }
     
     private func saveWeeklyGoal() {
+        // Validate goal
+        let validation = GoalsNotificationManager.shared.validateWeeklyGoal(hours: weeklyGoalHours, minutes: weeklyGoalMinutes)
+        guard validation.isValid else {
+            // Show error alert
+            validationErrorMessage = validation.errorMessage ?? "Weekly goal must be at least 7 hours"
+            showValidationError = true
+            print("❌ [Goals] Validation failed: \(validation.errorMessage ?? "Unknown error")")
+            return
+        }
+        
         let userDefaults = UserDefaults.standard
         let isNew = !hasWeeklyGoal
         let calendar = Calendar.current
@@ -322,12 +382,58 @@ struct GoalsView: View {
         }
         
         hasWeeklyGoal = true
+        let wasEditing = isEditingWeekly
         isEditingWeekly = false
+        
+        // Reset progress flags when creating new goal or editing
+        if isNew || wasEditing {
+            GoalsNotificationManager.shared.resetProgressFlags(goalType: .weekly)
+        }
         
         // Force update progress after saving
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             // Trigger progress update by notifying the card
             NotificationCenter.default.post(name: NSNotification.Name("UpdateWeeklyGoalProgress"), object: nil)
+        }
+        
+        // Send notifications (always send creation notification when saving, as editing resets the period)
+        Task {
+            // Get current progress (should be 0 or minimal since period was reset if editing)
+            let calendar = Calendar.current
+            let startDay = calendar.startOfDay(for: weeklyGoalStartDate ?? today)
+            var totalTime: TimeInterval = 0
+            var currentDate = startDay
+            let today = calendar.startOfDay(for: Date())
+            
+            while currentDate <= today {
+                totalTime += TimerStorage.shared.getDailyTime(for: currentDate)
+                guard let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) else { break }
+                currentDate = nextDate
+            }
+            
+            // Send creation notification (always, since editing resets the period)
+            await GoalsNotificationManager.shared.sendGoalCreatedNotification(
+                goalType: .weekly,
+                hours: weeklyGoalHours,
+                minutes: weeklyGoalMinutes,
+                currentProgress: totalTime
+            )
+            
+            // Schedule progress notifications
+            await GoalsNotificationManager.shared.scheduleProgressNotifications(
+                goalType: .weekly,
+                hours: weeklyGoalHours,
+                minutes: weeklyGoalMinutes,
+                startDate: weeklyGoalStartDate ?? today
+            )
+            
+            // Check and send smart notification
+            await GoalsNotificationManager.shared.checkAndSendSmartNotification(
+                goalType: .weekly,
+                hours: weeklyGoalHours,
+                minutes: weeklyGoalMinutes,
+                startDate: weeklyGoalStartDate ?? today
+            )
         }
         
         if isNew {
@@ -338,6 +444,16 @@ struct GoalsView: View {
     }
     
     private func saveMonthlyGoal() {
+        // Validate goal
+        let validation = GoalsNotificationManager.shared.validateMonthlyGoal(hours: monthlyGoalHours, minutes: monthlyGoalMinutes)
+        guard validation.isValid else {
+            // Show error alert
+            validationErrorMessage = validation.errorMessage ?? "Monthly goal must be at least 30 hours"
+            showValidationError = true
+            print("❌ [Goals] Validation failed: \(validation.errorMessage ?? "Unknown error")")
+            return
+        }
+        
         let userDefaults = UserDefaults.standard
         let isNew = !hasMonthlyGoal
         let calendar = Calendar.current
@@ -347,32 +463,89 @@ struct GoalsView: View {
         userDefaults.set(monthlyGoalHours, forKey: "monthly_goal_hours")
         userDefaults.set(monthlyGoalMinutes, forKey: "monthly_goal_minutes")
         
-        // When editing, always reset to today (new period starts)
+        // Monthly goals are based on calendar months (1st to last day of month)
+        let currentMonthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: today))!
+        
+        // When editing or creating, set to first day of current month
         if isEditingMonthly && !isNew {
-            print("⚠️ [Goals] Monthly goal edited - resetting period and losing previous progress")
-            monthlyGoalStartDate = today
-            userDefaults.set(today.timeIntervalSince1970, forKey: "monthly_goal_start_date")
+            print("⚠️ [Goals] Monthly goal edited - resetting to current month")
+            monthlyGoalStartDate = currentMonthStart
+            userDefaults.set(currentMonthStart.timeIntervalSince1970, forKey: "monthly_goal_start_date")
         } else if let startDate = monthlyGoalStartDate {
-            let endDate = calendar.date(byAdding: .day, value: 30, to: startDate)!
-            if Date() >= endDate {
-                monthlyGoalStartDate = today
-                userDefaults.set(today.timeIntervalSince1970, forKey: "monthly_goal_start_date")
-                print("📅 [Goals] Monthly goal recalculated - new period: \(formatDate(today)) to \(formatDate(calendar.date(byAdding: .day, value: 30, to: today)!))")
+            // Check if we're in a different month
+            let startMonth = calendar.component(.month, from: startDate)
+            let startYear = calendar.component(.year, from: startDate)
+            let currentMonth = calendar.component(.month, from: today)
+            let currentYear = calendar.component(.year, from: today)
+            
+            if startMonth != currentMonth || startYear != currentYear {
+                // Month changed, reset to current month
+                monthlyGoalStartDate = currentMonthStart
+                userDefaults.set(currentMonthStart.timeIntervalSince1970, forKey: "monthly_goal_start_date")
+                let monthEnd = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: currentMonthStart)!
+                print("📅 [Goals] Monthly goal recalculated - new month: \(formatDate(currentMonthStart)) to \(formatDate(monthEnd))")
             } else {
                 userDefaults.set(startDate.timeIntervalSince1970, forKey: "monthly_goal_start_date")
             }
         } else {
-            monthlyGoalStartDate = today
-            userDefaults.set(today.timeIntervalSince1970, forKey: "monthly_goal_start_date")
+            // New goal - set to first day of current month
+            monthlyGoalStartDate = currentMonthStart
+            userDefaults.set(currentMonthStart.timeIntervalSince1970, forKey: "monthly_goal_start_date")
         }
         
         hasMonthlyGoal = true
+        let wasEditing = isEditingMonthly
         isEditingMonthly = false
+        
+        // Reset progress flags when creating new goal or editing
+        if isNew || wasEditing {
+            GoalsNotificationManager.shared.resetProgressFlags(goalType: .monthly)
+        }
         
         // Force update progress after saving
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             // Trigger progress update by notifying the card
             NotificationCenter.default.post(name: NSNotification.Name("UpdateMonthlyGoalProgress"), object: nil)
+        }
+        
+        // Send notifications (always send creation notification when saving, as editing resets the period)
+        Task {
+            // Get current progress (should be 0 or minimal since period was reset if editing)
+            let calendar = Calendar.current
+            let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: monthlyGoalStartDate ?? today))!
+            var totalTime: TimeInterval = 0
+            var currentDate = monthStart
+            let today = calendar.startOfDay(for: Date())
+            
+            while currentDate <= today {
+                totalTime += TimerStorage.shared.getDailyTime(for: currentDate)
+                guard let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) else { break }
+                currentDate = nextDate
+            }
+            
+            // Send creation notification (always, since editing resets the period)
+            await GoalsNotificationManager.shared.sendGoalCreatedNotification(
+                goalType: .monthly,
+                hours: monthlyGoalHours,
+                minutes: monthlyGoalMinutes,
+                currentProgress: totalTime
+            )
+            
+            // Schedule progress notifications (reuse monthStart from above)
+            await GoalsNotificationManager.shared.scheduleProgressNotifications(
+                goalType: .monthly,
+                hours: monthlyGoalHours,
+                minutes: monthlyGoalMinutes,
+                startDate: monthStart
+            )
+            
+            // Check and send smart notification
+            await GoalsNotificationManager.shared.checkAndSendSmartNotification(
+                goalType: .monthly,
+                hours: monthlyGoalHours,
+                minutes: monthlyGoalMinutes,
+                startDate: monthStart
+            )
         }
         
         if isNew {
@@ -406,6 +579,8 @@ struct GoalsView: View {
                 weeklyGoalStartDate = today
                 userDefaults.set(today.timeIntervalSince1970, forKey: "weekly_goal_start_date")
                 print("📅 [Goals] Weekly goal period expired, recalculated - new period: \(formatDate(today)) to \(formatDate(calendar.date(byAdding: .day, value: 7, to: today)!))")
+                // Reset progress flags for new period
+                GoalsNotificationManager.shared.resetProgressFlags(goalType: .weekly)
                 // Force update progress after recalculating
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     NotificationCenter.default.post(name: NSNotification.Name("UpdateWeeklyGoalProgress"), object: nil)
@@ -413,14 +588,31 @@ struct GoalsView: View {
             }
         }
         
-        // Check monthly goal
+        // Check monthly goal - reset if month changed
         if hasMonthlyGoal, let startDate = monthlyGoalStartDate {
-            let startDay = calendar.startOfDay(for: startDate)
-            let endDate = calendar.date(byAdding: .day, value: 30, to: startDay)!
-            if Date() >= endDate {
-                monthlyGoalStartDate = today
-                userDefaults.set(today.timeIntervalSince1970, forKey: "monthly_goal_start_date")
-                print("📅 [Goals] Monthly goal period expired, recalculated - new period: \(formatDate(today)) to \(formatDate(calendar.date(byAdding: .day, value: 30, to: today)!))")
+            let startMonth = calendar.component(.month, from: startDate)
+            let startYear = calendar.component(.year, from: startDate)
+            let currentMonth = calendar.component(.month, from: today)
+            let currentYear = calendar.component(.year, from: today)
+            
+            if startMonth != currentMonth || startYear != currentYear {
+                // Month changed, reset to current month
+                let currentMonthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: today))!
+                monthlyGoalStartDate = currentMonthStart
+                userDefaults.set(currentMonthStart.timeIntervalSince1970, forKey: "monthly_goal_start_date")
+                let monthEnd = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: currentMonthStart)!
+                print("📅 [Goals] Monthly goal period expired, recalculated - new month: \(formatDate(currentMonthStart)) to \(formatDate(monthEnd))")
+                // Reset progress flags for new period
+                GoalsNotificationManager.shared.resetProgressFlags(goalType: .monthly)
+                // Send creation notification for new month
+                Task {
+                    await GoalsNotificationManager.shared.sendGoalCreatedNotification(
+                        goalType: .monthly,
+                        hours: monthlyGoalHours,
+                        minutes: monthlyGoalMinutes,
+                        currentProgress: 0
+                    )
+                }
                 // Force update progress after recalculating
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     NotificationCenter.default.post(name: NSNotification.Name("UpdateMonthlyGoalProgress"), object: nil)
@@ -437,12 +629,27 @@ struct TimeInputView: View {
     @Binding var minutes: Int
     let isBlocked: Bool
     let maxHours: Int
+    let minHours: Int
     
-    init(hours: Binding<Int>, minutes: Binding<Int>, isBlocked: Bool, maxHours: Int = 999) {
+    init(hours: Binding<Int>, minutes: Binding<Int>, isBlocked: Bool, maxHours: Int = 999, minHours: Int = 0) {
         self._hours = hours
         self._minutes = minutes
         self.isBlocked = isBlocked
         self.maxHours = maxHours
+        self.minHours = minHours
+        
+        // Ensure initial value is at least minimum
+        let totalMinutes = hours.wrappedValue * 60 + minutes.wrappedValue
+        let minMinutes = minHours * 60
+        if totalMinutes < minMinutes {
+            hours.wrappedValue = minHours
+            minutes.wrappedValue = 0
+        }
+    }
+    
+    private var isAtMinimum: Bool {
+        let totalMinutes = hours * 60 + minutes
+        return totalMinutes <= (minHours * 60)
     }
     
     var body: some View {
@@ -455,15 +662,19 @@ struct TimeInputView: View {
                     
                     HStack(spacing: 8) {
                         Button(action: {
-                            if hours > 0 {
-                                hours -= 1
+                            if !isAtMinimum {
+                                if hours > minHours {
+                                    hours -= 1
+                                } else if hours == minHours && minutes > 0 {
+                                    minutes = 0
+                                }
                             }
                         }) {
                             Image(systemName: "minus.circle.fill")
                                 .font(.system(size: 28))
-                                .foregroundColor(hours == 0 ? (isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA")) : (isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8")))
+                                .foregroundColor(isAtMinimum ? (isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA")) : (isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8")))
                         }
-                        .disabled(hours == 0)
+                        .disabled(isAtMinimum)
                         
                         Text("\(hours)")
                             .font(.system(size: 32, weight: .bold))
@@ -496,18 +707,22 @@ struct TimeInputView: View {
                     
                     HStack(spacing: 8) {
                         Button(action: {
-                            if minutes > 0 {
-                                minutes -= 1
-                            } else if hours > 0 {
-                                hours -= 1
-                                minutes = 59
+                            if !isAtMinimum {
+                                if minutes > 0 {
+                                    minutes -= 1
+                                } else if hours > minHours {
+                                    hours -= 1
+                                    minutes = 59
+                                } else if hours == minHours && minutes == 0 {
+                                    // Can't go below minimum
+                                }
                             }
                         }) {
                             Image(systemName: "minus.circle.fill")
                                 .font(.system(size: 28))
-                                .foregroundColor((hours == 0 && minutes == 0) ? (isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA")) : (isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8")))
+                                .foregroundColor(isAtMinimum ? (isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA")) : (isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8")))
                         }
-                        .disabled(hours == 0 && minutes == 0)
+                        .disabled(isAtMinimum)
                         
                         Text(String(format: "%02d", minutes))
                             .font(.system(size: 32, weight: .bold))
