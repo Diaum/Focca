@@ -9,6 +9,7 @@ struct ActivityView: View {
     @State private var showCreateMode = false
     @State private var showDailyDetail = false
     @State private var showAdvancedStats = false
+    @State private var showGoals = false
     @State private var selectedDate: Date?
     @State private var selectedTime: TimeInterval = 0
     @State private var todayTime: String = "0h 0m"
@@ -39,6 +40,7 @@ struct ActivityView: View {
                     Spacer()
                     HStack(spacing: 12) {
                         Button(action: {
+                            showGoals = true
                         }) {
                             Image(systemName: "target")
                                 .font(.system(size: 16, weight: .medium))
@@ -209,6 +211,9 @@ struct ActivityView: View {
         }
         .fullScreenCover(isPresented: $showAdvancedStats) {
             AdvancedStatsView(selectedTab: $selectedTab, isBlocked: isBlocked)
+        }
+        .fullScreenCover(isPresented: $showGoals) {
+            GoalsView(selectedTab: $selectedTab, isBlocked: isBlocked)
         }
         .preferredColorScheme(isBlocked ? .dark : .light)
         .onAppear {

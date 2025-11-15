@@ -190,6 +190,7 @@ struct SettingsRow: View {
     @ObservedObject private var awardManager = AwardManager.shared
     @ObservedObject private var statsAchievementManager = StatsAchievementManager.shared
     @State private var showAdvancedStats = false
+    @State private var showGoals = false
     
     var body: some View {
         Button(action: {
@@ -203,7 +204,7 @@ struct SettingsRow: View {
                 showAdvancedStats = true
                 StatsAchievementManager.shared.markAchievementsAsViewed()
             case .goals:
-                break
+                showGoals = true
             case .none:
                 break
             }
@@ -255,6 +256,9 @@ struct SettingsRow: View {
         .buttonStyle(PlainButtonStyle())
         .fullScreenCover(isPresented: $showAdvancedStats) {
             AdvancedStatsView(selectedTab: $selectedTab, isBlocked: isBlocked)
+        }
+        .fullScreenCover(isPresented: $showGoals) {
+            GoalsView(selectedTab: $selectedTab, isBlocked: isBlocked)
         }
     }
 }
