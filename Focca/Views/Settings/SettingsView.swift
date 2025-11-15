@@ -203,7 +203,6 @@ struct SettingsRow: View {
                 showAdvancedStats = true
                 StatsAchievementManager.shared.markAchievementsAsViewed()
             case .goals:
-                // TODO: Implementar Goals view
                 break
             case .none:
                 break

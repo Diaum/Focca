@@ -14,8 +14,7 @@ struct ActivityView: View {
     @State private var todayTime: String = "0h 0m"
     @State private var averageTime: String = "0h 0m"
     @State private var dailyCards: [(date: Date, time: TimeInterval)] = []
-    @State private var lastLoggedAppCount: Int = -1 // Para evitar logs repetidos
-    // Permite injetar dados no Preview para mostrar cards
+    @State private var lastLoggedAppCount: Int = -1
     let initialDailyCards: [(date: Date, time: TimeInterval)]?
     
     init(selectedTab: Binding<Int>, isBlocked: Bool = false, initialDailyCards: [(date: Date, time: TimeInterval)]? = nil) {
@@ -34,16 +33,12 @@ struct ActivityView: View {
                 endPoint: .bottom
             )
             .ignoresSafeArea()
-//            .overlay(ReferenceGrid(spacing: 24, color: .red.opacity(0.15)))
             
             VStack(spacing: 0) {
-                // Header com ícones de estatísticas e goals
                 HStack {
                     Spacer()
                     HStack(spacing: 12) {
-                        // Ícone de Goals
                         Button(action: {
-                            // TODO: Implementar Goals view
                         }) {
                             Image(systemName: "target")
                                 .font(.system(size: 16, weight: .medium))
@@ -54,7 +49,6 @@ struct ActivityView: View {
                                 .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                         }
                         
-                        // Ícone de Advanced Statistics
                         Button(action: {
                             showAdvancedStats = true
                         }) {
@@ -179,12 +173,10 @@ struct ActivityView: View {
                             print("✅ [ActivityView] DailyDetailView apareceu - date: \(date), time: \(selectedTime)")
                         }
                         .onDisappear {
-                            // Limpa a seleção quando a view é fechada
                             selectedDate = nil
                             selectedTime = 0
                         }
                 } else {
-                    // Fallback: mostra uma view vazia se selectedDate for nil
                     VStack {
                         Text("Erro: selectedDate é nil")
                             .foregroundColor(.red)
@@ -196,7 +188,6 @@ struct ActivityView: View {
                     .background(Color.white)
                     .onAppear {
                         print("⚠️ [ActivityView] Fallback apareceu - selectedDate é nil, showDailyDetail: \(showDailyDetail)")
-                        // Se selectedDate ainda for nil, fecha a view imediatamente
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                             if selectedDate == nil {
                                 print("❌ [ActivityView] Fechando fullScreenCover porque selectedDate é nil")
@@ -222,7 +213,6 @@ struct ActivityView: View {
         .preferredColorScheme(isBlocked ? .dark : .light)
         .onAppear {
             if let injected = initialDailyCards {
-                // Usa os dados de preview quando fornecidos
                 dailyCards = injected
             } else {
                 loadActivityData()
@@ -253,12 +243,10 @@ struct ActivityView: View {
         let minutes = (Int(totalTime) % 3600) / 60
         todayTime = String(format: "%dh %dm", hours, minutes)
         
-        // Log para verificar quantos apps bloqueados têm tempo salvo hoje (apenas quando mudar)
         let today = Date()
         let appDetails = AppBlockingTracker.shared.getAppBlockingDetails(for: today)
         let currentAppCount = appDetails.count
         
-        // Só loga se o número de apps mudou ou se ainda não foi logado
         if currentAppCount != lastLoggedAppCount {
             lastLoggedAppCount = currentAppCount
             if appDetails.isEmpty {
