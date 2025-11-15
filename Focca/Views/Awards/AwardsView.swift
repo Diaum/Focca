@@ -14,6 +14,7 @@ struct AwardsView: View {
     let awards: [(id: String, icon: String, title: String, subtitle: String, tint: String)] = [
         ("30_min_focus", "clock.fill", "30 minutes focused", "Stay focused for 30 minutes in a single session", "1C1C1E"),
         ("1_hour_focus", "star.fill", "1 hour focused", "Stay focused for 1 hour in a single session", "FFD700"),
+        ("create_goal", "target", "Goal Setter", "Create your first goal", "00A8FF"),
         ("7_day_streak", "flame", "7-day streak", "Use Focca seven days in a row with at least 1 hour per day", "FF6B6B"),
         ("10_hours_total", "hourglass", "10 hours total", "Accumulate ten hours of focused time", "0EA5E9"),
         ("15_day_streak", "flame.fill", "15-day streak", "Use Focca fifteen days in a row with at least 1 hour per day", "FF4500"),
@@ -22,6 +23,8 @@ struct AwardsView: View {
         ("72_hours_total", "clock.badge.checkmark.fill", "72 hours total", "Accumulate seventy-two hours of focused time", "4B0082"),
         ("scheduled_session", "calendar.badge.clock", "Scheduled session", "Start a focus session using a schedule", "4F46E5"),
         ("48_hours_total", "clock.badge.fill", "48 hours total", "Accumulate forty-eight hours of focused time", "9370DB"),
+        ("complete_weekly_goal", "calendar.badge.checkmark", "Weekly Goal Master", "Complete a weekly goal", "007AFF"),
+        ("complete_monthly_goal", "calendar.badge.clock.fill", "Monthly Goal Master", "Complete a monthly goal", "5856D6"),
     ]
     
     var filteredAwards: [(id: String, icon: String, title: String, subtitle: String, tint: String)] {

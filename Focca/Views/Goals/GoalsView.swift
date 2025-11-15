@@ -374,6 +374,7 @@ struct GoalsView: View {
         userDefaults.set(true, forKey: "weekly_goal_exists")
         userDefaults.set(weeklyGoalHours, forKey: "weekly_goal_hours")
         userDefaults.set(weeklyGoalMinutes, forKey: "weekly_goal_minutes")
+        userDefaults.synchronize() // Force sync to ensure data is saved
         
         // When editing, always reset to today (new period starts)
         if isEditingWeekly && !isNew {
@@ -444,6 +445,8 @@ struct GoalsView: View {
         
         if isNew {
             print("✅ [Goals] Weekly goal created - \(weeklyGoalHours)h \(weeklyGoalMinutes)m, start date: \(formatDate(weeklyGoalStartDate ?? today))")
+            // Check for goal creation award
+            AwardManager.shared.checkGoalCreatedAward()
         } else {
             print("✏️ [Goals] Weekly goal updated - \(weeklyGoalHours)h \(weeklyGoalMinutes)m, start date: \(formatDate(weeklyGoalStartDate ?? today))")
         }
@@ -468,6 +471,7 @@ struct GoalsView: View {
         userDefaults.set(true, forKey: "monthly_goal_exists")
         userDefaults.set(monthlyGoalHours, forKey: "monthly_goal_hours")
         userDefaults.set(monthlyGoalMinutes, forKey: "monthly_goal_minutes")
+        userDefaults.synchronize() // Force sync to ensure data is saved
         
         // Monthly goals are based on calendar months (1st to last day of month)
         let currentMonthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: today))!
@@ -548,9 +552,11 @@ struct GoalsView: View {
         }
         
         if isNew {
-            print("✅ [Goals] Monthly goal created - \(monthlyGoalHours)h \(monthlyGoalMinutes)m, start date: \(formatDate(monthlyGoalStartDate ?? today))")
+            print("✅ [Goals] Monthly goal created - \(monthlyGoalHours)h \(monthlyGoalMinutes)m, start date: \(formatDate(monthlyGoalStartDate ?? currentMonthStart))")
+            // Check for goal creation award
+            AwardManager.shared.checkGoalCreatedAward()
         } else {
-            print("✏️ [Goals] Monthly goal updated - \(monthlyGoalHours)h \(monthlyGoalMinutes)m, start date: \(formatDate(monthlyGoalStartDate ?? today))")
+            print("✏️ [Goals] Monthly goal updated - \(monthlyGoalHours)h \(monthlyGoalMinutes)m, start date: \(formatDate(monthlyGoalStartDate ?? currentMonthStart))")
         }
     }
     

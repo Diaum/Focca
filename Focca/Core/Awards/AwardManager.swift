@@ -107,6 +107,7 @@ class AwardManager: ObservableObject {
         checkHistoricalAwards()
         checkStreakAwards()
         checkScheduleAward()
+        checkGoalAwards()
     }
     
     private func checkHistoricalAwards() {
@@ -240,6 +241,72 @@ class AwardManager: ObservableObject {
     func markScheduleActivated() {
         userDefaults.set(true, forKey: "schedule_has_been_activated")
         checkScheduleAward()
+    }
+    
+    // MARK: - Goal Awards
+    
+    func checkGoalCreatedAward() {
+        guard !isAwardUnlocked("create_goal") else { return }
+        
+        // Use UserDefaults.standard to match GoalsView
+        let standardDefaults = UserDefaults.standard
+        let hasWeeklyGoal = standardDefaults.bool(forKey: "weekly_goal_exists")
+        let hasMonthlyGoal = standardDefaults.bool(forKey: "monthly_goal_exists")
+        
+        print("🎯 [AwardManager] Checking goal creation award - Weekly: \(hasWeeklyGoal), Monthly: \(hasMonthlyGoal)")
+        
+        if hasWeeklyGoal || hasMonthlyGoal {
+            unlockAward("create_goal")
+            NotificationManager.shared.sendInfoNotification(
+                title: "🎉 Award Unlocked!",
+                body: "You've created your first goal!"
+            )
+            print("✅ [AwardManager] Goal creation award unlocked!")
+        }
+    }
+    
+    func checkWeeklyGoalCompletedAward() {
+        guard !isAwardUnlocked("complete_weekly_goal") else { return }
+        
+        // Use UserDefaults.standard to match GoalsNotificationManager
+        let standardDefaults = UserDefaults.standard
+        let weeklyGoalsCompleted = standardDefaults.integer(forKey: "weekly_goals_completed")
+        
+        print("🎯 [AwardManager] Checking weekly goal completion award - Completed: \(weeklyGoalsCompleted)")
+        
+        if weeklyGoalsCompleted >= 1 {
+            unlockAward("complete_weekly_goal")
+            NotificationManager.shared.sendInfoNotification(
+                title: "🎉 Award Unlocked!",
+                body: "You've completed your first weekly goal!"
+            )
+            print("✅ [AwardManager] Weekly goal completion award unlocked!")
+        }
+    }
+    
+    func checkMonthlyGoalCompletedAward() {
+        guard !isAwardUnlocked("complete_monthly_goal") else { return }
+        
+        // Use UserDefaults.standard to match GoalsNotificationManager
+        let standardDefaults = UserDefaults.standard
+        let monthlyGoalsCompleted = standardDefaults.integer(forKey: "monthly_goals_completed")
+        
+        print("🎯 [AwardManager] Checking monthly goal completion award - Completed: \(monthlyGoalsCompleted)")
+        
+        if monthlyGoalsCompleted >= 1 {
+            unlockAward("complete_monthly_goal")
+            NotificationManager.shared.sendInfoNotification(
+                title: "🎉 Award Unlocked!",
+                body: "You've completed your first monthly goal!"
+            )
+            print("✅ [AwardManager] Monthly goal completion award unlocked!")
+        }
+    }
+    
+    private func checkGoalAwards() {
+        checkGoalCreatedAward()
+        checkWeeklyGoalCompletedAward()
+        checkMonthlyGoalCompletedAward()
     }
 }
 

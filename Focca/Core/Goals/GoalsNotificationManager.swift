@@ -153,6 +153,13 @@ class GoalsNotificationManager {
                 let currentCount = userDefaults.integer(forKey: completedKey)
                 userDefaults.set(currentCount + 1, forKey: completedKey)
                 print("🎯 [GoalsNotification] \(goalType.rawValue.capitalized) goal completed! Total: \(currentCount + 1)")
+                
+                // Check for completion awards
+                if goalType == .weekly {
+                    AwardManager.shared.checkWeeklyGoalCompletedAward()
+                } else {
+                    AwardManager.shared.checkMonthlyGoalCompletedAward()
+                }
             }
         }
     }
