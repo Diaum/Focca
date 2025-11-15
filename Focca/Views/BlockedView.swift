@@ -28,7 +28,7 @@ struct BlockedView: View {
                 TimerComponent(isActive: isBlocked)
                     .padding(.bottom, 60)
                 
-                Image("focca-rectangle-black")
+                Image("focca-rectangle-gray")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 300, height: 197)

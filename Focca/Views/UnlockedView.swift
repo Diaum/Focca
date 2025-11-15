@@ -52,7 +52,7 @@ struct UnlockedView: View {
 
 
                 
-                Image("focca-rectangle-white")
+                Image("focca-rectangle-gray")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 300, height: 197)
