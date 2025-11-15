@@ -2,7 +2,7 @@ import SwiftUI
 import UIKit
 import Combine
 
-struct WeeklyGoalCard: View {
+struct MonthlyGoalCard: View {
     @Binding var hours: Int
     @Binding var minutes: Int
     let isBlocked: Bool
@@ -17,7 +17,7 @@ struct WeeklyGoalCard: View {
     private var periodText: String? {
         guard let start = startDate else { return nil }
         let calendar = Calendar.current
-        let endDate = calendar.date(byAdding: .day, value: 7, to: start)!
+        let endDate = calendar.date(byAdding: .day, value: 30, to: start)!
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d"
         return "\(formatter.string(from: start)) - \(formatter.string(from: endDate))"
@@ -32,11 +32,11 @@ struct WeeklyGoalCard: View {
         VStack(spacing: 20) {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Image(systemName: "calendar")
+                    Image(systemName: "calendar.badge.clock")
                         .font(.system(size: 18))
-                        .foregroundColor(.blue)
+                        .foregroundColor(.purple)
                     
-                    Text("Weekly Goal")
+                    Text("Monthly Goal")
                         .font(.system(size: 20, weight: .semibold))
                         .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                     
@@ -49,7 +49,7 @@ struct WeeklyGoalCard: View {
                     }
                 }
                 
-                Text("The minimum weekly time you ideally want to stay away from your apps.")
+                Text("The minimum monthly time you ideally want to stay away from your apps.")
                     .font(.system(size: 13, weight: .regular))
                     .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                     .fixedSize(horizontal: false, vertical: true)
@@ -104,7 +104,7 @@ struct WeeklyGoalCard: View {
                                     .frame(height: 8)
                                 
                                 RoundedRectangle(cornerRadius: 6)
-                                    .fill(Color.blue)
+                                    .fill(Color.purple)
                                     .frame(width: geometry.size.width * progressPercentage, height: 8)
                             }
                         }
@@ -116,7 +116,7 @@ struct WeeklyGoalCard: View {
                     hours: $hours,
                     minutes: $minutes,
                     isBlocked: isBlocked,
-                    maxHours: 167
+                    maxHours: 744
                 )
                 
                 Button(action: onSave) {
@@ -161,7 +161,7 @@ struct WeeklyGoalCard: View {
         }
         
         let calendar = Calendar.current
-        let endDate = calendar.date(byAdding: .day, value: 7, to: start)!
+        let endDate = calendar.date(byAdding: .day, value: 30, to: start)!
         let today = calendar.startOfDay(for: Date())
         
         // Calculate goal time in seconds
