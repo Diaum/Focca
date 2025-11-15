@@ -43,6 +43,25 @@ struct GoalsView: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
+                // Header com botão de voltar
+                HStack {
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                            .frame(width: 44, height: 44)
+                            .background(isBlocked ? Color(hex: "1C1C1C") : Color.white)
+                            .clipShape(Circle())
+                            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                    }
+                    .padding(.leading, 16)
+                    .padding(.top, 8)
+                    
+                    Spacer()
+                }
+                
                 VStack(spacing: 8) {
                     Text("Goals")
                         .font(.system(size: 28, weight: .semibold))

@@ -3,6 +3,7 @@ import SwiftUI
 struct AdvancedStatsView: View {
     @Binding var selectedTab: Int
     let isBlocked: Bool
+    @Environment(\.presentationMode) var presentationMode
     @State private var totalBlockedTime: TimeInterval = 0
     @State private var showTimeInDays: Bool = false
     @State private var currentStreak: Int = 0
@@ -22,13 +23,32 @@ struct AdvancedStatsView: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
+                // Header com botão de voltar
+                HStack {
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                            .frame(width: 44, height: 44)
+                            .background(isBlocked ? Color(hex: "1C1C1C") : Color.white)
+                            .clipShape(Circle())
+                            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                    }
+                    .padding(.leading, 16)
+                    .padding(.top, 0)
+                    
+                    Spacer()
+                }
+                
                 // Título
                 VStack(spacing: 8) {
                     Text("Advanced Statistics")
                         .font(.system(size: 28, weight: .semibold))
                         .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 }
-                .padding(.top, -50)
+                .padding(.top, 0)
                 .padding(.bottom, 20)
                 
                 // Conteúdo
