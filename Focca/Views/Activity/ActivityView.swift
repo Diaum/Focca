@@ -37,19 +37,35 @@ struct ActivityView: View {
 //            .overlay(ReferenceGrid(spacing: 24, color: .red.opacity(0.15)))
             
             VStack(spacing: 0) {
-                // Header com ícone de estatísticas
+                // Header com ícones de estatísticas e goals
                 HStack {
                     Spacer()
-                    Button(action: {
-                        showAdvancedStats = true
-                    }) {
-                        Image(systemName: "chart.bar.fill")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
-                            .frame(width: 44, height: 44)
-                            .background(isBlocked ? Color(hex: "1C1C1C") : Color.white)
-                            .clipShape(Circle())
-                            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                    HStack(spacing: 12) {
+                        // Ícone de Goals
+                        Button(action: {
+                            // TODO: Implementar Goals view
+                        }) {
+                            Image(systemName: "target")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                                .frame(width: 44, height: 44)
+                                .background(isBlocked ? Color(hex: "1C1C1C") : Color.white)
+                                .clipShape(Circle())
+                                .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                        }
+                        
+                        // Ícone de Advanced Statistics
+                        Button(action: {
+                            showAdvancedStats = true
+                        }) {
+                            Image(systemName: "chart.bar.fill")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                                .frame(width: 44, height: 44)
+                                .background(isBlocked ? Color(hex: "1C1C1C") : Color.white)
+                                .clipShape(Circle())
+                                .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                        }
                     }
                     .padding(.trailing, 16)
                     .padding(.top, 8)
