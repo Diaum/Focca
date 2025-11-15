@@ -5,6 +5,7 @@ struct SettingsView: View {
     let isBlocked: Bool
     @State private var showNotificationsView = false
     @ObservedObject private var awardManager = AwardManager.shared
+    @ObservedObject private var statsAchievementManager = StatsAchievementManager.shared
     
     init(selectedTab: Binding<Int>, isBlocked: Bool = false) {
         self._selectedTab = selectedTab
@@ -177,6 +178,7 @@ struct SettingsRow: View {
     @Binding var selectedTab: Int
     let isBlocked: Bool
     @ObservedObject private var awardManager = AwardManager.shared
+    @ObservedObject private var statsAchievementManager = StatsAchievementManager.shared
     @State private var showAdvancedStats = false
     
     var body: some View {
@@ -189,6 +191,7 @@ struct SettingsRow: View {
                 AwardManager.shared.markAwardsAsViewed()
             case .advancedStats:
                 showAdvancedStats = true
+                StatsAchievementManager.shared.markAchievementsAsViewed()
             case .none:
                 break
             }
@@ -201,6 +204,12 @@ struct SettingsRow: View {
                             .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                         
                         if item.action == .awards && awardManager.hasNewAwards {
+                            Circle()
+                                .fill(Color.red)
+                                .frame(width: 8, height: 8)
+                        }
+                        
+                        if item.action == .advancedStats && statsAchievementManager.hasNewAchievements {
                             Circle()
                                 .fill(Color.red)
                                 .frame(width: 8, height: 8)

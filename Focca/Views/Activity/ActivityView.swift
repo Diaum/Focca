@@ -212,6 +212,7 @@ struct ActivityView: View {
                 loadActivityData()
             }
             updateTodayTime()
+            StatsAchievementManager.shared.updateAchievements()
             
             Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
                 DispatchQueue.main.async {

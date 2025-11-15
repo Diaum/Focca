@@ -113,6 +113,7 @@ struct AdvancedStatsView: View {
         .preferredColorScheme(isBlocked ? .dark : .light)
         .onAppear {
             loadTotalBlockedTime()
+            StatsAchievementManager.shared.markAchievementsAsViewed()
         }
     }
     
