@@ -9,7 +9,7 @@ struct StreakCard: View {
             HStack {
                 Image(systemName: "flame.fill")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.orange)
+                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 
                 Text("Current Streak")
                     .font(.system(size: 13, weight: .medium))

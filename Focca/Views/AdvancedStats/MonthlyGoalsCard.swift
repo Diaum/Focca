@@ -9,7 +9,7 @@ struct MonthlyGoalsCard: View {
             HStack {
                 Image(systemName: "calendar.badge.clock")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.purple)
+                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 
                 Text("Monthly Goals")
                     .font(.system(size: 13, weight: .medium))

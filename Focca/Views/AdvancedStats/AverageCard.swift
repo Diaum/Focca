@@ -19,7 +19,7 @@ struct AverageCard: View {
             HStack {
                 Image(systemName: "chart.bar.fill")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.green)
+                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 
                 Text("Average per Day")
                     .font(.system(size: 13, weight: .medium))

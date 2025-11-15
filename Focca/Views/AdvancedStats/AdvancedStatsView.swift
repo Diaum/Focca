@@ -28,8 +28,8 @@ struct AdvancedStatsView: View {
                         .font(.system(size: 28, weight: .semibold))
                         .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 }
-                .padding(.top, 0)
-                .padding(.bottom, 40)
+                .padding(.top, -50)
+                .padding(.bottom, 20)
                 
                 // Conteúdo
                 VStack(spacing: 20) {
@@ -39,7 +39,7 @@ struct AdvancedStatsView: View {
                             HStack(spacing: 10) {
                                 Image(systemName: "clock.fill")
                                     .font(.system(size: 20, weight: .medium))
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                                 
                                 Text("Total Blocked Time")
                                     .font(.system(size: 18, weight: .semibold))
