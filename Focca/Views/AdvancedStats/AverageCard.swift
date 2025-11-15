@@ -15,15 +15,15 @@ struct AverageCard: View {
     }
     
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 8) {
             Text("Average per Day")
-                .font(.system(size: 14, weight: .medium))
+                .font(.system(size: 13, weight: .medium))
                 .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
             
             Spacer()
             
             Text(formattedTime)
-                .font(.system(size: 32, weight: .bold))
+                .font(.system(size: 28, weight: .bold))
                 .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
@@ -32,8 +32,8 @@ struct AverageCard: View {
             Spacer()
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 120)
-        .padding(16)
+        .frame(height: 100)
+        .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white)
