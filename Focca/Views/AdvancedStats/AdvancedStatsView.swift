@@ -32,37 +32,53 @@ struct AdvancedStatsView: View {
                 .padding(.bottom, 40)
                 
                 // Conteúdo
-                VStack(spacing: 16) {
+                VStack(spacing: 20) {
                     // Card de tempo total bloqueado
-                    VStack(spacing: 12) {
+                    VStack(spacing: 16) {
                         HStack {
-                            Text("Total Blocked Time")
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                            HStack(spacing: 10) {
+                                Image(systemName: "clock.fill")
+                                    .font(.system(size: 20, weight: .medium))
+                                    .foregroundColor(.blue)
+                                
+                                Text("Total Blocked Time")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                            }
                             
                             Spacer()
                             
                             // Botão para alternar entre horas/minutos e dias
                             Button(action: {
-                                withAnimation {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                     showTimeInDays.toggle()
                                 }
                             }) {
-                                Text(showTimeInDays ? "Hours" : "Days")
-                                    .font(.system(size: 13, weight: .medium))
-                                    .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                                HStack(spacing: 4) {
+                                    Image(systemName: showTimeInDays ? "clock" : "calendar")
+                                        .font(.system(size: 11, weight: .medium))
+                                    Text(showTimeInDays ? "Hours" : "Days")
+                                        .font(.system(size: 13, weight: .medium))
+                                }
+                                .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "F5F5F5"))
+                                )
                             }
                         }
                         
-                        VStack(spacing: 8) {
+                        VStack(spacing: 4) {
                             Text(formattedTotalTime)
-                                .font(.system(size: 32, weight: .bold))
+                                .font(.system(size: 36, weight: .bold))
                                 .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                                 .multilineTextAlignment(.center)
                                 .lineLimit(nil)
                         }
                     }
-                    .padding(16)
+                    .padding(20)
                     .background(
                         RoundedRectangle(cornerRadius: 16)
                             .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white)
