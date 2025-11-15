@@ -147,6 +147,12 @@ class GoalsNotificationManager {
             if percentage >= 100 && !fullNotified {
                 sendProgressNotification(goalType: goalType, percentage: 100, currentProgress: totalTime, goalTime: goalTime)
                 userDefaults.set(true, forKey: fullNotifiedKey)
+                
+                // Increment completed goals counter
+                let completedKey = goalType == .weekly ? "weekly_goals_completed" : "monthly_goals_completed"
+                let currentCount = userDefaults.integer(forKey: completedKey)
+                userDefaults.set(currentCount + 1, forKey: completedKey)
+                print("🎯 [GoalsNotification] \(goalType.rawValue.capitalized) goal completed! Total: \(currentCount + 1)")
             }
         }
     }

@@ -113,15 +113,9 @@ struct MonthlyGoalCard: View {
                             
                             Spacer()
                             
-                            if hasExtraTime {
-                                Text("\(formatTime(hours: hours, minutes: minutes)) + \(formatTimeInterval(extraTime))")
-                                    .font(.system(size: 13, weight: .medium))
-                                    .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
-                            } else {
-                                Text("\(formatTimeInterval(currentProgress)) / \(formatTime(hours: hours, minutes: minutes))")
-                                    .font(.system(size: 13, weight: .medium))
-                                    .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
-                            }
+                            Text("\(Int(progressPercentage * 100))%")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                         }
                         
                         GeometryReader { geometry in
@@ -130,18 +124,10 @@ struct MonthlyGoalCard: View {
                                     .fill(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA"))
                                     .frame(height: 8)
                                 
-                                // Goal progress (purple) - fills up to 100%
+                                // Goal progress (purple) - fills up to 100%, can exceed
                                 RoundedRectangle(cornerRadius: 6)
                                     .fill(Color.purple)
                                     .frame(width: geometry.size.width * min(progressPercentage, 1.0), height: 8)
-                                
-                                // Extra time (green) if exceeds goal - continues after 100%
-                                if hasExtraTime {
-                                    RoundedRectangle(cornerRadius: 6)
-                                        .fill(Color.green)
-                                        .frame(width: min(geometry.size.width * (extraTime / goalTime), geometry.size.width * 0.3), height: 8)
-                                        .offset(x: geometry.size.width)
-                                }
                             }
                         }
                         .frame(height: 8)

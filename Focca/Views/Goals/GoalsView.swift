@@ -226,13 +226,14 @@ struct GoalsView: View {
                     .padding(.horizontal, 16)
                 }
                 
-                Spacer()
+                Spacer(minLength: 0)
                 
                 VStack(spacing: 0) {
                     WhiteRoundedBottomPlain(isBlocked: isBlocked)
                     TabBar(selectedTab: $selectedTab)
                         .padding(.bottom, -50)
                 }
+                .frame(maxHeight: .infinity, alignment: .bottom)
             }
         }
         .preferredColorScheme(isBlocked ? .dark : .light)
@@ -699,7 +700,7 @@ struct TimeInputView: View {
                         .disabled(isAtMinimum)
                         
                         Text("\(hours)")
-                            .font(.system(size: 28, weight: .bold))
+                            .font(.system(size: 24, weight: .bold))
                             .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                             .frame(minWidth: 60)
                         
@@ -709,7 +710,7 @@ struct TimeInputView: View {
                             }
                         }) {
                             Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 28))
+                                .font(.system(size: 20))
                                 .foregroundColor(hours >= maxHours ? (isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA")) : .blue)
                         }
                         .disabled(hours >= maxHours)
@@ -718,7 +719,7 @@ struct TimeInputView: View {
                 .frame(maxWidth: .infinity)
                 
                 Text(":")
-                    .font(.system(size: 32, weight: .bold))
+                    .font(.system(size: 24, weight: .bold))
                     .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8"))
                     .padding(.top, 20)
                 
@@ -741,13 +742,13 @@ struct TimeInputView: View {
                             }
                         }) {
                             Image(systemName: "minus.circle.fill")
-                                .font(.system(size: 24))
+                                .font(.system(size: 20))
                                 .foregroundColor(isAtMinimum ? (isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA")) : (isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8")))
                         }
                         .disabled(isAtMinimum)
                         
                         Text(String(format: "%02d", minutes))
-                            .font(.system(size: 28, weight: .bold))
+                            .font(.system(size: 24, weight: .bold))
                             .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                             .frame(minWidth: 60)
                         
@@ -760,7 +761,7 @@ struct TimeInputView: View {
                             }
                         }) {
                             Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 24))
+                                .font(.system(size: 20))
                                 .foregroundColor((hours >= maxHours && minutes >= 59) ? (isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA")) : .blue)
                         }
                         .disabled(hours >= maxHours && minutes >= 59)

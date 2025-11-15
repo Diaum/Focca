@@ -8,6 +8,8 @@ struct AdvancedStatsView: View {
     @State private var showTimeInDays: Bool = false
     @State private var currentStreak: Int = 0
     @State private var averageTimePerDay: TimeInterval = 0
+    @State private var weeklyGoalsCompleted: Int = 0
+    @State private var monthlyGoalsCompleted: Int = 0
     
     var body: some View {
         ZStack {
@@ -50,54 +52,59 @@ struct AdvancedStatsView: View {
                 .padding(.bottom, 40)
                 
                 // Conteúdo
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 24) {
-                        // Card de tempo total bloqueado
-                        VStack(spacing: 16) {
-                            HStack {
-                                Text("Total Blocked Time")
-                                    .font(.system(size: 18, weight: .semibold))
-                                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
-                                
-                                Spacer()
-                                
-                                // Botão para alternar entre horas/minutos e dias
-                                Button(action: {
-                                    withAnimation {
-                                        showTimeInDays.toggle()
-                                    }
-                                }) {
-                                    Text(showTimeInDays ? "Hours" : "Days")
-                                        .font(.system(size: 13, weight: .medium))
-                                        .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
-                                }
-                            }
+                VStack(spacing: 16) {
+                    // Card de tempo total bloqueado
+                    VStack(spacing: 16) {
+                        HStack {
+                            Text("Total Blocked Time")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                             
-                            VStack(spacing: 12) {
-                                Text(formattedTotalTime)
-                                    .font(.system(size: 36, weight: .bold))
-                                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
-                                    .multilineTextAlignment(.center)
-                                    .lineLimit(nil)
+                            Spacer()
+                            
+                            // Botão para alternar entre horas/minutos e dias
+                            Button(action: {
+                                withAnimation {
+                                    showTimeInDays.toggle()
+                                }
+                            }) {
+                                Text(showTimeInDays ? "Hours" : "Days")
+                                    .font(.system(size: 13, weight: .medium))
+                                    .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                             }
                         }
-                        .padding(20)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white)
-                                .shadow(color: Color.black.opacity(isBlocked ? 0.3 : 0.04), radius: 3, x: 0, y: 1)
-                        )
-                        .padding(.horizontal, 16)
                         
-                        // Cards de streak e média lado a lado
-                        HStack(spacing: 12) {
-                            StreakCard(streak: currentStreak, isBlocked: isBlocked)
-                            AverageCard(averageTime: averageTimePerDay, isBlocked: isBlocked)
+                        VStack(spacing: 12) {
+                            Text(formattedTotalTime)
+                                .font(.system(size: 36, weight: .bold))
+                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                                .multilineTextAlignment(.center)
+                                .lineLimit(nil)
                         }
-                        .padding(.horizontal, 16)
                     }
-                    .padding(.top, 0)
-                    .padding(.bottom, 250)
+                    .padding(20)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white)
+                            .shadow(color: Color.black.opacity(isBlocked ? 0.3 : 0.04), radius: 3, x: 0, y: 1)
+                    )
+                    .padding(.horizontal, 16)
+                    
+                    // Cards de streak e média lado a lado
+                    HStack(spacing: 12) {
+                        StreakCard(streak: currentStreak, isBlocked: isBlocked)
+                        AverageCard(averageTime: averageTimePerDay, isBlocked: isBlocked)
+                    }
+                    .padding(.horizontal, 16)
+                    
+                    // Cards de goals completados
+                    HStack(spacing: 12) {
+                        WeeklyGoalsCard(completed: weeklyGoalsCompleted, isBlocked: isBlocked)
+                        MonthlyGoalsCard(completed: monthlyGoalsCompleted, isBlocked: isBlocked)
+                    }
+                    .padding(.horizontal, 16)
+                    
+                    Spacer()
                 }
                 
                 Spacer()
@@ -113,6 +120,7 @@ struct AdvancedStatsView: View {
         .preferredColorScheme(isBlocked ? .dark : .light)
         .onAppear {
             loadTotalBlockedTime()
+            loadGoalsCompleted()
             StatsAchievementManager.shared.markAchievementsAsViewed()
         }
     }
@@ -161,6 +169,12 @@ struct AdvancedStatsView: View {
         totalBlockedTime = dailyTimes.reduce(0) { $0 + $1.time }
         averageTimePerDay = TimerStorage.shared.getAverageTime()
         currentStreak = calculateStreak(dailyTimes: dailyTimes)
+    }
+    
+    private func loadGoalsCompleted() {
+        let userDefaults = UserDefaults.standard
+        weeklyGoalsCompleted = userDefaults.integer(forKey: "weekly_goals_completed")
+        monthlyGoalsCompleted = userDefaults.integer(forKey: "monthly_goals_completed")
     }
     
     private func calculateStreak(dailyTimes: [(date: Date, time: TimeInterval)]) -> Int {
