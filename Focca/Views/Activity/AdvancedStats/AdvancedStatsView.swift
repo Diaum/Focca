@@ -167,15 +167,35 @@ struct AdvancedStatsView: View {
         let today = calendar.startOfDay(for: Date())
         let minTimePerDay: TimeInterval = 3600 // 1 hora
         
-        var streak = 0
+        guard !dailyTimes.isEmpty else { return 0 }
+        
+        // Cria um dicionário para acesso rápido por data
+        var timeByDate: [Date: TimeInterval] = [:]
+        for (date, time) in dailyTimes {
+            let dayStart = calendar.startOfDay(for: date)
+            // Se já existe uma entrada para este dia, usa o maior valor
+            if let existingTime = timeByDate[dayStart] {
+                timeByDate[dayStart] = max(existingTime, time)
+            } else {
+                timeByDate[dayStart] = time
+            }
+        }
+        
+        // O streak SEMPRE começa de hoje
+        // Se hoje não tem pelo menos 1h, o streak é 0 (quebrado)
+        let todayTime = timeByDate[today] ?? 0
+        guard todayTime >= minTimePerDay else { return 0 }
+        
+        // Conta os dias consecutivos a partir de hoje, indo para trás
+        var streak = 1 // Já contamos hoje
         var currentDate = today
         
         while true {
-            if let dayData = dailyTimes.first(where: { calendar.isDate($0.date, inSameDayAs: currentDate) }),
-               dayData.time >= minTimePerDay {
-                streak += 1
-                if let previousDay = calendar.date(byAdding: .day, value: -1, to: currentDate) {
-                    currentDate = calendar.startOfDay(for: previousDay)
+            if let previousDay = calendar.date(byAdding: .day, value: -1, to: currentDate) {
+                let previousDayStart = calendar.startOfDay(for: previousDay)
+                if let time = timeByDate[previousDayStart], time >= minTimePerDay {
+                    streak += 1
+                    currentDate = previousDayStart
                 } else {
                     break
                 }
