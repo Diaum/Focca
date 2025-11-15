@@ -9,6 +9,8 @@ struct WeeklyGoalCard: View {
     @Binding var hasGoal: Bool
     @Binding var isEditing: Bool
     let startDate: Date?
+    let isOtherGoalEditing: Bool
+    let onEditRequest: () -> Void
     let onSave: () -> Void
     
     @State private var currentProgress: TimeInterval = 0
@@ -70,16 +72,26 @@ struct WeeklyGoalCard: View {
                         
                         Spacer()
                         
-                        Button(action: {
-                            isEditing = true
-                        }) {
-                            Text("Edit")
-                                .font(.system(size: 15, weight: .semibold))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 20)
-                                .padding(.vertical, 10)
-                                .background(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "1C1C1E"))
-                                .cornerRadius(10)
+                        VStack(alignment: .trailing, spacing: 4) {
+                            Button(action: {
+                                onEditRequest()
+                            }) {
+                                Text("Edit")
+                                    .font(.system(size: 15, weight: .semibold))
+                                    .foregroundColor(isOtherGoalEditing ? (isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8")) : .white)
+                                    .padding(.horizontal, 20)
+                                    .padding(.vertical, 10)
+                                    .background(isOtherGoalEditing ? (isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA")) : (isBlocked ? Color(hex: "2C2C2E") : Color(hex: "1C1C1E")))
+                                    .cornerRadius(10)
+                            }
+                            .disabled(isOtherGoalEditing)
+                            
+                            if isOtherGoalEditing {
+                                Text("Finish editing the other goal first")
+                                    .font(.system(size: 10, weight: .regular))
+                                    .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                                    .multilineTextAlignment(.trailing)
+                            }
                         }
                     }
                     
@@ -119,14 +131,34 @@ struct WeeklyGoalCard: View {
                     maxHours: 167
                 )
                 
-                Button(action: onSave) {
-                    Text(hasGoal ? "Update Goal" : "Save Goal")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "1C1C1E"))
-                        .cornerRadius(12)
+                HStack(spacing: 12) {
+                    if hasGoal {
+                        Button(action: {
+                            isEditing = false
+                            // Reload original values
+                            let userDefaults = UserDefaults.standard
+                            hours = userDefaults.integer(forKey: "weekly_goal_hours")
+                            minutes = userDefaults.integer(forKey: "weekly_goal_minutes")
+                        }) {
+                            Text("Cancel")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 50)
+                                .background(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA"))
+                                .cornerRadius(12)
+                        }
+                    }
+                    
+                    Button(action: onSave) {
+                        Text(hasGoal ? "Update Goal" : "Save Goal")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 50)
+                            .background(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "1C1C1E"))
+                            .cornerRadius(12)
+                    }
                 }
             }
         }

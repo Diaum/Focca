@@ -17,6 +17,17 @@ struct GoalsView: View {
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
     @State private var weeklyGoalStartDate: Date?
     @State private var monthlyGoalStartDate: Date?
+    @State private var showEditWarning: Bool = false
+    @State private var pendingEditType: EditType? = nil
+    
+    enum EditType {
+        case weekly
+        case monthly
+    }
+    
+    private var isEditingAnyGoal: Bool {
+        return isEditingWeekly || isEditingMonthly
+    }
     
     var body: some View {
         ZStack {
@@ -65,6 +76,11 @@ struct GoalsView: View {
                             hasGoal: $hasWeeklyGoal,
                             isEditing: $isEditingWeekly,
                             startDate: weeklyGoalStartDate,
+                            isOtherGoalEditing: isEditingMonthly,
+                            onEditRequest: {
+                                pendingEditType = .weekly
+                                showEditWarning = true
+                            },
                             onSave: {
                                 saveWeeklyGoal()
                             }
@@ -77,12 +93,35 @@ struct GoalsView: View {
                             hasGoal: $hasMonthlyGoal,
                             isEditing: $isEditingMonthly,
                             startDate: monthlyGoalStartDate,
+                            isOtherGoalEditing: isEditingWeekly,
+                            onEditRequest: {
+                                pendingEditType = .monthly
+                                showEditWarning = true
+                            },
                             onSave: {
                                 saveMonthlyGoal()
                             }
                         )
                     }
                     .padding(.horizontal, 16)
+                    .alert("Edit Goal Warning", isPresented: $showEditWarning) {
+                        Button("Cancel", role: .cancel) {
+                            pendingEditType = nil
+                        }
+                        Button("Continue", role: .destructive) {
+                            if let editType = pendingEditType {
+                                switch editType {
+                                case .weekly:
+                                    isEditingWeekly = true
+                                case .monthly:
+                                    isEditingMonthly = true
+                                }
+                            }
+                            pendingEditType = nil
+                        }
+                    } message: {
+                        Text("Editing a goal is irreversible. All progress accumulated for the current period will be lost and a new period will start from today. Are you sure you want to continue?")
+                    }
                 } else {
                     VStack(spacing: 20) {
                         // Disabled Weekly Goal Card
@@ -263,7 +302,12 @@ struct GoalsView: View {
         userDefaults.set(weeklyGoalHours, forKey: "weekly_goal_hours")
         userDefaults.set(weeklyGoalMinutes, forKey: "weekly_goal_minutes")
         
-        if let startDate = weeklyGoalStartDate {
+        // When editing, always reset to today (new period starts)
+        if isEditingWeekly && !isNew {
+            print("⚠️ [Goals] Weekly goal edited - resetting period and losing previous progress")
+            weeklyGoalStartDate = today
+            userDefaults.set(today.timeIntervalSince1970, forKey: "weekly_goal_start_date")
+        } else if let startDate = weeklyGoalStartDate {
             let endDate = calendar.date(byAdding: .day, value: 7, to: startDate)!
             if Date() >= endDate {
                 weeklyGoalStartDate = today
@@ -303,7 +347,12 @@ struct GoalsView: View {
         userDefaults.set(monthlyGoalHours, forKey: "monthly_goal_hours")
         userDefaults.set(monthlyGoalMinutes, forKey: "monthly_goal_minutes")
         
-        if let startDate = monthlyGoalStartDate {
+        // When editing, always reset to today (new period starts)
+        if isEditingMonthly && !isNew {
+            print("⚠️ [Goals] Monthly goal edited - resetting period and losing previous progress")
+            monthlyGoalStartDate = today
+            userDefaults.set(today.timeIntervalSince1970, forKey: "monthly_goal_start_date")
+        } else if let startDate = monthlyGoalStartDate {
             let endDate = calendar.date(byAdding: .day, value: 30, to: startDate)!
             if Date() >= endDate {
                 monthlyGoalStartDate = today
