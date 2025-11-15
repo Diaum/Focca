@@ -97,27 +97,7 @@ struct SettingsView: View {
                     SettingsSection(
                         title: nil,
                         items: [
-                            SettingsItem(title: "Strict mode", hasArrow: false)
-                        ],
-                        showNotificationsView: $showNotificationsView,
-                        selectedTab: $selectedTab,
-                        isBlocked: isBlocked
-                    )
-                    
-                    SettingsSection(
-                        title: nil,
-                        items: [
                             SettingsItem(title: "Goals", hasToggle: true, isToggledOn: GoalsManager.shared.areGoalsEnabled, action: .goalsToggle)
-                        ],
-                        showNotificationsView: $showNotificationsView,
-                        selectedTab: $selectedTab,
-                        isBlocked: isBlocked
-                    )
-                    
-                    SettingsSection(
-                        title: nil,
-                        items: [
-                            SettingsItem(title: "Troubleshooting", hasArrow: true)
                         ],
                         showNotificationsView: $showNotificationsView,
                         selectedTab: $selectedTab,
