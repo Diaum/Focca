@@ -106,23 +106,45 @@ struct GoalsView: View {
                         )
                     }
                     .padding(.horizontal, 16)
-                    .alert("Edit Goal Warning", isPresented: $showEditWarning) {
+                    .alert("Delete Goal Warning", isPresented: $showEditWarning) {
                         Button("Cancel", role: .cancel) {
                             pendingEditType = nil
                         }
-                        Button("Continue", role: .destructive) {
+                        Button("Delete", role: .destructive) {
                             if let editType = pendingEditType {
                                 switch editType {
                                 case .weekly:
-                                    isEditingWeekly = true
+                                    // Delete weekly goal
+                                    let userDefaults = UserDefaults.standard
+                                    userDefaults.set(false, forKey: "weekly_goal_exists")
+                                    userDefaults.removeObject(forKey: "weekly_goal_hours")
+                                    userDefaults.removeObject(forKey: "weekly_goal_minutes")
+                                    userDefaults.removeObject(forKey: "weekly_goal_start_date")
+                                    hasWeeklyGoal = false
+                                    weeklyGoalHours = 10
+                                    weeklyGoalMinutes = 0
+                                    weeklyGoalStartDate = nil
+                                    isEditingWeekly = false
+                                    print("🗑️ [Goals] Weekly goal deleted")
                                 case .monthly:
-                                    isEditingMonthly = true
+                                    // Delete monthly goal
+                                    let userDefaults = UserDefaults.standard
+                                    userDefaults.set(false, forKey: "monthly_goal_exists")
+                                    userDefaults.removeObject(forKey: "monthly_goal_hours")
+                                    userDefaults.removeObject(forKey: "monthly_goal_minutes")
+                                    userDefaults.removeObject(forKey: "monthly_goal_start_date")
+                                    hasMonthlyGoal = false
+                                    monthlyGoalHours = 40
+                                    monthlyGoalMinutes = 0
+                                    monthlyGoalStartDate = nil
+                                    isEditingMonthly = false
+                                    print("🗑️ [Goals] Monthly goal deleted")
                                 }
                             }
                             pendingEditType = nil
                         }
                     } message: {
-                        Text("Editing a goal is irreversible. All progress accumulated for the current period will be lost and a new period will start from today. Are you sure you want to continue?")
+                        Text("Deleting a goal is irreversible. All progress accumulated for the current period will be lost. Are you sure you want to delete this goal?")
                     }
                     .alert("Invalid Goal", isPresented: $showValidationError) {
                         Button("OK", role: .cancel) {}
@@ -671,13 +693,13 @@ struct TimeInputView: View {
                             }
                         }) {
                             Image(systemName: "minus.circle.fill")
-                                .font(.system(size: 28))
+                                .font(.system(size: 24))
                                 .foregroundColor(isAtMinimum ? (isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA")) : (isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8")))
                         }
                         .disabled(isAtMinimum)
                         
                         Text("\(hours)")
-                            .font(.system(size: 32, weight: .bold))
+                            .font(.system(size: 28, weight: .bold))
                             .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                             .frame(minWidth: 60)
                         
@@ -719,13 +741,13 @@ struct TimeInputView: View {
                             }
                         }) {
                             Image(systemName: "minus.circle.fill")
-                                .font(.system(size: 28))
+                                .font(.system(size: 24))
                                 .foregroundColor(isAtMinimum ? (isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA")) : (isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8")))
                         }
                         .disabled(isAtMinimum)
                         
                         Text(String(format: "%02d", minutes))
-                            .font(.system(size: 32, weight: .bold))
+                            .font(.system(size: 28, weight: .bold))
                             .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                             .frame(minWidth: 60)
                         
@@ -738,7 +760,7 @@ struct TimeInputView: View {
                             }
                         }) {
                             Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 28))
+                                .font(.system(size: 24))
                                 .foregroundColor((hours >= maxHours && minutes >= 59) ? (isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA")) : .blue)
                         }
                         .disabled(hours >= maxHours && minutes >= 59)

@@ -30,6 +30,14 @@ struct WeeklyGoalCard: View {
         return min(currentProgress / goalTime, 1.0)
     }
     
+    private var hasExtraTime: Bool {
+        return currentProgress > goalTime && goalTime > 0
+    }
+    
+    private var extraTime: TimeInterval {
+        return max(0, currentProgress - goalTime)
+    }
+    
     var body: some View {
         VStack(spacing: 20) {
             VStack(alignment: .leading, spacing: 8) {
@@ -72,27 +80,27 @@ struct WeeklyGoalCard: View {
                         
                         Spacer()
                         
-                        VStack(alignment: .trailing, spacing: 4) {
-                            Button(action: {
-                                onEditRequest()
-                            }) {
-                                Text("Edit")
-                                    .font(.system(size: 15, weight: .semibold))
-                                    .foregroundColor(isOtherGoalEditing ? (isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8")) : .white)
-                                    .padding(.horizontal, 20)
-                                    .padding(.vertical, 10)
-                                    .background(isOtherGoalEditing ? (isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA")) : (isBlocked ? Color(hex: "2C2C2E") : Color(hex: "1C1C1E")))
-                                    .cornerRadius(10)
-                            }
-                            .disabled(isOtherGoalEditing)
-                            
-                            if isOtherGoalEditing {
-                                Text("Finish editing the other goal first")
-                                    .font(.system(size: 10, weight: .regular))
-                                    .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
-                                    .multilineTextAlignment(.trailing)
-                            }
-                        }
+                                VStack(alignment: .trailing, spacing: 4) {
+                                    Button(action: {
+                                        onEditRequest()
+                                    }) {
+                                        Text("Delete")
+                                            .font(.system(size: 15, weight: .semibold))
+                                            .foregroundColor(isOtherGoalEditing ? (isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8")) : .white)
+                                            .padding(.horizontal, 20)
+                                            .padding(.vertical, 10)
+                                            .background(isOtherGoalEditing ? (isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA")) : Color.red)
+                                            .cornerRadius(10)
+                                    }
+                                    .disabled(isOtherGoalEditing)
+                                    
+                                    if isOtherGoalEditing {
+                                        Text("Finish editing the other goal first")
+                                            .font(.system(size: 10, weight: .regular))
+                                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                                            .multilineTextAlignment(.trailing)
+                                    }
+                                }
                     }
                     
                     // Progress Bar
@@ -104,9 +112,15 @@ struct WeeklyGoalCard: View {
                             
                             Spacer()
                             
-                            Text("\(formatTimeInterval(currentProgress)) / \(formatTime(hours: hours, minutes: minutes))")
-                                .font(.system(size: 13, weight: .medium))
-                                .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                            if hasExtraTime {
+                                Text("\(formatTime(hours: hours, minutes: minutes)) + \(formatTimeInterval(extraTime))")
+                                    .font(.system(size: 13, weight: .medium))
+                                    .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                            } else {
+                                Text("\(formatTimeInterval(currentProgress)) / \(formatTime(hours: hours, minutes: minutes))")
+                                    .font(.system(size: 13, weight: .medium))
+                                    .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                            }
                         }
                         
                         GeometryReader { geometry in
@@ -115,9 +129,18 @@ struct WeeklyGoalCard: View {
                                     .fill(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA"))
                                     .frame(height: 8)
                                 
+                                // Goal progress (blue) - fills up to 100%
                                 RoundedRectangle(cornerRadius: 6)
                                     .fill(Color.blue)
-                                    .frame(width: geometry.size.width * progressPercentage, height: 8)
+                                    .frame(width: geometry.size.width * min(progressPercentage, 1.0), height: 8)
+                                
+                                // Extra time (green) if exceeds goal - continues after 100%
+                                if hasExtraTime {
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .fill(Color.green)
+                                        .frame(width: min(geometry.size.width * (extraTime / goalTime), geometry.size.width * 0.3), height: 8)
+                                        .offset(x: geometry.size.width)
+                                }
                             }
                         }
                         .frame(height: 8)
@@ -132,34 +155,14 @@ struct WeeklyGoalCard: View {
                     minHours: 7
                 )
                 
-                HStack(spacing: 12) {
-                    if hasGoal {
-                        Button(action: {
-                            isEditing = false
-                            // Reload original values
-                            let userDefaults = UserDefaults.standard
-                            hours = userDefaults.integer(forKey: "weekly_goal_hours")
-                            minutes = userDefaults.integer(forKey: "weekly_goal_minutes")
-                        }) {
-                            Text("Cancel")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 50)
-                                .background(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA"))
-                                .cornerRadius(12)
-                        }
-                    }
-                    
-                    Button(action: onSave) {
-                        Text(hasGoal ? "Update Goal" : "Save Goal")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 50)
-                            .background(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "1C1C1E"))
-                            .cornerRadius(12)
-                    }
+                Button(action: onSave) {
+                    Text("Create Goal")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "1C1C1E"))
+                        .cornerRadius(12)
                 }
             }
         }
