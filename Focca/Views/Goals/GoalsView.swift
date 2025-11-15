@@ -43,34 +43,16 @@ struct GoalsView: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                HStack {
-                    Button(action: {
-                        presentationMode.wrappedValue.dismiss()
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
-                            .frame(width: 44, height: 44)
-                            .background(isBlocked ? Color(hex: "1C1C1C") : Color.white)
-                            .clipShape(Circle())
-                            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
-                    }
-                    .padding(.leading, 16)
-                    .padding(.top, 8)
-                    
-                    Spacer()
-                }
-                
                 VStack(spacing: 8) {
                     Text("Goals")
                         .font(.system(size: 28, weight: .semibold))
                         .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 }
-                .padding(.top, 20)
-                .padding(.bottom, 20)
+                .padding(.top, 0)
+                .padding(.bottom, 40)
                 
                 if GoalsManager.shared.areGoalsEnabled {
-                    VStack(spacing: 20) {
+                    VStack(spacing: 50) {
                         WeeklyGoalCard(
                             hours: $weeklyGoalHours,
                             minutes: $weeklyGoalMinutes,
@@ -106,6 +88,7 @@ struct GoalsView: View {
                         )
                     }
                     .padding(.horizontal, 16)
+                    .padding(.bottom, 105)
                     .alert("Delete Goal Warning", isPresented: $showEditWarning) {
                         Button("Cancel", role: .cancel) {
                             pendingEditType = nil
@@ -224,17 +207,17 @@ struct GoalsView: View {
                         .allowsHitTesting(false)
                     }
                     .padding(.horizontal, 16)
+                    .padding(.bottom, 105)
                 }
-                
-                Spacer(minLength: 0)
-                
-                VStack(spacing: 0) {
-                    WhiteRoundedBottomPlain(isBlocked: isBlocked)
-                    TabBar(selectedTab: $selectedTab)
-                        .padding(.bottom, -50)
-                }
-                .frame(maxHeight: .infinity, alignment: .bottom)
             }
+            
+            VStack(spacing: 0) {
+                Spacer()
+                WhiteRoundedBottomPlain(isBlocked: isBlocked)
+                TabBar(selectedTab: $selectedTab)
+                    .padding(.bottom, -48)
+            }
+            .zIndex(1)
         }
         .preferredColorScheme(isBlocked ? .dark : .light)
         .onAppear {
@@ -263,24 +246,12 @@ struct GoalsView: View {
                         minutes: weeklyGoalMinutes,
                         startDate: startDate
                     )
-                    await GoalsNotificationManager.shared.checkAndSendSmartNotification(
-                        goalType: .weekly,
-                        hours: weeklyGoalHours,
-                        minutes: weeklyGoalMinutes,
-                        startDate: startDate
-                    )
                 }
                 
                 if hasMonthlyGoal, let startDate = monthlyGoalStartDate {
                     let calendar = Calendar.current
                     let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: startDate))!
                     await GoalsNotificationManager.shared.checkAndSendProgressNotifications(
-                        goalType: .monthly,
-                        hours: monthlyGoalHours,
-                        minutes: monthlyGoalMinutes,
-                        startDate: monthStart
-                    )
-                    await GoalsNotificationManager.shared.checkAndSendSmartNotification(
                         goalType: .monthly,
                         hours: monthlyGoalHours,
                         minutes: monthlyGoalMinutes,
@@ -450,13 +421,6 @@ struct GoalsView: View {
                 startDate: weeklyGoalStartDate ?? today
             )
             
-            // Check and send smart notification
-            await GoalsNotificationManager.shared.checkAndSendSmartNotification(
-                goalType: .weekly,
-                hours: weeklyGoalHours,
-                minutes: weeklyGoalMinutes,
-                startDate: weeklyGoalStartDate ?? today
-            )
         }
         
         if isNew {
@@ -562,13 +526,6 @@ struct GoalsView: View {
                 startDate: monthStart
             )
             
-            // Check and send smart notification
-            await GoalsNotificationManager.shared.checkAndSendSmartNotification(
-                goalType: .monthly,
-                hours: monthlyGoalHours,
-                minutes: monthlyGoalMinutes,
-                startDate: monthStart
-            )
         }
         
         if isNew {

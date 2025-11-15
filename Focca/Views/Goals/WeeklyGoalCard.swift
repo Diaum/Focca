@@ -27,7 +27,7 @@ struct WeeklyGoalCard: View {
     
     private var progressPercentage: Double {
         guard goalTime > 0 else { return 0 }
-        return min(currentProgress / goalTime, 1.0)
+        return currentProgress / goalTime
     }
     
     private var hasExtraTime: Bool {
@@ -38,9 +38,14 @@ struct WeeklyGoalCard: View {
         return max(0, currentProgress - goalTime)
     }
     
+    private var extraPercentage: Double {
+        guard goalTime > 0 else { return 0 }
+        return max(0, (currentProgress - goalTime) / goalTime)
+    }
+    
     var body: some View {
-        VStack(spacing: 20) {
-            VStack(alignment: .leading, spacing: 8) {
+        VStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Image(systemName: "calendar")
                         .font(.system(size: 18))
@@ -66,7 +71,7 @@ struct WeeklyGoalCard: View {
             }
             
             if hasGoal && !isEditing {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Current Goal")
@@ -123,11 +128,20 @@ struct WeeklyGoalCard: View {
                                     .fill(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA"))
                                     .frame(height: 8)
                                 
-                                // Goal progress (blue) - fills up to 100%, can exceed
+                                // Goal progress (blue) - fills up to 100%
                                 RoundedRectangle(cornerRadius: 6)
                                     .fill(Color.blue)
                                     .frame(width: geometry.size.width * min(progressPercentage, 1.0), height: 8)
+                                
+                                // Extra time (green) if exceeds goal - continues from 100%
+                                if hasExtraTime {
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .fill(Color.green)
+                                        .frame(width: min(geometry.size.width * extraPercentage, geometry.size.width * 0.3), height: 8)
+                                        .offset(x: geometry.size.width)
+                                }
                             }
+                            .clipped()
                         }
                         .frame(height: 8)
                     }
@@ -146,13 +160,13 @@ struct WeeklyGoalCard: View {
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 50)
+                        .frame(height: 44)
                         .background(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "1C1C1E"))
                         .cornerRadius(12)
                 }
             }
         }
-        .padding(20)
+        .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white)
@@ -198,18 +212,6 @@ struct WeeklyGoalCard: View {
                         minutes: minutes,
                         startDate: start
                     )
-                    // Check smart notification every 5 minutes
-                    let now = Date()
-                    let calendar = Calendar.current
-                    let currentMinutes = calendar.component(.minute, from: now)
-                    if currentMinutes % 5 == 0 {
-                        await GoalsNotificationManager.shared.checkAndSendSmartNotification(
-                            goalType: .weekly,
-                            hours: hours,
-                            minutes: minutes,
-                            startDate: start
-                        )
-                    }
                 }
             }
         }
