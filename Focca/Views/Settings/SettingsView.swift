@@ -46,7 +46,6 @@ struct SettingsView: View {
                         title: "About Focca",
                         items: [
                             SettingsItem(title: "About Focca", hasArrow: true),
-                            SettingsItem(title: "Why Focca?", hasArrow: true),
                             SettingsItem(title: "Privacy Policy", hasArrow: true)
                         ],
                         showNotificationsView: $showNotificationsView,
@@ -183,7 +182,7 @@ struct SettingsRow: View {
                 }
                 
                 // Handle expandable items
-                if item.title == "About Focca" || item.title == "Why Focca?" {
+                if item.title == "About Focca" {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                         isExpanded.toggle()
                     }
@@ -272,11 +271,6 @@ struct SettingsRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     if item.title == "About Focca" {
                         Text("Focca is a focus app designed to help you stay away from distracting apps and build better digital habits.")
-                            .font(.system(size: 14, weight: .regular))
-                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
-                            .fixedSize(horizontal: false, vertical: true)
-                    } else if item.title == "Why Focca?" {
-                        Text("Focca helps you regain control of your time by blocking distracting apps and providing insights into your digital habits")
                             .font(.system(size: 14, weight: .regular))
                             .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                             .fixedSize(horizontal: false, vertical: true)
