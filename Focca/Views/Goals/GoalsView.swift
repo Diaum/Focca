@@ -15,6 +15,8 @@ struct GoalsView: View {
     @State private var isEditingWeekly: Bool = false
     @State private var isEditingMonthly: Bool = false
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
+    @State private var weeklyGoalStartDate: Date?
+    @State private var monthlyGoalStartDate: Date?
     
     var body: some View {
         ZStack {
@@ -52,36 +54,34 @@ struct GoalsView: View {
                         .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 }
                 .padding(.top, 20)
-                .padding(.bottom, 30)
+                .padding(.bottom, 20)
                 
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 20) {
-                        WeeklyGoalCard(
-                            hours: $weeklyGoalHours,
-                            minutes: $weeklyGoalMinutes,
-                            isBlocked: isBlocked,
-                            hasGoal: $hasWeeklyGoal,
-                            isEditing: $isEditingWeekly,
-                            onSave: {
-                                saveWeeklyGoal()
-                            }
-                        )
-                        
-                        MonthlyGoalCard(
-                            hours: $monthlyGoalHours,
-                            minutes: $monthlyGoalMinutes,
-                            isBlocked: isBlocked,
-                            hasGoal: $hasMonthlyGoal,
-                            isEditing: $isEditingMonthly,
-                            onSave: {
-                                saveMonthlyGoal()
-                            }
-                        )
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.top, 0)
-                    .padding(.bottom, 300)
+                VStack(spacing: 20) {
+                    WeeklyGoalCard(
+                        hours: $weeklyGoalHours,
+                        minutes: $weeklyGoalMinutes,
+                        isBlocked: isBlocked,
+                        hasGoal: $hasWeeklyGoal,
+                        isEditing: $isEditingWeekly,
+                        startDate: weeklyGoalStartDate,
+                        onSave: {
+                            saveWeeklyGoal()
+                        }
+                    )
+                    
+                    MonthlyGoalCard(
+                        hours: $monthlyGoalHours,
+                        minutes: $monthlyGoalMinutes,
+                        isBlocked: isBlocked,
+                        hasGoal: $hasMonthlyGoal,
+                        isEditing: $isEditingMonthly,
+                        startDate: monthlyGoalStartDate,
+                        onSave: {
+                            saveMonthlyGoal()
+                        }
+                    )
                 }
+                .padding(.horizontal, 16)
                 
                 Spacer()
                 
@@ -96,6 +96,7 @@ struct GoalsView: View {
         .onAppear {
             checkNotificationStatus()
             loadGoals()
+            checkAndRecalculatePeriods()
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             checkNotificationStatus()
@@ -128,30 +129,120 @@ struct GoalsView: View {
         if hasWeeklyGoal {
             weeklyGoalHours = userDefaults.integer(forKey: "weekly_goal_hours")
             weeklyGoalMinutes = userDefaults.integer(forKey: "weekly_goal_minutes")
+            let startDateTimestamp = userDefaults.double(forKey: "weekly_goal_start_date")
+            if startDateTimestamp > 0 {
+                weeklyGoalStartDate = Date(timeIntervalSince1970: startDateTimestamp)
+            }
         }
         
         if hasMonthlyGoal {
             monthlyGoalHours = userDefaults.integer(forKey: "monthly_goal_hours")
             monthlyGoalMinutes = userDefaults.integer(forKey: "monthly_goal_minutes")
+            let startDateTimestamp = userDefaults.double(forKey: "monthly_goal_start_date")
+            if startDateTimestamp > 0 {
+                monthlyGoalStartDate = Date(timeIntervalSince1970: startDateTimestamp)
+            }
         }
     }
     
     private func saveWeeklyGoal() {
         let userDefaults = UserDefaults.standard
+        let isNew = !hasWeeklyGoal
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        
         userDefaults.set(true, forKey: "weekly_goal_exists")
         userDefaults.set(weeklyGoalHours, forKey: "weekly_goal_hours")
         userDefaults.set(weeklyGoalMinutes, forKey: "weekly_goal_minutes")
+        
+        if let startDate = weeklyGoalStartDate {
+            let endDate = calendar.date(byAdding: .day, value: 7, to: startDate)!
+            if Date() >= endDate {
+                weeklyGoalStartDate = today
+                userDefaults.set(today.timeIntervalSince1970, forKey: "weekly_goal_start_date")
+                print("📅 [Goals] Weekly goal recalculated - new period: \(formatDate(today)) to \(formatDate(calendar.date(byAdding: .day, value: 7, to: today)!))")
+            } else {
+                userDefaults.set(startDate.timeIntervalSince1970, forKey: "weekly_goal_start_date")
+            }
+        } else {
+            weeklyGoalStartDate = today
+            userDefaults.set(today.timeIntervalSince1970, forKey: "weekly_goal_start_date")
+        }
+        
         hasWeeklyGoal = true
         isEditingWeekly = false
+        
+        if isNew {
+            print("✅ [Goals] Weekly goal created - \(weeklyGoalHours)h \(weeklyGoalMinutes)m")
+        } else {
+            print("✏️ [Goals] Weekly goal updated - \(weeklyGoalHours)h \(weeklyGoalMinutes)m")
+        }
     }
     
     private func saveMonthlyGoal() {
         let userDefaults = UserDefaults.standard
+        let isNew = !hasMonthlyGoal
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        
         userDefaults.set(true, forKey: "monthly_goal_exists")
         userDefaults.set(monthlyGoalHours, forKey: "monthly_goal_hours")
         userDefaults.set(monthlyGoalMinutes, forKey: "monthly_goal_minutes")
+        
+        if let startDate = monthlyGoalStartDate {
+            let endDate = calendar.date(byAdding: .day, value: 30, to: startDate)!
+            if Date() >= endDate {
+                monthlyGoalStartDate = today
+                userDefaults.set(today.timeIntervalSince1970, forKey: "monthly_goal_start_date")
+                print("📅 [Goals] Monthly goal recalculated - new period: \(formatDate(today)) to \(formatDate(calendar.date(byAdding: .day, value: 30, to: today)!))")
+            } else {
+                userDefaults.set(startDate.timeIntervalSince1970, forKey: "monthly_goal_start_date")
+            }
+        } else {
+            monthlyGoalStartDate = today
+            userDefaults.set(today.timeIntervalSince1970, forKey: "monthly_goal_start_date")
+        }
+        
         hasMonthlyGoal = true
         isEditingMonthly = false
+        
+        if isNew {
+            print("✅ [Goals] Monthly goal created - \(monthlyGoalHours)h \(monthlyGoalMinutes)m")
+        } else {
+            print("✏️ [Goals] Monthly goal updated - \(monthlyGoalHours)h \(monthlyGoalMinutes)m")
+        }
+    }
+    
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d, yyyy"
+        return formatter.string(from: date)
+    }
+    
+    private func checkAndRecalculatePeriods() {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let userDefaults = UserDefaults.standard
+        
+        // Check weekly goal
+        if hasWeeklyGoal, let startDate = weeklyGoalStartDate {
+            let endDate = calendar.date(byAdding: .day, value: 7, to: startDate)!
+            if Date() >= endDate {
+                weeklyGoalStartDate = today
+                userDefaults.set(today.timeIntervalSince1970, forKey: "weekly_goal_start_date")
+                print("📅 [Goals] Weekly goal period expired, recalculated - new period: \(formatDate(today)) to \(formatDate(calendar.date(byAdding: .day, value: 7, to: today)!))")
+            }
+        }
+        
+        // Check monthly goal
+        if hasMonthlyGoal, let startDate = monthlyGoalStartDate {
+            let endDate = calendar.date(byAdding: .day, value: 30, to: startDate)!
+            if Date() >= endDate {
+                monthlyGoalStartDate = today
+                userDefaults.set(today.timeIntervalSince1970, forKey: "monthly_goal_start_date")
+                print("📅 [Goals] Monthly goal period expired, recalculated - new period: \(formatDate(today)) to \(formatDate(calendar.date(byAdding: .day, value: 30, to: today)!))")
+            }
+        }
     }
 }
 
@@ -161,7 +252,17 @@ struct WeeklyGoalCard: View {
     let isBlocked: Bool
     @Binding var hasGoal: Bool
     @Binding var isEditing: Bool
+    let startDate: Date?
     let onSave: () -> Void
+    
+    private var periodText: String? {
+        guard let start = startDate else { return nil }
+        let calendar = Calendar.current
+        let endDate = calendar.date(byAdding: .day, value: 7, to: start)!
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        return "\(formatter.string(from: start)) - \(formatter.string(from: endDate))"
+    }
     
     var body: some View {
         VStack(spacing: 20) {
@@ -185,29 +286,37 @@ struct WeeklyGoalCard: View {
             }
             
             if hasGoal && !isEditing {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Current Goal")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Current Goal")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                            
+                            Text(formatTime(hours: hours, minutes: minutes))
+                                .font(.system(size: 24, weight: .semibold))
+                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                        }
                         
-                        Text(formatTime(hours: hours, minutes: minutes))
-                            .font(.system(size: 24, weight: .semibold))
-                            .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                        Spacer()
+                        
+                        Button(action: {
+                            isEditing = true
+                        }) {
+                            Text("Edit")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 10)
+                                .background(Color.blue)
+                                .cornerRadius(10)
+                        }
                     }
                     
-                    Spacer()
-                    
-                    Button(action: {
-                        isEditing = true
-                    }) {
-                        Text("Edit")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 10)
-                            .background(Color.blue)
-                            .cornerRadius(10)
+                    if let period = periodText {
+                        Text("Period: \(period)")
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                     }
                 }
             } else {
@@ -244,7 +353,17 @@ struct MonthlyGoalCard: View {
     let isBlocked: Bool
     @Binding var hasGoal: Bool
     @Binding var isEditing: Bool
+    let startDate: Date?
     let onSave: () -> Void
+    
+    private var periodText: String? {
+        guard let start = startDate else { return nil }
+        let calendar = Calendar.current
+        let endDate = calendar.date(byAdding: .day, value: 30, to: start)!
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        return "\(formatter.string(from: start)) - \(formatter.string(from: endDate))"
+    }
     
     var body: some View {
         VStack(spacing: 20) {
@@ -268,29 +387,37 @@ struct MonthlyGoalCard: View {
             }
             
             if hasGoal && !isEditing {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Current Goal")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Current Goal")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                            
+                            Text(formatTime(hours: hours, minutes: minutes))
+                                .font(.system(size: 24, weight: .semibold))
+                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                        }
                         
-                        Text(formatTime(hours: hours, minutes: minutes))
-                            .font(.system(size: 24, weight: .semibold))
-                            .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                        Spacer()
+                        
+                        Button(action: {
+                            isEditing = true
+                        }) {
+                            Text("Edit")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 10)
+                                .background(Color.blue)
+                                .cornerRadius(10)
+                        }
                     }
                     
-                    Spacer()
-                    
-                    Button(action: {
-                        isEditing = true
-                    }) {
-                        Text("Edit")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 10)
-                            .background(Color.blue)
-                            .cornerRadius(10)
+                    if let period = periodText {
+                        Text("Period: \(period)")
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                     }
                 }
             } else {
