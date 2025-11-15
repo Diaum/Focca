@@ -172,89 +172,122 @@ struct SettingsRow: View {
     @State private var showAdvancedStats = false
     @State private var showGoals = false
     @State private var goalsEnabled = GoalsManager.shared.areGoalsEnabled
+    @State private var isExpanded = false
     
     var body: some View {
-        Button(action: {
-            // Don't trigger action if it's a toggle (toggle handles its own action)
-            if item.hasToggle && item.action == .goalsToggle {
-                return
-            }
-            
-            switch item.action {
-            case .notifications:
-                showNotificationsView = true
-            case .awards:
-                selectedTab = 2
-                AwardManager.shared.markAwardsAsViewed()
-            case .advancedStats:
-                showAdvancedStats = true
-                StatsAchievementManager.shared.markAchievementsAsViewed()
-            case .goals:
-                showGoals = true
-            case .goalsToggle:
-                break
-            case .none:
-                break
-            }
-        }) {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 8) {
-                        Text(item.title)
-                            .font(.system(size: 17, weight: .regular))
-                            .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
-                        
-                        if item.action == .awards && awardManager.hasNewAwards {
-                            Circle()
-                                .fill(Color.red)
-                                .frame(width: 8, height: 8)
+        VStack(spacing: 0) {
+            Button(action: {
+                // Don't trigger action if it's a toggle (toggle handles its own action)
+                if item.hasToggle && item.action == .goalsToggle {
+                    return
+                }
+                
+                // Handle expandable items
+                if item.title == "About Focca" || item.title == "Why Focca?" {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        isExpanded.toggle()
+                    }
+                    return
+                }
+                
+                switch item.action {
+                case .notifications:
+                    showNotificationsView = true
+                case .awards:
+                    selectedTab = 2
+                    AwardManager.shared.markAwardsAsViewed()
+                case .advancedStats:
+                    showAdvancedStats = true
+                    StatsAchievementManager.shared.markAchievementsAsViewed()
+                case .goals:
+                    showGoals = true
+                case .goalsToggle:
+                    break
+                case .none:
+                    break
+                }
+            }) {
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(spacing: 8) {
+                            Text(item.title)
+                                .font(.system(size: 17, weight: .regular))
+                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                            
+                            if item.action == .awards && awardManager.hasNewAwards {
+                                Circle()
+                                    .fill(Color.red)
+                                    .frame(width: 8, height: 8)
+                            }
+                            
+                            if item.action == .advancedStats && statsAchievementManager.hasNewAchievements {
+                                Circle()
+                                    .fill(Color.red)
+                                    .frame(width: 8, height: 8)
+                            }
                         }
                         
-                        if item.action == .advancedStats && statsAchievementManager.hasNewAchievements {
-                            Circle()
-                                .fill(Color.red)
-                                .frame(width: 8, height: 8)
+                        if let subtitle = item.subtitle {
+                            Text(subtitle)
+                                .font(.system(size: 14, weight: .regular))
+                                .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                         }
                     }
                     
-                    if let subtitle = item.subtitle {
-                        Text(subtitle)
-                            .font(.system(size: 14, weight: .regular))
-                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                    Spacer()
+                    
+                    if item.hasToggle {
+                        Toggle("", isOn: Binding(
+                            get: { 
+                                if item.action == .goalsToggle {
+                                    return goalsEnabled
+                                }
+                                return item.isToggledOn
+                            },
+                            set: { newValue in
+                                if item.action == .goalsToggle {
+                                    goalsEnabled = newValue
+                                    GoalsManager.shared.areGoalsEnabled = newValue
+                                }
+                            }
+                        ))
+                        .tint(Color.blue)
+                        .labelsHidden()
+                    } else if item.hasArrow {
+                        Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8"))
+                            .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isExpanded)
                     }
                 }
-                
-                Spacer()
-                
-                if item.hasToggle {
-                    Toggle("", isOn: Binding(
-                        get: { 
-                            if item.action == .goalsToggle {
-                                return goalsEnabled
-                            }
-                            return item.isToggledOn
-                        },
-                        set: { newValue in
-                            if item.action == .goalsToggle {
-                                goalsEnabled = newValue
-                                GoalsManager.shared.areGoalsEnabled = newValue
-                            }
-                        }
-                    ))
-                    .tint(Color.blue)
-                    .labelsHidden()
-                } else if item.hasArrow {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8"))
-                }
+                .padding(.horizontal, 16)
+                .frame(height: item.subtitle != nil ? 56 : 44)
+                .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
             }
-            .padding(.horizontal, 16)
-            .frame(height: item.subtitle != nil ? 56 : 44)
-            .frame(maxWidth: .infinity)
-            .contentShape(Rectangle())
+            .buttonStyle(PlainButtonStyle())
+            
+            // Expanded content
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 2) {
+                    if item.title == "About Focca" {
+                        Text("Focca is a focus app designed to help you stay away from distracting apps and build better digital habits.")
+                            .font(.system(size: 14, weight: .regular))
+                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else if item.title == "Why Focca?" {
+                        Text("Focca helps you regain control of your time by blocking distracting apps and providing insights into your digital habits")
+                            .font(.system(size: 14, weight: .regular))
+                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 16)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
         }
-        .buttonStyle(PlainButtonStyle())
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("GoalsEnabledChanged"))) { _ in
             goalsEnabled = GoalsManager.shared.areGoalsEnabled
         }
