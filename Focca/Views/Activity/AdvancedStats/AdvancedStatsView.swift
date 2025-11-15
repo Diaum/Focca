@@ -6,6 +6,8 @@ struct AdvancedStatsView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var totalBlockedTime: TimeInterval = 0
     @State private var showTimeInDays: Bool = false
+    @State private var currentStreak: Int = 0
+    @State private var averageTimePerDay: TimeInterval = 0
     
     var body: some View {
         ZStack {
@@ -86,6 +88,13 @@ struct AdvancedStatsView: View {
                                 .shadow(color: Color.black.opacity(isBlocked ? 0.3 : 0.04), radius: 3, x: 0, y: 1)
                         )
                         .padding(.horizontal, 16)
+                        
+                        // Cards de streak e média lado a lado
+                        HStack(spacing: 12) {
+                            StreakCard(streak: currentStreak, isBlocked: isBlocked)
+                            AverageCard(averageTime: averageTimePerDay, isBlocked: isBlocked)
+                        }
+                        .padding(.horizontal, 16)
                     }
                     .padding(.top, 0)
                     .padding(.bottom, 250)
@@ -149,6 +158,33 @@ struct AdvancedStatsView: View {
     private func loadTotalBlockedTime() {
         let dailyTimes = TimerStorage.shared.getAllDailyTimes()
         totalBlockedTime = dailyTimes.reduce(0) { $0 + $1.time }
+        averageTimePerDay = TimerStorage.shared.getAverageTime()
+        currentStreak = calculateStreak(dailyTimes: dailyTimes)
+    }
+    
+    private func calculateStreak(dailyTimes: [(date: Date, time: TimeInterval)]) -> Int {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let minTimePerDay: TimeInterval = 3600 // 1 hora
+        
+        var streak = 0
+        var currentDate = today
+        
+        while true {
+            if let dayData = dailyTimes.first(where: { calendar.isDate($0.date, inSameDayAs: currentDate) }),
+               dayData.time >= minTimePerDay {
+                streak += 1
+                if let previousDay = calendar.date(byAdding: .day, value: -1, to: currentDate) {
+                    currentDate = calendar.startOfDay(for: previousDay)
+                } else {
+                    break
+                }
+            } else {
+                break
+            }
+        }
+        
+        return streak
     }
 }
 
