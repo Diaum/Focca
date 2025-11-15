@@ -37,7 +37,7 @@ struct AdvancedStatsView: View {
                             .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                     }
                     .padding(.leading, 16)
-                    .padding(.top, 0)
+                    .padding(.top, -50)
                     
                     Spacer()
                 }
