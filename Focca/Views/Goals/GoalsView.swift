@@ -56,32 +56,107 @@ struct GoalsView: View {
                 .padding(.top, 20)
                 .padding(.bottom, 20)
                 
-                VStack(spacing: 20) {
-                    WeeklyGoalCard(
-                        hours: $weeklyGoalHours,
-                        minutes: $weeklyGoalMinutes,
-                        isBlocked: isBlocked,
-                        hasGoal: $hasWeeklyGoal,
-                        isEditing: $isEditingWeekly,
-                        startDate: weeklyGoalStartDate,
-                        onSave: {
-                            saveWeeklyGoal()
+                if GoalsManager.shared.areGoalsEnabled {
+                    VStack(spacing: 20) {
+                        WeeklyGoalCard(
+                            hours: $weeklyGoalHours,
+                            minutes: $weeklyGoalMinutes,
+                            isBlocked: isBlocked,
+                            hasGoal: $hasWeeklyGoal,
+                            isEditing: $isEditingWeekly,
+                            startDate: weeklyGoalStartDate,
+                            onSave: {
+                                saveWeeklyGoal()
+                            }
+                        )
+                        
+                        MonthlyGoalCard(
+                            hours: $monthlyGoalHours,
+                            minutes: $monthlyGoalMinutes,
+                            isBlocked: isBlocked,
+                            hasGoal: $hasMonthlyGoal,
+                            isEditing: $isEditingMonthly,
+                            startDate: monthlyGoalStartDate,
+                            onSave: {
+                                saveMonthlyGoal()
+                            }
+                        )
+                    }
+                    .padding(.horizontal, 16)
+                } else {
+                    VStack(spacing: 20) {
+                        // Disabled Weekly Goal Card
+                        VStack(spacing: 20) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Image(systemName: "calendar")
+                                        .font(.system(size: 18))
+                                        .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8"))
+                                    
+                                    Text("Weekly Goal")
+                                        .font(.system(size: 20, weight: .semibold))
+                                        .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8"))
+                                    
+                                    Spacer()
+                                }
+                                
+                                Text("The minimum weekly time you ideally want to stay away from your apps.")
+                                    .font(.system(size: 13, weight: .regular))
+                                    .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8"))
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            
+                            Text("Goals are currently disabled. Enable them in Settings to use this feature.")
+                                .font(.system(size: 14, weight: .regular))
+                                .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                                .multilineTextAlignment(.center)
+                                .padding(.vertical, 20)
                         }
-                    )
-                    
-                    MonthlyGoalCard(
-                        hours: $monthlyGoalHours,
-                        minutes: $monthlyGoalMinutes,
-                        isBlocked: isBlocked,
-                        hasGoal: $hasMonthlyGoal,
-                        isEditing: $isEditingMonthly,
-                        startDate: monthlyGoalStartDate,
-                        onSave: {
-                            saveMonthlyGoal()
+                        .padding(20)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "F5F5F5"))
+                                .shadow(color: Color.black.opacity(isBlocked ? 0.2 : 0.02), radius: 3, x: 0, y: 1)
+                        )
+                        .allowsHitTesting(false)
+                        
+                        // Disabled Monthly Goal Card
+                        VStack(spacing: 20) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Image(systemName: "calendar.badge.clock")
+                                        .font(.system(size: 18))
+                                        .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8"))
+                                    
+                                    Text("Monthly Goal")
+                                        .font(.system(size: 20, weight: .semibold))
+                                        .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8"))
+                                    
+                                    Spacer()
+                                }
+                                
+                                Text("The minimum monthly time you ideally want to stay away from your apps.")
+                                    .font(.system(size: 13, weight: .regular))
+                                    .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8"))
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            
+                            Text("Goals are currently disabled. Enable them in Settings to use this feature.")
+                                .font(.system(size: 14, weight: .regular))
+                                .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                                .multilineTextAlignment(.center)
+                                .padding(.vertical, 20)
                         }
-                    )
+                        .padding(20)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "F5F5F5"))
+                                .shadow(color: Color.black.opacity(isBlocked ? 0.2 : 0.02), radius: 3, x: 0, y: 1)
+                        )
+                        .allowsHitTesting(false)
+                    }
+                    .padding(.horizontal, 16)
                 }
-                .padding(.horizontal, 16)
                 
                 Spacer()
                 
@@ -97,9 +172,22 @@ struct GoalsView: View {
             checkNotificationStatus()
             loadGoals()
             checkAndRecalculatePeriods()
+            // Force update progress when view appears - delay to ensure cards are ready
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                NotificationCenter.default.post(name: NSNotification.Name("UpdateWeeklyGoalProgress"), object: nil)
+                NotificationCenter.default.post(name: NSNotification.Name("UpdateMonthlyGoalProgress"), object: nil)
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             checkNotificationStatus()
+            checkAndRecalculatePeriods()
+            // Force update progress when app comes to foreground
+            NotificationCenter.default.post(name: NSNotification.Name("UpdateWeeklyGoalProgress"), object: nil)
+            NotificationCenter.default.post(name: NSNotification.Name("UpdateMonthlyGoalProgress"), object: nil)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("GoalsEnabledChanged"))) { _ in
+            // Reload goals state when enabled/disabled
+            loadGoals()
         }
     }
     
@@ -126,13 +214,21 @@ struct GoalsView: View {
         hasWeeklyGoal = userDefaults.bool(forKey: "weekly_goal_exists")
         hasMonthlyGoal = userDefaults.bool(forKey: "monthly_goal_exists")
         
+        print("📋 [GoalsView] Loading goals - Weekly: \(hasWeeklyGoal), Monthly: \(hasMonthlyGoal)")
+        
         if hasWeeklyGoal {
             weeklyGoalHours = userDefaults.integer(forKey: "weekly_goal_hours")
             weeklyGoalMinutes = userDefaults.integer(forKey: "weekly_goal_minutes")
             let startDateTimestamp = userDefaults.double(forKey: "weekly_goal_start_date")
             if startDateTimestamp > 0 {
                 weeklyGoalStartDate = Date(timeIntervalSince1970: startDateTimestamp)
+                print("📋 [GoalsView] Weekly goal loaded - \(weeklyGoalHours)h \(weeklyGoalMinutes)m, start: \(formatDate(weeklyGoalStartDate!))")
             }
+        } else {
+            // Reset to defaults if no goal exists
+            weeklyGoalHours = 10
+            weeklyGoalMinutes = 0
+            weeklyGoalStartDate = nil
         }
         
         if hasMonthlyGoal {
@@ -141,7 +237,19 @@ struct GoalsView: View {
             let startDateTimestamp = userDefaults.double(forKey: "monthly_goal_start_date")
             if startDateTimestamp > 0 {
                 monthlyGoalStartDate = Date(timeIntervalSince1970: startDateTimestamp)
+                print("📋 [GoalsView] Monthly goal loaded - \(monthlyGoalHours)h \(monthlyGoalMinutes)m, start: \(formatDate(monthlyGoalStartDate!))")
             }
+        } else {
+            // Reset to defaults if no goal exists
+            monthlyGoalHours = 40
+            monthlyGoalMinutes = 0
+            monthlyGoalStartDate = nil
+        }
+        
+        // Trigger progress update after loading goals
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            NotificationCenter.default.post(name: NSNotification.Name("UpdateWeeklyGoalProgress"), object: nil)
+            NotificationCenter.default.post(name: NSNotification.Name("UpdateMonthlyGoalProgress"), object: nil)
         }
     }
     
@@ -232,27 +340,42 @@ struct GoalsView: View {
     }
     
     private func checkAndRecalculatePeriods() {
+        // Only recalculate if goals are enabled
+        guard GoalsManager.shared.areGoalsEnabled else {
+            return
+        }
+        
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         let userDefaults = UserDefaults.standard
         
         // Check weekly goal
         if hasWeeklyGoal, let startDate = weeklyGoalStartDate {
-            let endDate = calendar.date(byAdding: .day, value: 7, to: startDate)!
+            let startDay = calendar.startOfDay(for: startDate)
+            let endDate = calendar.date(byAdding: .day, value: 7, to: startDay)!
             if Date() >= endDate {
                 weeklyGoalStartDate = today
                 userDefaults.set(today.timeIntervalSince1970, forKey: "weekly_goal_start_date")
                 print("📅 [Goals] Weekly goal period expired, recalculated - new period: \(formatDate(today)) to \(formatDate(calendar.date(byAdding: .day, value: 7, to: today)!))")
+                // Force update progress after recalculating
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    NotificationCenter.default.post(name: NSNotification.Name("UpdateWeeklyGoalProgress"), object: nil)
+                }
             }
         }
         
         // Check monthly goal
         if hasMonthlyGoal, let startDate = monthlyGoalStartDate {
-            let endDate = calendar.date(byAdding: .day, value: 30, to: startDate)!
+            let startDay = calendar.startOfDay(for: startDate)
+            let endDate = calendar.date(byAdding: .day, value: 30, to: startDay)!
             if Date() >= endDate {
                 monthlyGoalStartDate = today
                 userDefaults.set(today.timeIntervalSince1970, forKey: "monthly_goal_start_date")
                 print("📅 [Goals] Monthly goal period expired, recalculated - new period: \(formatDate(today)) to \(formatDate(calendar.date(byAdding: .day, value: 30, to: today)!))")
+                // Force update progress after recalculating
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    NotificationCenter.default.post(name: NSNotification.Name("UpdateMonthlyGoalProgress"), object: nil)
+                }
             }
         }
     }

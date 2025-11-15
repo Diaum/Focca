@@ -107,7 +107,7 @@ struct SettingsView: View {
                     SettingsSection(
                         title: nil,
                         items: [
-                            SettingsItem(title: "Questions", hasToggle: true, isToggledOn: true)
+                            SettingsItem(title: "Goals", hasToggle: true, isToggledOn: GoalsManager.shared.areGoalsEnabled, action: .goalsToggle)
                         ],
                         showNotificationsView: $showNotificationsView,
                         selectedTab: $selectedTab,
@@ -191,9 +191,15 @@ struct SettingsRow: View {
     @ObservedObject private var statsAchievementManager = StatsAchievementManager.shared
     @State private var showAdvancedStats = false
     @State private var showGoals = false
+    @State private var goalsEnabled = GoalsManager.shared.areGoalsEnabled
     
     var body: some View {
         Button(action: {
+            // Don't trigger action if it's a toggle (toggle handles its own action)
+            if item.hasToggle && item.action == .goalsToggle {
+                return
+            }
+            
             switch item.action {
             case .notifications:
                 showNotificationsView = true
@@ -205,6 +211,8 @@ struct SettingsRow: View {
                 StatsAchievementManager.shared.markAchievementsAsViewed()
             case .goals:
                 showGoals = true
+            case .goalsToggle:
+                break
             case .none:
                 break
             }
@@ -239,9 +247,22 @@ struct SettingsRow: View {
                 Spacer()
                 
                 if item.hasToggle {
-                    Toggle("", isOn: .constant(item.isToggledOn))
-                        .tint(Color.blue)
-                        .labelsHidden()
+                    Toggle("", isOn: Binding(
+                        get: { 
+                            if item.action == .goalsToggle {
+                                return goalsEnabled
+                            }
+                            return item.isToggledOn
+                        },
+                        set: { newValue in
+                            if item.action == .goalsToggle {
+                                goalsEnabled = newValue
+                                GoalsManager.shared.areGoalsEnabled = newValue
+                            }
+                        }
+                    ))
+                    .tint(Color.blue)
+                    .labelsHidden()
                 } else if item.hasArrow {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 14, weight: .medium))
@@ -254,6 +275,12 @@ struct SettingsRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("GoalsEnabledChanged"))) { _ in
+            goalsEnabled = GoalsManager.shared.areGoalsEnabled
+        }
+        .onAppear {
+            goalsEnabled = GoalsManager.shared.areGoalsEnabled
+        }
         .fullScreenCover(isPresented: $showAdvancedStats) {
             AdvancedStatsView(selectedTab: $selectedTab, isBlocked: isBlocked)
         }
@@ -268,6 +295,7 @@ enum SettingsAction {
     case notifications
     case awards
     case goals
+    case goalsToggle
     case advancedStats
 }
 

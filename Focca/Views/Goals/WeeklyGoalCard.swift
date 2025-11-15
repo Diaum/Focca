@@ -137,13 +137,30 @@ struct WeeklyGoalCard: View {
                 .shadow(color: Color.black.opacity(isBlocked ? 0.3 : 0.04), radius: 3, x: 0, y: 1)
         )
         .onAppear {
-            updateProgress()
+            // Update immediately when card appears
+            DispatchQueue.main.async {
+                self.updateProgress()
+            }
         }
         .onChange(of: hasGoal) { _ in
-            updateProgress()
+            DispatchQueue.main.async {
+                self.updateProgress()
+            }
         }
         .onChange(of: startDate) { _ in
-            updateProgress()
+            DispatchQueue.main.async {
+                self.updateProgress()
+            }
+        }
+        .onChange(of: hours) { _ in
+            DispatchQueue.main.async {
+                self.updateProgress()
+            }
+        }
+        .onChange(of: minutes) { _ in
+            DispatchQueue.main.async {
+                self.updateProgress()
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             updateProgress()
@@ -152,11 +169,20 @@ struct WeeklyGoalCard: View {
             updateProgress()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("UpdateWeeklyGoalProgress"))) { _ in
-            updateProgress()
+            DispatchQueue.main.async {
+                self.updateProgress()
+            }
         }
     }
     
     private func updateProgress() {
+        // Don't calculate progress if goals are disabled
+        guard GoalsManager.shared.areGoalsEnabled else {
+            currentProgress = 0
+            goalTime = 0
+            return
+        }
+        
         guard let start = startDate else {
             currentProgress = 0
             goalTime = 0
