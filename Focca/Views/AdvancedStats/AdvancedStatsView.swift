@@ -216,6 +216,7 @@ struct AdvancedStatsView: View {
         guard todayTime >= minTimePerDay else { return 0 }
         
         // Conta os dias consecutivos a partir de hoje, indo para trás
+        // O streak mínimo é 1 (se hoje tem pelo menos 1h, já conta como 1 dia)
         var streak = 1 // Já contamos hoje
         var currentDate = today
         
@@ -233,7 +234,8 @@ struct AdvancedStatsView: View {
             }
         }
         
-        return streak
+        // Garante que o streak mínimo seja 1 se hoje tem pelo menos 1h
+        return max(1, streak)
     }
 }
 
