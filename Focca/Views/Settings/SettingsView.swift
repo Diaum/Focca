@@ -66,6 +66,16 @@ struct SettingsView: View {
                     SettingsSection(
                         title: nil,
                         items: [
+                            SettingsItem(title: "Advanced Statistics", hasArrow: true, action: .advancedStats)
+                        ],
+                        showNotificationsView: $showNotificationsView,
+                        selectedTab: $selectedTab,
+                        isBlocked: isBlocked
+                    )
+                    
+                    SettingsSection(
+                        title: nil,
+                        items: [
                             SettingsItem(title: "Emergency Unblock", subtitle: "4 remaining", hasArrow: true)
                         ],
                         showNotificationsView: $showNotificationsView,
@@ -167,6 +177,7 @@ struct SettingsRow: View {
     @Binding var selectedTab: Int
     let isBlocked: Bool
     @ObservedObject private var awardManager = AwardManager.shared
+    @State private var showAdvancedStats = false
     
     var body: some View {
         Button(action: {
@@ -176,6 +187,8 @@ struct SettingsRow: View {
             case .awards:
                 selectedTab = 2
                 AwardManager.shared.markAwardsAsViewed()
+            case .advancedStats:
+                showAdvancedStats = true
             case .none:
                 break
             }
@@ -219,6 +232,9 @@ struct SettingsRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
+        .fullScreenCover(isPresented: $showAdvancedStats) {
+            AdvancedStatsView(selectedTab: $selectedTab, isBlocked: isBlocked)
+        }
     }
 }
 
@@ -226,6 +242,7 @@ enum SettingsAction {
     case none
     case notifications
     case awards
+    case advancedStats
 }
 
 struct SettingsItem {
