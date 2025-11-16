@@ -57,21 +57,21 @@ struct GoalsView: View {
                             .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                     }
                     .padding(.leading, 16)
-                    .padding(.top, 8)
+                    .padding(.top, 0)
                     
                     Spacer()
                 }
                 
-                VStack(spacing: 8) {
+                VStack(spacing: 4) {
                     Text("Goals")
-                        .font(.system(size: 28, weight: .semibold))
+                        .font(.system(size: 24, weight: .medium))
                         .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 }
-                .padding(.top, 0)
-                .padding(.bottom, 40)
+                .padding(.top, 8)
+                .padding(.bottom, 24)
                 
                 if GoalsManager.shared.areGoalsEnabled {
-                    VStack(spacing: 50) {
+                    VStack(spacing: 20) {
                         WeeklyGoalCard(
                             hours: $weeklyGoalHours,
                             minutes: $weeklyGoalMinutes,

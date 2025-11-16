@@ -37,32 +37,32 @@ struct AdvancedStatsView: View {
                             .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                     }
                     .padding(.leading, 16)
-                    .padding(.top, -50)
+                    .padding(.top, 0)
                     
                     Spacer()
                 }
                 
                 // Título
-                VStack(spacing: 8) {
+                VStack(spacing: 4) {
                     Text("Advanced Statistics")
-                        .font(.system(size: 28, weight: .semibold))
+                        .font(.system(size: 24, weight: .medium))
                         .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 }
-                .padding(.top, 0)
-                .padding(.bottom, 20)
+                .padding(.top, 8)
+                .padding(.bottom, 16)
                 
                 // Conteúdo
-                VStack(spacing: 20) {
+                VStack(spacing: 12) {
                     // Card de tempo total bloqueado
-                    VStack(spacing: 16) {
+                    VStack(spacing: 12) {
                         HStack {
-                            HStack(spacing: 10) {
+                            HStack(spacing: 8) {
                                 Image(systemName: "clock.fill")
-                                    .font(.system(size: 20, weight: .medium))
+                                    .font(.system(size: 16, weight: .medium))
                                     .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                                 
                                 Text("Total Blocked Time")
-                                    .font(.system(size: 18, weight: .semibold))
+                                    .font(.system(size: 15, weight: .medium))
                                     .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                             }
                             
@@ -76,47 +76,49 @@ struct AdvancedStatsView: View {
                             }) {
                                 HStack(spacing: 4) {
                                     Image(systemName: showTimeInDays ? "clock" : "calendar")
-                                        .font(.system(size: 11, weight: .medium))
+                                        .font(.system(size: 10, weight: .medium))
                                     Text(showTimeInDays ? "Hours" : "Days")
-                                        .font(.system(size: 13, weight: .medium))
+                                        .font(.system(size: 12, weight: .medium))
                                 }
                                 .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 8)
+                                    RoundedRectangle(cornerRadius: 6)
                                         .fill(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "F5F5F5"))
                                 )
                             }
                         }
                         
-                        VStack(spacing: 4) {
+                        VStack(spacing: 2) {
                             Text(formattedTotalTime)
-                                .font(.system(size: 36, weight: .bold))
+                                .font(.system(size: 28, weight: .light, design: .rounded))
                                 .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                                 .multilineTextAlignment(.center)
                                 .lineLimit(nil)
                         }
                     }
-                    .padding(20)
+                    .padding(16)
                     .background(
-                        RoundedRectangle(cornerRadius: 16)
+                        RoundedRectangle(cornerRadius: 14)
                             .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white)
                             .shadow(color: Color.black.opacity(isBlocked ? 0.3 : 0.04), radius: 3, x: 0, y: 1)
                     )
                     .padding(.horizontal, 16)
                     
-                    // Cards de streak e média lado a lado
-                    HStack(spacing: 12) {
-                        StreakCard(streak: currentStreak, isBlocked: isBlocked)
-                        AverageCard(averageTime: averageTimePerDay, isBlocked: isBlocked)
-                    }
-                    .padding(.horizontal, 16)
-                    
-                    // Cards de goals completados
-                    HStack(spacing: 12) {
-                        WeeklyGoalsCard(completed: weeklyGoalsCompleted, isBlocked: isBlocked)
-                        MonthlyGoalsCard(completed: monthlyGoalsCompleted, isBlocked: isBlocked)
+                    // Grid de cards menores
+                    VStack(spacing: 10) {
+                        // Primeira linha: Streak e Average
+                        HStack(spacing: 10) {
+                            StreakCard(streak: currentStreak, isBlocked: isBlocked)
+                            AverageCard(averageTime: averageTimePerDay, isBlocked: isBlocked)
+                        }
+                        
+                        // Segunda linha: Weekly e Monthly Goals
+                        HStack(spacing: 10) {
+                            WeeklyGoalsCard(completed: weeklyGoalsCompleted, isBlocked: isBlocked)
+                            MonthlyGoalsCard(completed: monthlyGoalsCompleted, isBlocked: isBlocked)
+                        }
                     }
                     .padding(.horizontal, 16)
                 }

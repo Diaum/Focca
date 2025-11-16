@@ -5,14 +5,14 @@ struct StreakCard: View {
     let isBlocked: Bool
     
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 8) {
             HStack {
                 Image(systemName: "flame.fill")
-                    .font(.system(size: 16, weight: .medium))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 
                 Text("Current Streak")
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                 
                 Spacer()
@@ -22,19 +22,19 @@ struct StreakCard: View {
             
             VStack(spacing: 2) {
                 Text("\(streak)")
-                    .font(.system(size: 32, weight: .bold))
+                    .font(.system(size: 26, weight: .light, design: .rounded))
                     .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 
                 Text(streak == 1 ? "day" : "days")
-                    .font(.system(size: 12, weight: .regular))
+                    .font(.system(size: 11, weight: .regular))
                     .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
             }
             
             Spacer()
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 110)
-        .padding(16)
+        .frame(height: 100)
+        .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white)

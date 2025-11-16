@@ -15,14 +15,14 @@ struct AverageCard: View {
     }
     
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 8) {
             HStack {
                 Image(systemName: "chart.bar.fill")
-                    .font(.system(size: 16, weight: .medium))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 
                 Text("Average per Day")
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                 
                 Spacer()
@@ -31,7 +31,7 @@ struct AverageCard: View {
             Spacer()
             
             Text(formattedTime)
-                .font(.system(size: 28, weight: .bold))
+                .font(.system(size: 24, weight: .light, design: .rounded))
                 .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
@@ -40,8 +40,8 @@ struct AverageCard: View {
             Spacer()
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 110)
-        .padding(16)
+        .frame(height: 100)
+        .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white)
