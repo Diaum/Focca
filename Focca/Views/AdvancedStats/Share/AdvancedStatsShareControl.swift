@@ -113,10 +113,6 @@ struct AdvancedStatsShareSnapshot: View {
         ZStack {
             Color.clear
             VStack(alignment: .leading, spacing: 40) {
-                if let iconImage {
-                    ShareTransparencyBadge(icon: iconImage)
-                }
-                
                 ShareBrandRow(icon: iconImage)
                 
                 ShareMetricsGrid(metrics: metrics)
@@ -136,41 +132,11 @@ private struct ShareMetric: Identifiable {
     let value: String
 }
 
-private struct ShareTransparencyBadge: View {
-    let icon: UIImage
-    
-    var body: some View {
-        HStack(spacing: 8) {
-            Image(uiImage: icon)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 18, height: 18)
-                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-            
-            Text("Focca Transparent")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(.white)
-                .textCase(.uppercase)
-                .kerning(0.8)
-        }
-        .padding(.vertical, 6)
-        .padding(.horizontal, 16)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(Color.white.opacity(0.55), lineWidth: 1)
-                .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(Color.black.opacity(0.35))
-                )
-        )
-    }
-}
-
 private struct ShareBrandRow: View {
     let icon: UIImage?
     
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 18) {
             if let icon {
                 Image(uiImage: icon)
                     .resizable()
@@ -180,7 +146,7 @@ private struct ShareBrandRow: View {
             }
             
             Text("FOCCA")
-                .font(.system(size: 72, weight: .black, design: .rounded))
+                .font(.system(size: 58, weight: .black, design: .rounded))
                 .foregroundColor(.white)
                 .kerning(0.8)
         }
