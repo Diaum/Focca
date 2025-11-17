@@ -18,17 +18,14 @@ struct AdvancedStatsShareControl: View {
     @State private var isGeneratingShareImage = false
     
     var body: some View {
-        Button(action: shareStatsSnapshot) {
+        Button(action: generateSnapshot) {
             HStack(spacing: 8) {
                 if isGeneratingShareImage {
                     ProgressView()
-                        .progressViewStyle(.circular)
-                        .tint(configuration.isBlocked ? .white : Color(hex: "1C1C1E"))
                 } else {
                     Image(systemName: "square.and.arrow.up")
                         .font(.system(size: 15, weight: .semibold))
                 }
-                
                 Text(isGeneratingShareImage ? "Preparing..." : "Share my stats")
                     .font(.system(size: 15, weight: .semibold))
             }
@@ -44,195 +41,231 @@ struct AdvancedStatsShareControl: View {
         .disabled(isGeneratingShareImage)
         .sheet(isPresented: $isShareSheetPresented, onDismiss: cleanupShareFile) {
             ShareSheet(activityItems: shareItems)
-                .ignoresSafeArea()
         }
     }
     
-    private func shareStatsSnapshot() {
+    private func generateSnapshot() {
         guard !isGeneratingShareImage else { return }
         isGeneratingShareImage = true
         
         let snapshot = AdvancedStatsShareSnapshot(configuration: configuration)
-        let renderer = ImageRenderer(content: snapshot)
-        renderer.scale = UIScreen.main.scale
-        renderer.isOpaque = false
         
-        DispatchQueue.global(qos: .userInitiated).async {
-            let renderedImage = renderer.uiImage
-            DispatchQueue.main.async {
-                if let image = renderedImage {
-                    shareItems = makeShareItems(from: image)
-                    isShareSheetPresented = !shareItems.isEmpty
-                } else {
-                    isShareSheetPresented = false
-                }
-                isGeneratingShareImage = false
+        Task { @MainActor in
+            let image = TransparentSnapshotRenderer.render(view: snapshot)
+            
+            if let image {
+                shareItems = makeShareItems(from: image)
+                isShareSheetPresented = !shareItems.isEmpty
+            } else {
+                isShareSheetPresented = false
             }
+            
+            isGeneratingShareImage = false
         }
     }
     
     private func makeShareItems(from image: UIImage) -> [Any] {
-        if let pngData = image.pngData() {
-            let fileURL = FileManager.default.temporaryDirectory
-                .appendingPathComponent("advanced-stats-\(UUID().uuidString).png")
-            do {
-                if let existingURL = shareFileURL {
-                    try? FileManager.default.removeItem(at: existingURL)
-                }
-                try pngData.write(to: fileURL, options: .atomic)
-                shareFileURL = fileURL
-                return [fileURL]
-            } catch {
-                shareFileURL = nil
+        guard let data = image.pngData() else { return [] }
+        
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("advanced-stats-\(UUID().uuidString).png")
+        
+        do {
+            if let shareFileURL {
+                try? FileManager.default.removeItem(at: shareFileURL)
             }
+            
+            try data.write(to: url, options: .atomic)
+            shareFileURL = url
+            return [url]
+        } catch {
+            shareFileURL = nil
+            return [image]
         }
-        return [image]
     }
     
     private func cleanupShareFile() {
-        if let url = shareFileURL {
-            try? FileManager.default.removeItem(at: url)
-            shareFileURL = nil
+        if let shareFileURL {
+            try? FileManager.default.removeItem(at: shareFileURL)
+            self.shareFileURL = nil
         }
         shareItems = []
     }
 }
 
-private struct AdvancedStatsShareSnapshot: View {
+struct AdvancedStatsShareSnapshot: View {
     let configuration: AdvancedStatsShareConfiguration
     
-    private var logoName: String {
-        configuration.isBlocked ? "focca-rectangle-gray" : "focca_black"
+    private var iconImage: UIImage? {
+        UIImage.appIcon ?? UIImage(named: "focca_black")
     }
     
-    private var appIconImage: UIImage? {
-        UIImage.appIcon ?? UIImage(named: logoName)
+    private var metrics: [ShareMetric] {
+        [
+            ShareMetric(label: "Total Time", value: configuration.totalTimeText),
+            ShareMetric(label: "Streak", value: "\(configuration.streak) day\(configuration.streak == 1 ? "" : "s")"),
+            ShareMetric(label: "Avg / day", value: configuration.averageTimeText),
+            ShareMetric(label: "Weekly Goals", value: "\(configuration.weeklyGoals)"),
+            ShareMetric(label: "Monthly Goals", value: "\(configuration.monthlyGoals)")
+        ]
     }
     
     var body: some View {
         ZStack {
             Color.clear
-            
-            VStack(spacing: 24) {
-                if let icon = appIconImage {
-                    Image(uiImage: icon)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 96, height: 96)
-                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                        .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 5)
+            VStack(spacing: 40) {
+                if let iconImage {
+                    ShareTransparencyBadge(icon: iconImage)
                 }
                 
-                VStack(spacing: 8) {
-                    Text("Total Blocked Time")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(configuration.isBlocked ? .white.opacity(0.7) : Color(hex: "8A8A8E"))
-                    Text(configuration.totalTimeText)
-                        .font(.system(size: 32, weight: .light, design: .rounded))
-                        .foregroundColor(configuration.isBlocked ? .white : Color(hex: "1C1C1E"))
-                        .multilineTextAlignment(.center)
-                }
-                .padding(20)
-                .frame(maxWidth: .infinity)
-                .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(configuration.isBlocked ? Color(hex: "1C1C1C") : Color.white)
-                        .shadow(color: Color.black.opacity(configuration.isBlocked ? 0.25 : 0.08), radius: 12, x: 0, y: 6)
-                )
+                ShareBrandRow(icon: iconImage)
                 
-                HStack(spacing: 12) {
-                    ShareStatCard(
-                        title: "Streak",
-                        value: "\(configuration.streak) day\(configuration.streak == 1 ? "" : "s")",
-                        icon: "flame.fill",
-                        isBlocked: configuration.isBlocked
-                    )
-                    
-                    ShareStatCard(
-                        title: "Avg / day",
-                        value: configuration.averageTimeText,
-                        icon: "clock.arrow.circlepath",
-                        isBlocked: configuration.isBlocked
-                    )
-                }
-                
-                HStack(spacing: 12) {
-                    ShareStatCard(
-                        title: "Weekly Goals",
-                        value: "\(configuration.weeklyGoals)",
-                        icon: "calendar",
-                        isBlocked: configuration.isBlocked
-                    )
-                    
-                    ShareStatCard(
-                        title: "Monthly Goals",
-                        value: "\(configuration.monthlyGoals)",
-                        icon: "calendar.circle",
-                        isBlocked: configuration.isBlocked
-                    )
-                }
+                ShareMetricsGrid(metrics: metrics)
+                    .frame(maxWidth: 760)
             }
-            .padding(24)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 72)
+            .padding(.vertical, 96)
         }
-        .compositingGroup()
-        .background(Color.clear)
+        .frame(width: 1080)
     }
 }
 
-private struct ShareStatCard: View {
-    let title: String
+private struct ShareMetric: Identifiable {
+    let id = UUID()
+    let label: String
     let value: String
-    let icon: String
-    let isBlocked: Bool
+}
+
+private struct ShareTransparencyBadge: View {
+    let icon: UIImage
     
     var body: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
-                Text(title)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
-            }
+        HStack(spacing: 10) {
+            Image(uiImage: icon)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 18, height: 18)
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
             
-            Text(value)
-                .font(.system(size: 20, weight: .semibold, design: .rounded))
-                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+            Text("Focca Transparent")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.white)
+                .textCase(.uppercase)
+                .kerning(0.8)
         }
-        .frame(maxWidth: .infinity)
-        .padding(16)
+        .padding(.vertical, 6)
+        .padding(.horizontal, 18)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white)
-                .shadow(color: Color.black.opacity(isBlocked ? 0.25 : 0.08), radius: 8, x: 0, y: 4)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(Color.white.opacity(0.6), lineWidth: 1)
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Color.black.opacity(0.35))
+                )
         )
     }
 }
 
-private struct ShareSheet: UIViewControllerRepresentable {
+private struct ShareBrandRow: View {
+    let icon: UIImage?
+    
+    var body: some View {
+        HStack(spacing: 14) {
+            if let icon {
+                Image(uiImage: icon)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 64, height: 64)
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            }
+            
+            Text("FOCCA")
+                .font(.system(size: 46, weight: .black, design: .rounded))
+                .foregroundColor(.white)
+                .kerning(1)
+        }
+    }
+}
+
+private struct ShareMetricsGrid: View {
+    let metrics: [ShareMetric]
+    
+    private var columns: [GridItem] {
+        [
+            GridItem(.flexible(), spacing: 56),
+            GridItem(.flexible(), spacing: 56)
+        ]
+    }
+    
+    var body: some View {
+        LazyVGrid(columns: columns, spacing: 36) {
+            ForEach(metrics) { metric in
+                ShareMetricItem(metric: metric)
+            }
+        }
+    }
+}
+
+private struct ShareMetricItem: View {
+    let metric: ShareMetric
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(metric.label.uppercased())
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(Color.white.opacity(0.65))
+                .kerning(1)
+            Text(metric.value)
+                .font(.system(size: 30, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+struct ShareSheet: UIViewControllerRepresentable {
     let activityItems: [Any]
-    let applicationActivities: [UIActivity]? = nil
     
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
     }
     
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
-private extension UIImage {
+enum TransparentSnapshotRenderer {
+    @MainActor
+    static func render<V: View>(view: V) -> UIImage? {
+        let controller = UIHostingController(rootView: view)
+        controller.view.backgroundColor = .clear
+        
+        let targetSize = controller.sizeThatFits(in: CGSize(width: 1080, height: CGFloat.greatestFiniteMagnitude))
+        controller.view.bounds = CGRect(origin: .zero, size: targetSize)
+        controller.view.sizeToFit()
+        
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = UIScreen.main.scale
+        format.opaque = false
+        
+        let renderer = UIGraphicsImageRenderer(size: targetSize, format: format)
+        return renderer.image { _ in
+            controller.view.drawHierarchy(in: controller.view.bounds, afterScreenUpdates: true)
+        }
+    }
+}
+
+extension UIImage {
     static var appIcon: UIImage? {
         guard
             let iconsDictionary = Bundle.main.infoDictionary?["CFBundleIcons"] as? [String: Any],
             let primaryIcon = iconsDictionary["CFBundlePrimaryIcon"] as? [String: Any],
             let iconFiles = primaryIcon["CFBundleIconFiles"] as? [String],
-            let iconName = iconFiles.last,
-            let iconImage = UIImage(named: iconName)
+            let iconName = iconFiles.last
         else {
             return nil
         }
-        return iconImage
+        
+        return UIImage(named: iconName)
     }
 }
-
