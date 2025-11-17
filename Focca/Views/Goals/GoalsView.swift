@@ -229,6 +229,8 @@ struct GoalsView: View {
                     .padding(.bottom, 105)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .top)
+            .padding(.top, -90)
             
             VStack(spacing: 0) {
                 Spacer()
