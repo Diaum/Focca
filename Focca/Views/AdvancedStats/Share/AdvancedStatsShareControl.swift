@@ -106,14 +106,15 @@ struct AdvancedStatsShareSnapshot: View {
             ShareMetric(label: "Streak", value: "\(configuration.streak) day\(configuration.streak == 1 ? "" : "s")"),
             ShareMetric(label: "Avg / day", value: configuration.averageTimeText),
             ShareMetric(label: "Weekly Goals", value: "\(configuration.weeklyGoals)"),
-            ShareMetric(label: "Monthly Goals", value: "\(configuration.monthlyGoals)")
+            ShareMetric(label: "Monthly Goals", value: "\(configuration.monthlyGoals)"),
+            ShareMetric(label: "Mode", value: configuration.isBlocked ? "Blocked" : "Active")
         ]
     }
     
     var body: some View {
         ZStack {
             Color.clear
-            VStack(spacing: 40) {
+            VStack(alignment: .leading, spacing: 16) {
                 if let iconImage {
                     ShareTransparencyBadge(icon: iconImage)
                 }
@@ -121,13 +122,13 @@ struct AdvancedStatsShareSnapshot: View {
                 ShareBrandRow(icon: iconImage)
                 
                 ShareMetricsGrid(metrics: metrics)
-                    .frame(maxWidth: 760)
+                    .frame(maxWidth: 820, alignment: .leading)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, 72)
-            .padding(.vertical, 96)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 48)
+            .padding(.vertical, 56)
         }
-        .frame(width: 1080)
+        .frame(width: 1080, height: 1920, alignment: .topLeading)
     }
 }
 
@@ -141,7 +142,7 @@ private struct ShareTransparencyBadge: View {
     let icon: UIImage
     
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             Image(uiImage: icon)
                 .resizable()
                 .scaledToFit()
@@ -149,18 +150,18 @@ private struct ShareTransparencyBadge: View {
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
             
             Text("Focca Transparent")
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(.white)
                 .textCase(.uppercase)
                 .kerning(0.8)
         }
         .padding(.vertical, 6)
-        .padding(.horizontal, 18)
+        .padding(.horizontal, 16)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(Color.white.opacity(0.6), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(Color.white.opacity(0.55), lineWidth: 1)
                 .background(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
                         .fill(Color.black.opacity(0.35))
                 )
         )
@@ -171,20 +172,21 @@ private struct ShareBrandRow: View {
     let icon: UIImage?
     
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 8) {
             if let icon {
                 Image(uiImage: icon)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 64, height: 64)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .frame(width: 52, height: 52)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
             
             Text("FOCCA")
-                .font(.system(size: 46, weight: .black, design: .rounded))
+                .font(.system(size: 28, weight: .black, design: .rounded))
                 .foregroundColor(.white)
-                .kerning(1)
+                .kerning(0.8)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -193,13 +195,13 @@ private struct ShareMetricsGrid: View {
     
     private var columns: [GridItem] {
         [
-            GridItem(.flexible(), spacing: 56),
-            GridItem(.flexible(), spacing: 56)
+            GridItem(.flexible(), spacing: 28, alignment: .leading),
+            GridItem(.flexible(), spacing: 28, alignment: .leading)
         ]
     }
     
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 36) {
+        LazyVGrid(columns: columns, alignment: .leading, spacing: 16) {
             ForEach(metrics) { metric in
                 ShareMetricItem(metric: metric)
             }
@@ -211,13 +213,13 @@ private struct ShareMetricItem: View {
     let metric: ShareMetric
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 2) {
             Text(metric.label.uppercased())
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(Color.white.opacity(0.65))
-                .kerning(1)
+                .kerning(0.8)
             Text(metric.value)
-                .font(.system(size: 30, weight: .bold, design: .rounded))
+                .font(.system(size: 32, weight: .bold, design: .rounded))
                 .foregroundColor(.white)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -240,7 +242,7 @@ enum TransparentSnapshotRenderer {
         let controller = UIHostingController(rootView: view)
         controller.view.backgroundColor = .clear
         
-        let targetSize = controller.sizeThatFits(in: CGSize(width: 1080, height: CGFloat.greatestFiniteMagnitude))
+        let targetSize = CGSize(width: 1080, height: 1920)
         controller.view.bounds = CGRect(origin: .zero, size: targetSize)
         controller.view.sizeToFit()
         
@@ -269,3 +271,4 @@ extension UIImage {
         return UIImage(named: iconName)
     }
 }
+
