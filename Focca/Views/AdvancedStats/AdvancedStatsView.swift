@@ -129,6 +129,8 @@ struct AdvancedStatsView: View {
                 }
                 .padding(.bottom, 105)
             }
+            .frame(maxWidth: .infinity, alignment: .top)
+            .padding(.top, -120)
             
             VStack(spacing: 0) {
                 Spacer()
