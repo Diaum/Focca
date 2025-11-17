@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct AdvancedStatsView: View {
     @Binding var selectedTab: Int
@@ -121,6 +122,10 @@ struct AdvancedStatsView: View {
                         }
                     }
                     .padding(.horizontal, 16)
+                    
+                    AdvancedStatsShareControl(configuration: shareConfiguration)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 4)
                 }
                 .padding(.bottom, 105)
             }
@@ -193,6 +198,16 @@ struct AdvancedStatsView: View {
         monthlyGoalsCompleted = userDefaults.integer(forKey: "monthly_goals_completed")
     }
     
+    private var formattedAverageTime: String {
+        let hours = Int(averageTimePerDay) / 3600
+        let minutes = (Int(averageTimePerDay) % 3600) / 60
+        if hours > 0 {
+            return "\(hours)h \(minutes)m"
+        } else {
+            return "\(minutes)m"
+        }
+    }
+    
     private func calculateStreak(dailyTimes: [(date: Date, time: TimeInterval)]) -> Int {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
@@ -239,9 +254,19 @@ struct AdvancedStatsView: View {
         // Garante que o streak mínimo seja 1 se hoje tem pelo menos 1h
         return max(1, streak)
     }
+    
+    private var shareConfiguration: AdvancedStatsShareConfiguration {
+        AdvancedStatsShareConfiguration(
+            isBlocked: isBlocked,
+            totalTimeText: formattedTotalTime,
+            averageTimeText: formattedAverageTime,
+            streak: currentStreak,
+            weeklyGoals: weeklyGoalsCompleted,
+            monthlyGoals: monthlyGoalsCompleted
+        )
+    }
 }
 
 #Preview {
     AdvancedStatsView(selectedTab: .constant(1), isBlocked: false)
 }
-
