@@ -92,11 +92,15 @@ struct AdvancedStatsView: View {
                         }
                         
                         VStack(spacing: 2) {
-                            Text(formattedTotalTime)
-                                .font(.system(size: 28, weight: .light, design: .rounded))
-                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
-                                .multilineTextAlignment(.center)
-                                .lineLimit(nil)
+                            if showTimeInDays {
+                                Text(formattedTotalTime)
+                                    .font(.system(size: 28, weight: .light, design: .rounded))
+                                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                                    .multilineTextAlignment(.center)
+                                    .lineLimit(nil)
+                            } else {
+                                TimeDisplayView(time: totalBlockedTime, isBlocked: isBlocked)
+                            }
                         }
                     }
                     .padding(16)
@@ -266,6 +270,40 @@ struct AdvancedStatsView: View {
             weeklyGoals: weeklyGoalsCompleted,
             monthlyGoals: monthlyGoalsCompleted
         )
+    }
+}
+
+private struct TimeDisplayView: View {
+    let time: TimeInterval
+    let isBlocked: Bool
+    
+    var body: some View {
+        let hours = Int(time) / 3600
+        let minutes = (Int(time) % 3600) / 60
+        
+        HStack(spacing: 0) {
+            if hours > 0 {
+                Text("\(hours)")
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                Text("h")
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                Text(" \(minutes)")
+                    .font(.system(size: 28, weight: .light, design: .rounded))
+                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                Text("m")
+                    .font(.system(size: 28, weight: .light, design: .rounded))
+                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+            } else {
+                Text("\(minutes)")
+                    .font(.system(size: 28, weight: .light, design: .rounded))
+                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                Text("m")
+                    .font(.system(size: 28, weight: .light, design: .rounded))
+                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+            }
+        }
     }
 }
 

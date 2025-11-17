@@ -4,16 +4,6 @@ struct AverageCard: View {
     let averageTime: TimeInterval
     let isBlocked: Bool
     
-    private var formattedTime: String {
-        let hours = Int(averageTime) / 3600
-        let minutes = (Int(averageTime) % 3600) / 60
-        if hours > 0 {
-            return String(format: "%dh\n%dm", hours, minutes)
-        } else {
-            return String(format: "%dm", minutes)
-        }
-    }
-    
     var body: some View {
         VStack(spacing: 8) {
             HStack {
@@ -30,12 +20,7 @@ struct AverageCard: View {
             
             Spacer()
             
-            Text(formattedTime)
-                .font(.system(size: 24, weight: .light, design: .rounded))
-                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
-                .fixedSize(horizontal: false, vertical: true)
+            AverageTimeDisplayView(time: averageTime, isBlocked: isBlocked)
             
             Spacer()
         }
@@ -47,6 +32,47 @@ struct AverageCard: View {
                 .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white)
                 .shadow(color: Color.black.opacity(isBlocked ? 0.3 : 0.04), radius: 3, x: 0, y: 1)
         )
+    }
+}
+
+private struct AverageTimeDisplayView: View {
+    let time: TimeInterval
+    let isBlocked: Bool
+    
+    var body: some View {
+        let hours = Int(time) / 3600
+        let minutes = (Int(time) % 3600) / 60
+        
+        VStack(spacing: 0) {
+            if hours > 0 {
+                HStack(spacing: 0) {
+                    Text("\(hours)")
+                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                    Text("h")
+                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                }
+                HStack(spacing: 0) {
+                    Text("\(minutes)")
+                        .font(.system(size: 24, weight: .light, design: .rounded))
+                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                    Text("m")
+                        .font(.system(size: 24, weight: .light, design: .rounded))
+                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                }
+            } else {
+                HStack(spacing: 0) {
+                    Text("\(minutes)")
+                        .font(.system(size: 24, weight: .light, design: .rounded))
+                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                    Text("m")
+                        .font(.system(size: 24, weight: .light, design: .rounded))
+                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                }
+            }
+        }
+        .multilineTextAlignment(.center)
     }
 }
 
