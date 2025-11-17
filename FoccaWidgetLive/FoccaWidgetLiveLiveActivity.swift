@@ -12,10 +12,8 @@ import SwiftUI
 struct FoccaWidgetLiveLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: FoccaWidgetLiveAttributes.self) { context in
-            // MARK: - Main Container
-            HStack(spacing: 60) {
-                // Ícone / Bloco à esquerda
-                Image("focca_black")
+            HStack(spacing: 0) {
+                Image("focca-rectangle-gray", bundle: Bundle.main)
                     .renderingMode(.original)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
@@ -23,9 +21,8 @@ struct FoccaWidgetLiveLiveActivity: Widget {
                     .shadow(color: .black.opacity(0.5), radius: 1, x: 0, y: 1)
                     .padding(.leading, 18)
 
-                Spacer()
+                Spacer(minLength: 180)
 
-                // Timer com distância mínima de 20 da margem direita
                 Text(timerInterval: context.state.startDate...Date.distantFuture, countsDown: false)
                     .monospacedDigit()
                     .font(.system(size: 22, weight: .medium, design: .rounded))
@@ -34,10 +31,11 @@ struct FoccaWidgetLiveLiveActivity: Widget {
                     .minimumScaleFactor(0.8)
                     .padding(.trailing, 20)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 12)
             .background(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color(hex: "1C1C1E")) // tom uniforme escuro
+                    .fill(Color(hex: "1C1C1E"))
                     .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
             )
             .activityBackgroundTint(Color.clear)
@@ -67,7 +65,7 @@ extension FoccaWidgetLiveAttributes {
 extension FoccaWidgetLiveAttributes.ContentState {
     fileprivate static var active: FoccaWidgetLiveAttributes.ContentState {
         // Para mostrar 15h30m56s, a data de início deve ser 15h30m56s atrás
-        let hours = 15
+        let hours = 10
         let minutes = 30
         let seconds = 56
         let totalSeconds = hours * 3600 + minutes * 60 + seconds
