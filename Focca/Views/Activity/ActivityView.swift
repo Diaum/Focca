@@ -43,24 +43,28 @@ struct ActivityView: View {
                             showGoals = true
                         }) {
                             Image(systemName: "target")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
-                                .frame(width: 44, height: 44)
-                                .background(isBlocked ? Color(hex: "1C1C1C") : Color.white)
-                                .clipShape(Circle())
-                                .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(isBlocked ? Color(hex: "D1D1D6") : Color(hex: "3C3C43").opacity(0.6))
+                                .frame(width: 40, height: 40)
+                                .background(
+                                    Circle()
+                                        .fill(isBlocked ? Color(hex: "1E1E1F") : Color.white)
+                                        .shadow(color: Color.black.opacity(isBlocked ? 0.4 : 0.04), radius: 6, x: 0, y: 3)
+                                )
                         }
                         
                         Button(action: {
                             showAdvancedStats = true
                         }) {
                             Image(systemName: "chart.bar.fill")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
-                                .frame(width: 44, height: 44)
-                                .background(isBlocked ? Color(hex: "1C1C1C") : Color.white)
-                                .clipShape(Circle())
-                                .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(isBlocked ? Color(hex: "D1D1D6") : Color(hex: "3C3C43").opacity(0.6))
+                                .frame(width: 40, height: 40)
+                                .background(
+                                    Circle()
+                                        .fill(isBlocked ? Color(hex: "1E1E1F") : Color.white)
+                                        .shadow(color: Color.black.opacity(isBlocked ? 0.4 : 0.04), radius: 6, x: 0, y: 3)
+                                )
                         }
                     }
                     .padding(.trailing, 16)
