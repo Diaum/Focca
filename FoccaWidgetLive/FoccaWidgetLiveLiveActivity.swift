@@ -13,13 +13,13 @@ struct FoccaWidgetLiveLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: FoccaWidgetLiveAttributes.self) { context in
             HStack(spacing: 0) {
-                Image("focca-rectangle-gray", bundle: Bundle.main)
-                    .renderingMode(.original)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 58, height: 58)
-                    .shadow(color: .black.opacity(0.5), radius: 1, x: 0, y: 1)
-                    .padding(.leading, 18)
+                Image("focca_black")
+                        .renderingMode(.original)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 58, height: 58)
+                        .shadow(color: .black.opacity(0.5), radius: 1, x: 0, y: 1)
+                        .padding(.leading, 18)
 
                 Spacer(minLength: 180)
 
