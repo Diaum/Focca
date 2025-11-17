@@ -126,12 +126,10 @@ struct WeeklyGoalCard: View {
                                     .fill(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA"))
                                     .frame(height: 8)
                                 
-                                // Goal progress (blue) - fills up to 100%
                                 RoundedRectangle(cornerRadius: 6)
-                                    .fill(Color.blue)
+                                    .fill(isBlocked ? Color.white : Color.black)
                                     .frame(width: geometry.size.width * min(progressPercentage, 1.0), height: 8)
                                 
-                                // Extra time (green) if exceeds goal - continues from 100%
                                 if hasExtraTime {
                                     RoundedRectangle(cornerRadius: 6)
                                         .fill(Color.green)
