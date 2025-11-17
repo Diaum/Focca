@@ -105,16 +105,14 @@ struct AdvancedStatsShareSnapshot: View {
             ShareMetric(label: "Total Time", value: configuration.totalTimeText),
             ShareMetric(label: "Streak", value: "\(configuration.streak) day\(configuration.streak == 1 ? "" : "s")"),
             ShareMetric(label: "Avg / day", value: configuration.averageTimeText),
-            ShareMetric(label: "Weekly Goals", value: "\(configuration.weeklyGoals)"),
-            ShareMetric(label: "Monthly Goals", value: "\(configuration.monthlyGoals)"),
-            ShareMetric(label: "Mode", value: configuration.isBlocked ? "Blocked" : "Active")
+            ShareMetric(label: "Weekly Goals", value: "\(configuration.weeklyGoals)")
         ]
     }
     
     var body: some View {
         ZStack {
             Color.clear
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 40) {
                 if let iconImage {
                     ShareTransparencyBadge(icon: iconImage)
                 }
@@ -122,11 +120,11 @@ struct AdvancedStatsShareSnapshot: View {
                 ShareBrandRow(icon: iconImage)
                 
                 ShareMetricsGrid(metrics: metrics)
-                    .frame(maxWidth: 820, alignment: .leading)
+                    .frame(maxWidth: 900, alignment: .leading)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 48)
-            .padding(.vertical, 56)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            .padding(.horizontal, 96)
+            .padding(.vertical, 120)
         }
         .frame(width: 1080, height: 1920, alignment: .topLeading)
     }
@@ -172,17 +170,17 @@ private struct ShareBrandRow: View {
     let icon: UIImage?
     
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 12) {
             if let icon {
                 Image(uiImage: icon)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 52, height: 52)
+                    .frame(width: 90, height: 90)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
             
             Text("FOCCA")
-                .font(.system(size: 28, weight: .black, design: .rounded))
+                .font(.system(size: 72, weight: .black, design: .rounded))
                 .foregroundColor(.white)
                 .kerning(0.8)
         }
@@ -195,13 +193,13 @@ private struct ShareMetricsGrid: View {
     
     private var columns: [GridItem] {
         [
-            GridItem(.flexible(), spacing: 28, alignment: .leading),
-            GridItem(.flexible(), spacing: 28, alignment: .leading)
+            GridItem(.flexible(), spacing: 32, alignment: .leading),
+            GridItem(.flexible(), spacing: 32, alignment: .leading)
         ]
     }
     
     var body: some View {
-        LazyVGrid(columns: columns, alignment: .leading, spacing: 16) {
+        LazyVGrid(columns: columns, alignment: .leading, spacing: 28) {
             ForEach(metrics) { metric in
                 ShareMetricItem(metric: metric)
             }
@@ -213,14 +211,16 @@ private struct ShareMetricItem: View {
     let metric: ShareMetric
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 6) {
             Text(metric.label.uppercased())
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: 28, weight: .semibold))
                 .foregroundColor(Color.white.opacity(0.65))
                 .kerning(0.8)
             Text(metric.value)
-                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .font(.system(size: 96, weight: .bold, design: .rounded))
                 .foregroundColor(.white)
+                .minimumScaleFactor(0.6)
+                .lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
