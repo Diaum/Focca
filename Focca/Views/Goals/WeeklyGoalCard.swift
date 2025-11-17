@@ -89,10 +89,10 @@ struct WeeklyGoalCard: View {
                                     }) {
                                         Text("Delete")
                                             .font(.system(size: 15, weight: .semibold))
-                                            .foregroundColor(isOtherGoalEditing ? (isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8")) : .white)
+                                            .foregroundColor(isOtherGoalEditing ? (isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8")) : (isBlocked ? .white : Color(hex: "1C1C1E")))
                                             .padding(.horizontal, 20)
                                             .padding(.vertical, 10)
-                                            .background(isOtherGoalEditing ? (isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA")) : Color.red)
+                                            .background(isOtherGoalEditing ? (isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA")) : (isBlocked ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA")))
                                             .cornerRadius(10)
                                     }
                                     .disabled(isOtherGoalEditing)
