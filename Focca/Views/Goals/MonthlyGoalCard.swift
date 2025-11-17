@@ -44,6 +44,12 @@ struct MonthlyGoalCard: View {
         return max(0, (currentProgress - goalTime) / goalTime)
     }
     
+    private var monthName: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM"
+        return formatter.string(from: Date()).capitalized
+    }
+    
     var body: some View {
         VStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 6) {
@@ -52,7 +58,7 @@ struct MonthlyGoalCard: View {
                         .font(.system(size: 18))
                         .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                     
-                    Text("Monthly Goal")
+                    Text(monthName + " Goals")
                         .font(.system(size: 20, weight: .semibold))
                         .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                     
@@ -79,9 +85,7 @@ struct MonthlyGoalCard: View {
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                             
-                            Text(formatTime(hours: hours, minutes: minutes))
-                                .font(.system(size: 24, weight: .semibold))
-                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                            GoalTimeDisplayView(hours: hours, minutes: minutes, isBlocked: isBlocked)
                         }
                         
                         Spacer()
@@ -336,6 +340,38 @@ struct MonthlyGoalCard: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d, yyyy"
         return formatter.string(from: date)
+    }
+}
+
+private struct GoalTimeDisplayView: View {
+    let hours: Int
+    let minutes: Int
+    let isBlocked: Bool
+    
+    var body: some View {
+        HStack(spacing: 0) {
+            if hours > 0 {
+                Text("\(hours)")
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                Text("h")
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                Text(" \(String(format: "%02d", minutes))")
+                    .font(.system(size: 24, weight: .light, design: .rounded))
+                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                Text("m")
+                    .font(.system(size: 24, weight: .light, design: .rounded))
+                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+            } else {
+                Text("\(minutes)")
+                    .font(.system(size: 24, weight: .light, design: .rounded))
+                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                Text("m")
+                    .font(.system(size: 24, weight: .light, design: .rounded))
+                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+            }
+        }
     }
 }
 
