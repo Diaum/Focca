@@ -12,7 +12,6 @@ struct ActivityView: View {
     @State private var todayTime: String = "0h 0m"
     @State private var averageTime: String = "0h 0m"
     @State private var dailyCards: [(date: Date, time: TimeInterval)] = []
-    @State private var lastLoggedAppCount: Int = -1
     @State private var expandedCardDate: Date? = nil
     let initialDailyCards: [(date: Date, time: TimeInterval)]?
     
@@ -112,10 +111,15 @@ struct ActivityView: View {
                         }
                         .onChange(of: expandedCardDate) { newValue in
                             if let expandedDate = newValue {
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                    withAnimation(.easeInOut(duration: 0.3)) {
-                                        proxy.scrollTo(expandedDate, anchor: .top)
+                                if let card = dailyCards.first(where: { $0.date == expandedDate }),
+                                   card.time > 0 {
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                        withAnimation(.easeInOut(duration: 0.3)) {
+                                            proxy.scrollTo(expandedDate, anchor: .top)
+                                        }
                                     }
+                                } else {
+                                    expandedCardDate = nil
                                 }
                             }
                         }
@@ -236,7 +240,7 @@ struct ActivityView: View {
                 GridItem(.flexible(), spacing: 10),
                 GridItem(.flexible(), spacing: 10)
             ], spacing: 10) {
-                ForEach(compactCards, id: \.date) { card in
+                        ForEach(compactCards, id: \.date) { card in
                     if card.time > 0 {
                         DailyCard(
                             date: card.date,
@@ -263,6 +267,7 @@ struct ActivityView: View {
                             onTap: nil
                         )
                         .id(card.date)
+                        .allowsHitTesting(false)
                     }
                 }
             }
@@ -276,19 +281,6 @@ struct ActivityView: View {
         let hours = Int(totalTime) / 3600
         let minutes = (Int(totalTime) % 3600) / 60
         todayTime = String(format: "%dh %dm", hours, minutes)
-        
-        let today = Date()
-        let appDetails = AppBlockingTracker.shared.getAppBlockingDetails(for: today)
-        let currentAppCount = appDetails.count
-        
-        if currentAppCount != lastLoggedAppCount {
-            lastLoggedAppCount = currentAppCount
-            if appDetails.isEmpty {
-                print("📱 [ActivityView] Hoje: Nenhum app bloqueado com tempo salvo")
-            } else {
-                print("📱 [ActivityView] Hoje: \(appDetails.count) apps bloqueados com tempo salvo (total: \(Int(totalTime / 60))m)")
-            }
-        }
     }
 }
 

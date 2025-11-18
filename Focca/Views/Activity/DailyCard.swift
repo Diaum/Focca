@@ -95,17 +95,23 @@ struct DailyCard: View {
             if isZeroTime {
                 compactView
                     .allowsHitTesting(false)
-            } else {
+            } else if isExpanded {
                 Button(action: {
                     onTap?()
                 }) {
-                    if isExpanded {
-                        DailyCardExpander(date: date, time: time, isBlocked: isBlocked)
-                    } else {
-                        compactView
-                    }
+                    DailyCardExpander(date: date, time: time, isBlocked: isBlocked)
                 }
                 .buttonStyle(PlainButtonStyle())
+            } else if onTap != nil {
+                Button(action: {
+                    onTap?()
+                }) {
+                    compactView
+                }
+                .buttonStyle(PlainButtonStyle())
+            } else {
+                compactView
+                    .allowsHitTesting(false)
             }
         }
         .opacity(isZeroTime ? 0.6 : 1.0)
