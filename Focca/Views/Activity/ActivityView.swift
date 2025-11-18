@@ -13,6 +13,7 @@ struct ActivityView: View {
     @State private var averageTime: String = "0h 0m"
     @State private var dailyCards: [(date: Date, time: TimeInterval)] = []
     @State private var lastLoggedAppCount: Int = -1
+    @State private var expandedCardDate: Date? = nil
     let initialDailyCards: [(date: Date, time: TimeInterval)]?
     
     init(selectedTab: Binding<Int>, isBlocked: Bool = false, initialDailyCards: [(date: Date, time: TimeInterval)]? = nil) {
@@ -103,23 +104,21 @@ struct ActivityView: View {
                         .padding(.top, 40)
 
                 } else {
-                    ScrollView(showsIndicators: false) {
-                        LazyVGrid(columns: [
-                            GridItem(.flexible(), spacing: 10),
-                            GridItem(.flexible(), spacing: 10),
-                            GridItem(.flexible(), spacing: 10)
-                        ], spacing: 10) {
-                            ForEach(dailyCards, id: \.date) { card in
-                                DailyCard(
-                                    date: card.date,
-                                    time: card.time,
-                                    isBlocked: isBlocked
-                                )
+                    ScrollViewReader { proxy in
+                        ScrollView(showsIndicators: false) {
+                            cardGrid
+                                .padding(.top, 0)
+                                .padding(.bottom, 250)
+                        }
+                        .onChange(of: expandedCardDate) { newValue in
+                            if let expandedDate = newValue {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                        proxy.scrollTo(expandedDate, anchor: .top)
+                                    }
+                                }
                             }
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 0)
-                        .padding(.bottom, 250)
                     }
                 }
             }
@@ -178,12 +177,19 @@ struct ActivityView: View {
             }
             updateTodayTime()
             StatsAchievementManager.shared.updateAchievements()
+            expandedCardDate = nil
             
             Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
                 DispatchQueue.main.async {
                     self.updateTodayTime()
                 }
             }
+        }
+        .onChange(of: selectedTab) { _ in
+            expandedCardDate = nil
+        }
+        .onDisappear {
+            expandedCardDate = nil
         }
     }
     
@@ -194,6 +200,64 @@ struct ActivityView: View {
         let hours = Int(avgTime) / 3600
         let minutes = (Int(avgTime) % 3600) / 60
         averageTime = String(format: "%dh %dm", hours, minutes)
+    }
+    
+    private var compactCards: [(date: Date, time: TimeInterval)] {
+        dailyCards.filter { expandedCardDate == nil || $0.date != expandedCardDate }
+    }
+    
+    @ViewBuilder
+    private var cardGrid: some View {
+        VStack(spacing: 10) {
+            if let expandedDate = expandedCardDate,
+               let expandedCard = dailyCards.first(where: { $0.date == expandedDate }),
+               expandedCard.time > 0 {
+                DailyCard(
+                    date: expandedCard.date,
+                    time: expandedCard.time,
+                    isBlocked: isBlocked,
+                    isExpanded: true,
+                    onTap: {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.75, blendDuration: 0.2)) {
+                            expandedCardDate = nil
+                        }
+                    }
+                )
+                .id(expandedCard.date)
+                .padding(.horizontal, 20)
+                .transition(.asymmetric(
+                    insertion: .scale(scale: 0.95).combined(with: .opacity),
+                    removal: .scale(scale: 0.95).combined(with: .opacity)
+                ))
+            }
+            
+            LazyVGrid(columns: [
+                GridItem(.flexible(), spacing: 10),
+                GridItem(.flexible(), spacing: 10),
+                GridItem(.flexible(), spacing: 10)
+            ], spacing: 10) {
+                ForEach(compactCards, id: \.date) { card in
+                    DailyCard(
+                        date: card.date,
+                        time: card.time,
+                        isBlocked: isBlocked,
+                        isExpanded: false,
+                        onTap: card.time > 0 ? {
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.75, blendDuration: 0.2)) {
+                                expandedCardDate = card.date
+                            }
+                        } : nil
+                    )
+                    .id(card.date)
+                    .transition(.asymmetric(
+                        insertion: .scale(scale: 0.95).combined(with: .opacity),
+                        removal: .scale(scale: 0.95).combined(with: .opacity)
+                    ))
+                }
+            }
+            .padding(.horizontal, 20)
+        }
+        .animation(.spring(response: 0.4, dampingFraction: 0.75, blendDuration: 0.2), value: expandedCardDate)
     }
     
     private func updateTodayTime() {

@@ -4,12 +4,14 @@ struct DailyCard: View {
     let date: Date
     let time: TimeInterval
     let isBlocked: Bool
+    let isExpanded: Bool
     var onTap: (() -> Void)? = nil
     
-    init(date: Date, time: TimeInterval, isBlocked: Bool = false, onTap: (() -> Void)? = nil) {
+    init(date: Date, time: TimeInterval, isBlocked: Bool = false, isExpanded: Bool = false, onTap: (() -> Void)? = nil) {
         self.date = date
         self.time = time
         self.isBlocked = isBlocked
+        self.isExpanded = isExpanded
         self.onTap = onTap
     }
     
@@ -89,34 +91,50 @@ struct DailyCard: View {
     }
     
     var body: some View {
-        Button(action: {
-            onTap?()
-        }) {
-            VStack(spacing: 6) {
-                Text(formattedDate)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8A8A8E"))
-                    .multilineTextAlignment(.center)
-                
-                VStack(spacing: 0) {
-                    Text("\(hours)h")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(timeTextColor)
-                    
-                    Text(String(format: "%02dm", minutes))
-                        .font(.system(size: 20, weight: .light))
-                        .foregroundColor(timeTextColor)
+        Group {
+            if isZeroTime {
+                compactView
+            } else {
+                Button(action: {
+                    onTap?()
+                }) {
+                    if isExpanded {
+                        DailyCardExpander(date: date, time: time, isBlocked: isBlocked)
+                    } else {
+                        compactView
+                    }
                 }
-                .multilineTextAlignment(.center)
+                .buttonStyle(PlainButtonStyle())
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 20)
-            .background(cardBackgroundColor)
-            .cornerRadius(16)
-            .shadow(color: isBlocked ? (shouldShowGray ? Color.black.opacity(0.2) : Color.black.opacity(0.3)) : Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
         }
-        .buttonStyle(PlainButtonStyle())
+        .opacity(isZeroTime ? 0.6 : 1.0)
     }
+    
+    private var compactView: some View {
+        VStack(spacing: 6) {
+            Text(formattedDate)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8A8A8E"))
+                .multilineTextAlignment(.center)
+            
+            VStack(spacing: 0) {
+                Text("\(hours)h")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(timeTextColor)
+                
+                Text(String(format: "%02dm", minutes))
+                    .font(.system(size: 20, weight: .light))
+                    .foregroundColor(timeTextColor)
+            }
+            .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 20)
+        .background(cardBackgroundColor)
+        .cornerRadius(16)
+        .shadow(color: isBlocked ? (shouldShowGray ? Color.black.opacity(0.2) : Color.black.opacity(0.3)) : Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+    }
+    
 }
 
 #Preview {
