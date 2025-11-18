@@ -9,8 +9,8 @@ struct AdvancedStatsView: View {
     @State private var showTimeInDays: Bool = false
     @State private var currentStreak: Int = 0
     @State private var averageTimePerDay: TimeInterval = 0
-    @State private var weeklyGoalsCompleted: Int = 0
-    @State private var monthlyGoalsCompleted: Int = 0
+    @State private var weeklyAverageTime: TimeInterval = 0
+    @State private var monthlyAverageTime: TimeInterval = 0
     
     var body: some View {
         ZStack {
@@ -119,10 +119,10 @@ struct AdvancedStatsView: View {
                             AverageCard(averageTime: averageTimePerDay, isBlocked: isBlocked)
                         }
                         
-                        // Segunda linha: Weekly e Monthly Goals
+                        // Segunda linha: Weekly e Monthly Averages
                         HStack(spacing: 10) {
-                            WeeklyGoalsCard(completed: weeklyGoalsCompleted, isBlocked: isBlocked)
-                            MonthlyGoalsCard(completed: monthlyGoalsCompleted, isBlocked: isBlocked)
+                            WeeklyGoalsCard(averageTime: weeklyAverageTime, isBlocked: isBlocked)
+                            MonthlyGoalsCard(averageTime: monthlyAverageTime, isBlocked: isBlocked)
                         }
                     }
                     .padding(.horizontal, 16)
@@ -147,7 +147,7 @@ struct AdvancedStatsView: View {
         .preferredColorScheme(isBlocked ? .dark : .light)
         .onAppear {
             loadTotalBlockedTime()
-            loadGoalsCompleted()
+            loadAverages()
             StatsAchievementManager.shared.markAchievementsAsViewed()
         }
     }
@@ -198,10 +198,30 @@ struct AdvancedStatsView: View {
         currentStreak = calculateStreak(dailyTimes: dailyTimes)
     }
     
-    private func loadGoalsCompleted() {
-        let userDefaults = UserDefaults.standard
-        weeklyGoalsCompleted = userDefaults.integer(forKey: "weekly_goals_completed")
-        monthlyGoalsCompleted = userDefaults.integer(forKey: "monthly_goals_completed")
+    private func loadAverages() {
+        let dailyTimes = TimerStorage.shared.getAllDailyTimes()
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        
+        var weeklyTotals: [Date: TimeInterval] = [:]
+        var monthlyTotals: [Date: TimeInterval] = [:]
+        
+        for (date, time) in dailyTimes {
+            let dayStart = calendar.startOfDay(for: date)
+            
+            if dayStart < today {
+                if let weekStart = calendar.dateInterval(of: .weekOfYear, for: dayStart)?.start {
+                    weeklyTotals[weekStart, default: 0] += time
+                }
+                
+                if let monthStart = calendar.dateInterval(of: .month, for: dayStart)?.start {
+                    monthlyTotals[monthStart, default: 0] += time
+                }
+            }
+        }
+        
+        weeklyAverageTime = weeklyTotals.isEmpty ? 0 : weeklyTotals.values.reduce(0, +) / Double(weeklyTotals.count)
+        monthlyAverageTime = monthlyTotals.isEmpty ? 0 : monthlyTotals.values.reduce(0, +) / Double(monthlyTotals.count)
     }
     
     private var formattedAverageTime: String {
@@ -262,13 +282,21 @@ struct AdvancedStatsView: View {
     }
     
     private var shareConfiguration: AdvancedStatsShareConfiguration {
-        AdvancedStatsShareConfiguration(
+        let weeklyHours = Int(weeklyAverageTime) / 3600
+        let weeklyMinutes = (Int(weeklyAverageTime) % 3600) / 60
+        let weeklyText = weeklyHours > 0 ? "\(weeklyHours)h \(weeklyMinutes)m" : "\(weeklyMinutes)m"
+        
+        let monthlyHours = Int(monthlyAverageTime) / 3600
+        let monthlyMinutes = (Int(monthlyAverageTime) % 3600) / 60
+        let monthlyText = monthlyHours > 0 ? "\(monthlyHours)h \(monthlyMinutes)m" : "\(monthlyMinutes)m"
+        
+        return AdvancedStatsShareConfiguration(
             isBlocked: isBlocked,
             totalTimeText: formattedTotalTime,
             averageTimeText: formattedAverageTime,
             streak: currentStreak,
-            weeklyGoals: weeklyGoalsCompleted,
-            monthlyGoals: monthlyGoalsCompleted
+            weeklyAverage: weeklyText,
+            monthlyAverage: monthlyText
         )
     }
 }

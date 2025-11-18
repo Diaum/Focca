@@ -1,8 +1,16 @@
 import SwiftUI
 
 struct MonthlyGoalsCard: View {
-    let completed: Int
+    let averageTime: TimeInterval
     let isBlocked: Bool
+    
+    private var hours: Int {
+        Int(averageTime) / 3600
+    }
+    
+    private var minutes: Int {
+        (Int(averageTime) % 3600) / 60
+    }
     
     var body: some View {
         VStack(spacing: 8) {
@@ -11,7 +19,7 @@ struct MonthlyGoalsCard: View {
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 
-                Text("Monthly Goals")
+                Text("Monthly Average")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                 
@@ -21,13 +29,18 @@ struct MonthlyGoalsCard: View {
             Spacer()
             
             VStack(spacing: 2) {
-                Text("\(completed)")
-                    .font(.system(size: 26, weight: .light, design: .rounded))
-                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
-                    .multilineTextAlignment(.center)
-                    .lineLimit(1)
+                VStack(spacing: 0) {
+                    Text("\(hours)h")
+                        .font(.system(size: 26, weight: .semibold, design: .rounded))
+                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                    
+                    Text(String(format: "%02dm", minutes))
+                        .font(.system(size: 26, weight: .light, design: .rounded))
+                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                }
+                .multilineTextAlignment(.center)
                 
-                Text(completed == 1 ? "Completed" : "Completed")
+                Text("Per Month")
                     .font(.system(size: 11, weight: .regular))
                     .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
             }
@@ -46,9 +59,12 @@ struct MonthlyGoalsCard: View {
 }
 
 #Preview {
-    HStack(spacing: 12) {
-        MonthlyGoalsCard(completed: 3, isBlocked: false)
-        MonthlyGoalsCard(completed: 8, isBlocked: true)
+    let time1: TimeInterval = 3 * 3600 + 45 * 60
+    let time2: TimeInterval = 8 * 3600 + 20 * 60
+    
+    return HStack(spacing: 12) {
+        MonthlyGoalsCard(averageTime: time1, isBlocked: false)
+        MonthlyGoalsCard(averageTime: time2, isBlocked: true)
     }
     .padding()
     .background(Color.gray.opacity(0.1))

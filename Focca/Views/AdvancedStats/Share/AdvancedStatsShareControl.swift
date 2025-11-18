@@ -6,8 +6,8 @@ struct AdvancedStatsShareConfiguration {
     let totalTimeText: String
     let averageTimeText: String
     let streak: Int
-    let weeklyGoals: Int
-    let monthlyGoals: Int
+    let weeklyAverage: String
+    let monthlyAverage: String
 }
 
 struct AdvancedStatsShareControl: View {
@@ -105,7 +105,8 @@ struct AdvancedStatsShareSnapshot: View {
             ShareMetric(label: "Total Time", value: configuration.totalTimeText),
             ShareMetric(label: "Streak", value: "\(configuration.streak) day\(configuration.streak == 1 ? "" : "s")"),
             ShareMetric(label: "Avg / day", value: configuration.averageTimeText),
-            ShareMetric(label: "Weekly Goals", value: "\(configuration.weeklyGoals)")
+            ShareMetric(label: "Avg / week", value: configuration.weeklyAverage),
+            ShareMetric(label: "Avg / month", value: configuration.monthlyAverage)
         ]
     }
     
