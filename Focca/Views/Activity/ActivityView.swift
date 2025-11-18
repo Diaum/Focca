@@ -7,11 +7,8 @@ struct ActivityView: View {
     @State private var showEditMode = false
     @State private var modeToEdit: String?
     @State private var showCreateMode = false
-    @State private var showDailyDetail = false
     @State private var showAdvancedStats = false
     @State private var showGoals = false
-    @State private var selectedDate: Date?
-    @State private var selectedTime: TimeInterval = 0
     @State private var todayTime: String = "0h 0m"
     @State private var averageTime: String = "0h 0m"
     @State private var dailyCards: [(date: Date, time: TimeInterval)] = []
@@ -116,12 +113,7 @@ struct ActivityView: View {
                                 DailyCard(
                                     date: card.date,
                                     time: card.time,
-                                    isBlocked: isBlocked,
-                                    onTap: {
-                                        selectedDate = card.date
-                                        selectedTime = card.time
-                                        showDailyDetail = true
-                                    }
+                                    isBlocked: isBlocked
                                 )
                             }
                         }
@@ -170,48 +162,6 @@ struct ActivityView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("OpenCreateMode"))) { _ in
             showCreateMode = true
-        }
-        .fullScreenCover(isPresented: $showDailyDetail) {
-            Group {
-                if let date = selectedDate {
-                    DailyDetailView(date: date, totalTime: selectedTime, isBlocked: isBlocked, selectedTab: $selectedTab)
-                        .onAppear {
-                            print("✅ [ActivityView] DailyDetailView apareceu - date: \(date), time: \(selectedTime)")
-                        }
-                        .onDisappear {
-                            selectedDate = nil
-                            selectedTime = 0
-                        }
-                } else {
-                    VStack {
-                        Text("Erro: selectedDate é nil")
-                            .foregroundColor(.red)
-                            .padding()
-                        Text("showDailyDetail: \(showDailyDetail ? "true" : "false")")
-                            .foregroundColor(.red)
-                            .padding()
-                    }
-                    .background(Color.white)
-                    .onAppear {
-                        print("⚠️ [ActivityView] Fallback apareceu - selectedDate é nil, showDailyDetail: \(showDailyDetail)")
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                            if selectedDate == nil {
-                                print("❌ [ActivityView] Fechando fullScreenCover porque selectedDate é nil")
-                                showDailyDetail = false
-                            }
-                        }
-                    }
-                }
-            }
-            .onAppear {
-                print("📱 [ActivityView] fullScreenCover apareceu - showDailyDetail: \(showDailyDetail), selectedDate: \(selectedDate != nil ? "definido" : "nil")")
-            }
-        }
-        .onChange(of: showDailyDetail) { newValue in
-            print("🔄 [ActivityView] showDailyDetail mudou para: \(newValue)")
-        }
-        .onChange(of: selectedDate) { newValue in
-            print("🔄 [ActivityView] selectedDate mudou para: \(newValue?.description ?? "nil")")
         }
         .fullScreenCover(isPresented: $showAdvancedStats) {
             AdvancedStatsView(selectedTab: $selectedTab, isBlocked: isBlocked)
