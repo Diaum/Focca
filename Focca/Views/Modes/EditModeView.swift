@@ -42,17 +42,7 @@ struct EditModeView: View {
                 return false
             }
             
-            // Deve ter horário válido (mínimo 5 minutos)
-            let calendar = Calendar.current
-            let startComps = calendar.dateComponents([.hour, .minute], from: startTime)
-            let endComps = calendar.dateComponents([.hour, .minute], from: endTime)
-            
-            let start = calendar.date(bySettingHour: startComps.hour ?? 0, minute: startComps.minute ?? 0, second: 0, of: Date()) ?? Date()
-            let end = calendar.date(bySettingHour: endComps.hour ?? 0, minute: endComps.minute ?? 0, second: 0, of: Date()) ?? Date()
-            let duration = end.timeIntervalSince(start)
-            let actualDuration = duration < 0 ? duration + 86400 : duration
-            
-            guard actualDuration >= 300 else { // Mínimo 5 minutos
+            guard scheduleDurationIsValid else {
                 return false
             }
             
@@ -63,6 +53,18 @@ struct EditModeView: View {
         }
         
         return true
+    }
+    
+    private var scheduleDurationIsValid: Bool {
+        guard isScheduled else { return true }
+        let calendar = Calendar.current
+        let startComps = calendar.dateComponents([.hour, .minute], from: startTime)
+        let endComps = calendar.dateComponents([.hour, .minute], from: endTime)
+        let start = calendar.date(bySettingHour: startComps.hour ?? 0, minute: startComps.minute ?? 0, second: 0, of: Date()) ?? Date()
+        let end = calendar.date(bySettingHour: endComps.hour ?? 0, minute: endComps.minute ?? 0, second: 0, of: Date()) ?? Date()
+        let duration = end.timeIntervalSince(start)
+        let actualDuration = duration < 0 ? duration + 86400 : duration
+        return actualDuration >= 300
     }
     
     init(modeName: String) {
@@ -236,6 +238,14 @@ struct EditModeView: View {
                                 Text("Schedule se encerrará no dia seguinte")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundColor(Color(hex: "9E9EA3"))
+                                    .padding(.horizontal, 16)
+                                    .padding(.bottom, 8)
+                            }
+                            
+                            if !scheduleDurationIsValid {
+                                Text("Schedule must be at least 5 minutes long")
+                                    .font(.system(size: 11, weight: .regular))
+                                    .foregroundColor(.red)
                                     .padding(.horizontal, 16)
                                     .padding(.bottom, 8)
                             }
