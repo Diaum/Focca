@@ -13,7 +13,7 @@ struct WeeklyGoalsCard: View {
     }
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 0) {
             HStack(spacing: 4) {
                 Image(systemName: "calendar")
                     .font(.system(size: 12, weight: .medium))
@@ -27,6 +27,7 @@ struct WeeklyGoalsCard: View {
                 
                 Spacer(minLength: 0)
             }
+            .padding(.bottom, 8)
             
             Spacer()
             
