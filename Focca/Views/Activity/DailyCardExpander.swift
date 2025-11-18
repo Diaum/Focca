@@ -23,43 +23,24 @@ struct DailyCardExpander: View {
         (Int(time) % 3600) / 60
     }
     
-    private var averageTime: TimeInterval {
+    private var allDailyTimes: [(date: Date, time: TimeInterval)] {
+        TimerStorage.shared.getAllDailyTimes()
+    }
+    
+    private var dailyAverageTime: TimeInterval {
         TimerStorage.shared.getAverageTime()
-    }
-    
-    private var averageHours: Int {
-        Int(averageTime) / 3600
-    }
-    
-    private var averageMinutes: Int {
-        (Int(averageTime) % 3600) / 60
-    }
-    
-    private var percentageBelowAverage: Int? {
-        guard averageTime > 0 else { return nil }
-        let diff = averageTime - time
-        let percentage = Int((diff / averageTime) * 100)
-        return percentage > 0 ? percentage : nil
-    }
-    
-    private var previousDayTime: TimeInterval {
-        let calendar = Calendar.current
-        if let previousDay = calendar.date(byAdding: .day, value: -1, to: date) {
-            return AppBlockingTracker.shared.getTotalBlockingTime(for: previousDay)
-        }
-        return 0
     }
     
     private var weekAverageInfo: (average: TimeInterval, startDate: Date?, endDate: Date?) {
         let calendar = Calendar.current
-        let allDailyTimes = TimerStorage.shared.getAllDailyTimes()
+        let allTimes = allDailyTimes
         
-        guard !allDailyTimes.isEmpty else { return (0, nil, nil) }
+        guard allTimes.count > 1 else { return (0, nil, nil) }
         
         let dateStart = calendar.startOfDay(for: date)
         let weekStart = calendar.date(byAdding: .day, value: -7, to: dateStart) ?? dateStart
         
-        let weekDays = allDailyTimes.filter { dailyTime in
+        let weekDays = allTimes.filter { dailyTime in
             let dailyDate = calendar.startOfDay(for: dailyTime.date)
             return dailyDate >= weekStart && dailyDate < dateStart && dailyTime.time > 0
         }
@@ -80,47 +61,83 @@ struct DailyCardExpander: View {
         weekAverageInfo.average
     }
     
-    private var weekDateRange: String? {
-        let info = weekAverageInfo
-        guard let start = info.startDate, let end = info.endDate else { return nil }
-        
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d"
-        
-        let startStr = formatter.string(from: start).lowercased()
-        let endStr = formatter.string(from: end).lowercased()
-        
-        return "\(startStr) a \(endStr)"
+    private var hasEnoughData: Bool {
+        allDailyTimes.count > 1
     }
     
-    private var comparisonInfo: (text: String, color: Color)? {
-        if previousDayTime > 0 {
-            let diff = time - previousDayTime
-            let percentage = Int((diff / previousDayTime) * 100)
+    private func formatTime(_ timeInterval: TimeInterval) -> String {
+        let hours = Int(timeInterval) / 3600
+        let minutes = (Int(timeInterval) % 3600) / 60
+        return "\(hours)h\(String(format: "%02dm", minutes))"
+    }
+    
+    private var comparisonText: String? {
+        guard hasEnoughData else {
+            return "Não tem estatísticas para comparação"
+        }
+        
+        let hasDailyAverage = dailyAverageTime > 0
+        let hasWeeklyAverage = weekAverageTime > 0
+        
+        if !hasDailyAverage && !hasWeeklyAverage {
+            return "Não tem estatísticas para comparação"
+        }
+        
+        var comparisons: [(text: String, type: String)] = []
+        
+        if hasDailyAverage {
+            let diff = time - dailyAverageTime
+            let percentage = abs(Int((diff / dailyAverageTime) * 100))
+            let averageText = formatTime(dailyAverageTime)
             
-            if percentage > 0 {
-                return ("\(percentage)% superior a ontem", Color(hex: "34C759"))
-            } else if percentage < 0 {
-                return ("\(abs(percentage))% inferior a ontem", Color(hex: "FF3B30"))
+            if diff > 0 {
+                comparisons.append(("\(percentage)% acima da sua média diária (\(averageText))", "daily"))
+            } else if diff < 0 {
+                comparisons.append(("\(percentage)% abaixo da sua média diária (\(averageText))", "daily"))
             } else {
-                return ("Igual a ontem", isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                comparisons.append(("O mesmo da sua média diária (\(averageText))", "daily"))
             }
-        } else if weekAverageTime > 0 {
+        }
+        
+        if hasWeeklyAverage {
             let diff = time - weekAverageTime
-            let percentage = Int((diff / weekAverageTime) * 100)
+            let percentage = abs(Int((diff / weekAverageTime) * 100))
+            let averageText = formatTime(weekAverageTime)
             
-            let weekRange = weekDateRange ?? ""
-            let rangeText = weekRange.isEmpty ? "" : " (\(weekRange))"
-            
-            if percentage > 0 {
-                return ("\(percentage)% superior à média da semana\(rangeText)", Color(hex: "34C759"))
-            } else if percentage < 0 {
-                return ("\(abs(percentage))% inferior à média da semana\(rangeText)", Color(hex: "FF3B30"))
+            if diff > 0 {
+                comparisons.append(("\(percentage)% acima da sua média semanal (\(averageText))", "weekly"))
+            } else if diff < 0 {
+                comparisons.append(("\(percentage)% abaixo da sua média semanal (\(averageText))", "weekly"))
             } else {
-                return ("Igual à média da semana\(rangeText)", isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                comparisons.append(("O mesmo da sua média semanal (\(averageText))", "weekly"))
             }
+        }
+        
+        guard !comparisons.isEmpty else {
+            return "Não tem estatísticas para comparação"
+        }
+        
+        if comparisons.count == 1 {
+            return comparisons[0].text
+        }
+        
+        let randomIndex = Int.random(in: 0..<comparisons.count)
+        return comparisons[randomIndex].text
+    }
+    
+    private var comparisonColor: Color {
+        guard let text = comparisonText else {
+            return isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93")
+        }
+        
+        if text.contains("acima") {
+            return Color(hex: "34C759")
+        } else if text.contains("abaixo") {
+            return Color(hex: "FF3B30")
+        } else if text.contains("O mesmo") {
+            return isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93")
         } else {
-            return nil
+            return isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93")
         }
     }
     
@@ -147,48 +164,44 @@ struct DailyCardExpander: View {
     }
     
     private var expandedContent: some View {
-        HStack(alignment: .top, spacing: 16) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(formattedDate)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8A8A8E"))
-                
-                HStack(spacing: 4) {
-                    Text("\(hours)h")
-                        .font(.system(size: 28, weight: .semibold))
-                        .foregroundColor(timeTextColor)
-                    Text(String(format: "%02dm", minutes))
-                        .font(.system(size: 28, weight: .light))
-                        .foregroundColor(timeTextColor)
-                }
-            }
-            
-            Spacer()
-            
-            VStack(alignment: .trailing, spacing: 6) {
-                if averageTime > 0 {
-                    if let percentage = percentageBelowAverage {
-                        Text("\(percentage)% abaixo da média")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(Color(hex: "FF3B30"))
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(formattedDate)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8A8A8E"))
+                    
+                    HStack(spacing: 4) {
+                        Text("\(hours)h")
+                            .font(.system(size: 28, weight: .semibold))
+                            .foregroundColor(timeTextColor)
+                        Text(String(format: "%02dm", minutes))
+                            .font(.system(size: 28, weight: .light))
+                            .foregroundColor(timeTextColor)
                     }
                     
-                    Text("Média: \(averageHours)h \(String(format: "%02dm", averageMinutes))")
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                    if let comparison = comparisonText {
+                        Text(comparison)
+                            .font(.system(size: 13, weight: .regular))
+                            .foregroundColor(comparisonColor)
+                            .padding(.top, 4)
+                    }
                 }
                 
-                if let comparison = comparisonInfo {
-                    Text(comparison.text)
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(comparison.color)
-                        .multilineTextAlignment(.trailing)
-                } else {
-                    Text("Ainda não há dados de comparativo")
-                        .font(.system(size: 12, weight: .regular))
+                Spacer()
+                
+                Button(action: {
+                }) {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.system(size: 16, weight: .medium))
                         .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
-                        .multilineTextAlignment(.trailing)
+                        .frame(width: 36, height: 36)
+                        .background(
+                            Circle()
+                                .fill(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "F5F5F5"))
+                        )
                 }
+                .buttonStyle(PlainButtonStyle())
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -199,4 +212,3 @@ struct DailyCardExpander: View {
         .shadow(color: isBlocked ? Color.black.opacity(0.3) : Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
 }
-

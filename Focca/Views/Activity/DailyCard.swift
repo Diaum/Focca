@@ -94,6 +94,7 @@ struct DailyCard: View {
         Group {
             if isZeroTime {
                 compactView
+                    .allowsHitTesting(false)
             } else {
                 Button(action: {
                     onTap?()

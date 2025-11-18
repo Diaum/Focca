@@ -237,22 +237,33 @@ struct ActivityView: View {
                 GridItem(.flexible(), spacing: 10)
             ], spacing: 10) {
                 ForEach(compactCards, id: \.date) { card in
-                    DailyCard(
-                        date: card.date,
-                        time: card.time,
-                        isBlocked: isBlocked,
-                        isExpanded: false,
-                        onTap: card.time > 0 ? {
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.75, blendDuration: 0.2)) {
-                                expandedCardDate = card.date
+                    if card.time > 0 {
+                        DailyCard(
+                            date: card.date,
+                            time: card.time,
+                            isBlocked: isBlocked,
+                            isExpanded: false,
+                            onTap: {
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.75, blendDuration: 0.2)) {
+                                    expandedCardDate = card.date
+                                }
                             }
-                        } : nil
-                    )
-                    .id(card.date)
-                    .transition(.asymmetric(
-                        insertion: .scale(scale: 0.95).combined(with: .opacity),
-                        removal: .scale(scale: 0.95).combined(with: .opacity)
-                    ))
+                        )
+                        .id(card.date)
+                        .transition(.asymmetric(
+                            insertion: .scale(scale: 0.95).combined(with: .opacity),
+                            removal: .scale(scale: 0.95).combined(with: .opacity)
+                        ))
+                    } else {
+                        DailyCard(
+                            date: card.date,
+                            time: card.time,
+                            isBlocked: isBlocked,
+                            isExpanded: false,
+                            onTap: nil
+                        )
+                        .id(card.date)
+                    }
                 }
             }
             .padding(.horizontal, 20)
