@@ -269,16 +269,9 @@ struct MonthlyGoalCard: View {
         // Include today if we're still within the month
         let maxDate = min(monthEndDay, today)
         
-        print("📊 [MonthlyGoal] Calculating progress from \(formatDate(monthStart)) to \(formatDate(maxDate))")
-        
         while currentDate <= maxDate {
             let dailyTime = TimerStorage.shared.getDailyTime(for: currentDate)
             totalTime += dailyTime
-            
-            // Debug log for all days
-            let formatter = DateFormatter()
-            formatter.dateFormat = "MMM d"
-            print("📊 [MonthlyGoal] Day \(dayCount): \(formatter.string(from: currentDate)) - \(Int(dailyTime / 60))m (total so far: \(Int(totalTime / 60))m)")
             
             dayCount += 1
             guard let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) else { break }
@@ -286,14 +279,6 @@ struct MonthlyGoalCard: View {
         }
         
         currentProgress = totalTime
-        
-        // Format for console log
-        let totalMinutes = Int(totalTime / 60)
-        let goalMinutes = Int(goalTime / 60)
-        let totalFormatted = totalMinutes >= 60 ? "\(totalMinutes / 60)h \(totalMinutes % 60)m" : "\(totalMinutes)m"
-        let goalFormatted = goalMinutes >= 60 ? "\(goalMinutes / 60)h \(goalMinutes % 60)m" : "\(goalMinutes)m"
-        // Reuse monthEnd from above
-        print("📊 [MonthlyGoal] Progress: \(totalFormatted) / \(goalFormatted) (Period: \(formatDate(monthStart)) to \(formatDate(monthEnd)))")
         
         // Check and send progress notifications
         Task {
