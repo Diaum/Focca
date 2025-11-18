@@ -14,16 +14,18 @@ struct WeeklyGoalsCard: View {
     
     var body: some View {
         VStack(spacing: 8) {
-            HStack {
+            HStack(spacing: 4) {
                 Image(systemName: "calendar")
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 
                 Text("Weekly Average")
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 11, weight: .medium))
                     .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
                 
-                Spacer()
+                Spacer(minLength: 0)
             }
             
             Spacer()
