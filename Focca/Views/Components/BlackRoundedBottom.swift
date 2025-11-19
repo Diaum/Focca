@@ -9,8 +9,8 @@ struct BlackRoundedBottom: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color(hex: "181818"),
-                            Color(hex: "")
+                            Color(hex: ""),
+                            Color(hex: "181818")
                         ],
                         startPoint: .bottom,
                         endPoint: .top
