@@ -33,12 +33,12 @@ struct BlockedView: View {
                 
                 VStack(spacing: 6) {
                     HStack(spacing: 6) {
-                        Text("Mode : \(activeModeName)")
+                        Text("Modo: \(activeModeName)")
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.white)
                     }
                     
-                    Text("Blocking \(activeModeCount) apps")
+                    Text("Bloqueando \(activeModeCount) apps")
                         .font(.system(size: 13))
                         .foregroundColor(Color(hex: "8A8A8E"))
                 }
@@ -104,10 +104,10 @@ struct BlockedView: View {
 
                     isBlocked = false
                 })
-                    .padding(.bottom, 0)
+                .padding(.bottom, 0)
                 
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, 0)
+                    .padding(.bottom, 12)
             }
         }
         .preferredColorScheme(.dark)

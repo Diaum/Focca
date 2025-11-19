@@ -16,7 +16,7 @@ struct WhiteRoundedBottom: View {
                         endPoint: .top
                     )
                 )
-                .frame(height: 120)
+                .frame(height: 110)
                 .padding(.horizontal, 0)
                 .padding(.bottom, 0)
                 .clipShape(

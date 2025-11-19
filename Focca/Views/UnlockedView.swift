@@ -51,14 +51,14 @@ struct UnlockedView: View {
                 Image("focca-rectangle-gray")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 320, height: 210)
+                    .frame(width: 300, height: 197)
                     .shadow(color: Color.black.opacity(0.12), radius: 12, x: 0, y: 5)
                     .padding(.bottom, 60)
                 
                 VStack(spacing: 8) {
                     Button(action: { showModeSheet = true }) {
                         HStack(spacing: 6) {
-                            Text("Modo : \(activeModeName)")
+                            Text("Modo: \(activeModeName)")
                                 .font(.system(size: 17, weight: .semibold))
                                 .foregroundColor(Color(hex: "1C1C1E"))
                             
@@ -119,10 +119,10 @@ struct UnlockedView: View {
                         isBlocked = true
                     }
                 })
-                    .padding(.bottom, 0)
+                .padding(.bottom, 0)
                 
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, 0)
+                    .padding(.bottom, 12)
             }
         }
         .preferredColorScheme(.light)

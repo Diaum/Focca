@@ -9,11 +9,11 @@ struct WhiteBlockButton: View {
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundColor(Color(hex: "1C1C1E"))
                 .frame(maxWidth: .infinity)
-                .frame(height: 60)
+                .frame(height: 52)
                 .background(
                     ZStack {
                         // Base suave
-                        RoundedRectangle(cornerRadius: 30)
+                        RoundedRectangle(cornerRadius: 24)
                             .fill(
                                 LinearGradient(
                                     colors: [
@@ -26,7 +26,7 @@ struct WhiteBlockButton: View {
                             )
                             // Simulação de sombra interna sutil
                             .overlay(
-                                RoundedRectangle(cornerRadius: 30)
+                                RoundedRectangle(cornerRadius: 24)
                                     .stroke(
                                         LinearGradient(
                                             colors: [
@@ -44,7 +44,7 @@ struct WhiteBlockButton: View {
                             .shadow(color: Color.black.opacity(0.08), radius: 6, x: 2, y: 3)
                             // Efeito de leve profundidade (simula sombra interna)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 30)
+                                RoundedRectangle(cornerRadius: 24)
                                     .stroke(
                                         LinearGradient(
                                             colors: [

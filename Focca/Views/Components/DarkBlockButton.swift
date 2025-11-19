@@ -5,18 +5,18 @@ struct DarkBlockButton: View {
     
     var body: some View {
         Button(action: action) {
-            Text("Unfoccus")
+            Text("Desativar Focca")
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
-                .frame(height: 60)
+                .frame(height: 52)
                 .background(
                     ZStack {
-                        RoundedRectangle(cornerRadius: 30)
+                        RoundedRectangle(cornerRadius: 24)
                             .fill(Color(hex: "1E1E1F"))
                         
                         // Borda interna superior clara (simula a luz)
-                        RoundedRectangle(cornerRadius: 30)
+                        RoundedRectangle(cornerRadius: 24)
                             .stroke(
                                 LinearGradient(
                                     colors: [
@@ -42,7 +42,7 @@ struct DarkBlockButton: View {
                             )
                         
                         // Borda interna inferior escura (simula rebaixo)
-                        RoundedRectangle(cornerRadius: 30)
+                        RoundedRectangle(cornerRadius: 24)
                             .stroke(
                                 LinearGradient(
                                     colors: [
@@ -68,7 +68,7 @@ struct DarkBlockButton: View {
                             )
                         
                 
-                        RoundedRectangle(cornerRadius: 30)
+                        RoundedRectangle(cornerRadius: 24)
                             .fill(
                                 LinearGradient(
                                     colors: [
