@@ -29,7 +29,7 @@ struct SettingsView: View {
                     .frame(height: 66)
                     .overlay(
                         HStack {
-                            Text("Account")
+                            Text("Conta")
                                 .font(.system(size: 20, weight: .semibold))
                                 .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                             Spacer()
@@ -43,10 +43,10 @@ struct SettingsView: View {
                 
                 VStack(spacing: 14) {
                     SettingsSection(
-                        title: "About Focca",
+                        title: "Sobre o Focca",
                         items: [
-                            SettingsItem(title: "About Focca", hasArrow: true),
-                            SettingsItem(title: "Privacy Policy", hasArrow: true)
+                            SettingsItem(title: "Sobre o Focca", hasArrow: true),
+                            SettingsItem(title: "Política de Privacidade", hasArrow: true)
                         ],
                         showNotificationsView: $showNotificationsView,
                         selectedTab: $selectedTab,
@@ -56,7 +56,7 @@ struct SettingsView: View {
                     SettingsSection(
                         title: nil,
                         items: [
-                            SettingsItem(title: "Awards", hasArrow: true, action: .awards)
+                            SettingsItem(title: "Conquistas", hasArrow: true, action: .awards)
                         ],
                         showNotificationsView: $showNotificationsView,
                         selectedTab: $selectedTab,
@@ -66,7 +66,7 @@ struct SettingsView: View {
                     SettingsSection(
                         title: nil,
                         items: [
-                            SettingsItem(title: "Goals", hasArrow: true, action: .goals)
+                            SettingsItem(title: "Metas", hasArrow: true, action: .goals)
                         ],
                         showNotificationsView: $showNotificationsView,
                         selectedTab: $selectedTab,
@@ -76,7 +76,7 @@ struct SettingsView: View {
                     SettingsSection(
                         title: nil,
                         items: [
-                            SettingsItem(title: "Advanced Statistics", hasArrow: true, action: .advancedStats)
+                            SettingsItem(title: "Estatísticas Avançadas", hasArrow: true, action: .advancedStats)
                         ],
                         showNotificationsView: $showNotificationsView,
                         selectedTab: $selectedTab,
@@ -86,7 +86,7 @@ struct SettingsView: View {
                     SettingsSection(
                         title: nil,
                         items: [
-                            SettingsItem(title: "Emergency Unblock", subtitle: "4 remaining", hasArrow: true)
+                            SettingsItem(title: "Desbloqueio de Emergência", subtitle: "4 restantes", hasArrow: true)
                         ],
                         showNotificationsView: $showNotificationsView,
                         selectedTab: $selectedTab,
@@ -96,7 +96,7 @@ struct SettingsView: View {
                     SettingsSection(
                         title: nil,
                         items: [
-                            SettingsItem(title: "Goals", hasToggle: true, isToggledOn: GoalsManager.shared.areGoalsEnabled, action: .goalsToggle)
+                            SettingsItem(title: "Metas", hasToggle: true, isToggledOn: GoalsManager.shared.areGoalsEnabled, action: .goalsToggle)
                         ],
                         showNotificationsView: $showNotificationsView,
                         selectedTab: $selectedTab,
@@ -182,7 +182,7 @@ struct SettingsRow: View {
                 }
                 
                 // Handle expandable items
-                if item.title == "About Focca" {
+                if item.title == "Sobre o Focca" {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                         isExpanded.toggle()
                     }
@@ -269,8 +269,8 @@ struct SettingsRow: View {
             // Expanded content
             if isExpanded {
                 VStack(alignment: .leading, spacing: 2) {
-                    if item.title == "About Focca" {
-                        Text("Focca is a focus app designed to help you stay away from distracting apps and build better digital habits.")
+                    if item.title == "Sobre o Focca" {
+                        Text("Focca é um app de foco projetado para ajudá-lo a ficar longe de apps que distraem e construir melhores hábitos digitais.")
                             .font(.system(size: 14, weight: .regular))
                             .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                             .fixedSize(horizontal: false, vertical: true)

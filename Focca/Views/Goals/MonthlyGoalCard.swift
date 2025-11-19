@@ -46,6 +46,7 @@ struct MonthlyGoalCard: View {
     
     private var monthName: String {
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "pt_BR")
         formatter.dateFormat = "MMMM"
         return formatter.string(from: Date()).capitalized
     }
@@ -81,7 +82,7 @@ struct MonthlyGoalCard: View {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Current Goal")
+                            Text("Meta Atual")
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                             
