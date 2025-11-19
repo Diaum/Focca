@@ -15,11 +15,11 @@ struct WhiteRoundedBottomPlain: View {
                     colors: isBlocked
                         ? [
                             Color(hex: "181818"),
-                            Color(hex: "").opacity(0.4)
+                            Color(hex: "181818").opacity(0.4)
                         ]
                         : [
                             Color(hex: "F9F4F0"),
-                            Color(hex: "").opacity(0.4)
+                            Color(hex: "F9F4F0").opacity(0.4)
                         ],
                     startPoint: .bottom,
                     endPoint: .top

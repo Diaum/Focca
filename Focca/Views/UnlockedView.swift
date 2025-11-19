@@ -106,9 +106,9 @@ struct UnlockedView: View {
                     WhiteRoundedBottomPlain()
                     WhiteBlockButton(action: activateCurrentMode)
                         .padding(.horizontal, 36)
-                        .offset(y: -24)
+                        .offset(y: -20)
                 }
-                .padding(.bottom, 5)
+                .padding(.bottom, 0)
                 TabBar(selectedTab: $selectedTab)
                     .padding(.bottom, -12)
             }
