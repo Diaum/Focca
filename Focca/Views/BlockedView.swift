@@ -21,9 +21,6 @@ struct BlockedView: View {
             VStack(spacing: 0) {
                 Spacer(minLength: 140)
                 
-                Text("You've been Focused for")
-                    .font(.system(size: 12))
-                    .foregroundColor(Color(hex: "8A8A8E"))
                 
                 TimerComponent(isActive: isBlocked)
                     .padding(.bottom, 60)

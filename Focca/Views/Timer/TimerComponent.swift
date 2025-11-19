@@ -104,34 +104,66 @@ struct TimerComponent: View {
     @StateObject private var timerManager = TimerManager()
     let isActive: Bool
     
+    private var timeComponents: (hours: String, minutes: String, seconds: String) {
+        let parts = timerManager.elapsedTime.components(separatedBy: " ")
+        let hours = parts.first ?? "0h"
+        
+        var minutes = "00m"
+        if parts.count > 1 {
+            let minutesValue = parts[1].replacingOccurrences(of: "m", with: "")
+            if let value = Int(minutesValue) {
+                minutes = String(format: "%02dm", value)
+            } else {
+                minutes = parts[1]
+            }
+        }
+        
+        var seconds = "00s"
+        if parts.count > 2 {
+            let secondsValue = parts[2].replacingOccurrences(of: "s", with: "")
+            if let value = Int(secondsValue) {
+                seconds = String(format: "%02ds", value)
+            } else {
+                seconds = parts[2]
+            }
+        }
+        
+        return (hours, minutes, seconds)
+    }
+    
     var body: some View {
-        Text(timerManager.elapsedTime)
-            .font(.system(size: 42, weight: .semibold, design: .rounded))
-            .foregroundColor(isActive ? .white : Color(hex: "1C1C1E"))
-            .id("timer-\(isActive)") // Evita recriação desnecessária
-            .onAppear {
-                if isActive {
-                    timerManager.start()
-                }
+        VStack(spacing: 2) {
+            Text(timeComponents.hours)
+                .font(.system(size: 42, weight: .bold, design: .rounded))
+                .foregroundColor(isActive ? .white : Color(hex: "1C1C1E"))
+            Text(timeComponents.minutes)
+                .font(.system(size: 42, weight: .light, design: .rounded))
+                .foregroundColor(isActive ? .white : Color(hex: "1C1C1E"))
+            Text(timeComponents.seconds)
+                .font(.system(size: 16, weight: .regular, design: .rounded))
+                .foregroundColor(isActive ? Color.white.opacity(0.7) : Color(hex: "8E8E93"))
+        }
+        .id("timer-\(isActive)")
+        .onAppear {
+            if isActive {
+                timerManager.start()
             }
-            .onDisappear {
-                // Apenas pausa o timer, não remove o estado (o bloqueio ainda está ativo)
-                timerManager.stop()
+        }
+        .onDisappear {
+            timerManager.stop()
+        }
+        .onChange(of: isActive) { active in
+            if active {
+                timerManager.start()
+            } else {
+                timerManager.finalize()
             }
-            .onChange(of: isActive) { active in
-                if active {
-                    timerManager.start()
-                } else {
-                    // Quando o bloqueio realmente termina, finaliza o timer
-                    timerManager.finalize()
-                }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("BlockingStarted"))) { _ in
+            if isActive {
+                timerManager.start()
             }
-            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("BlockingStarted"))) { _ in
-                // Inicia o timer quando o bloqueio começa (incluindo quando schedule ativa em background)
-                if isActive {
-                    timerManager.start()
-                }
-            }
+        }
     }
 }
 
