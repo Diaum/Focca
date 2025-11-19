@@ -32,6 +32,7 @@ struct WhiteRoundedBottomPlain: View {
                 RoundedCorner(radius: 120, corners: [.topLeft, .topRight])
             )
             .shadow(color: Color.black.opacity(0.08), radius: 20, x: 0, y: 8)
+            .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: -4)
             .allowsHitTesting(false)
             .accessibilityHidden(true)
     }
