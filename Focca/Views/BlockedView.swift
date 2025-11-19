@@ -16,7 +16,6 @@ struct BlockedView: View {
         ZStack {
             Color(hex: "0A0A0A")
                 .ignoresSafeArea()
-//                .overlay(ReferenceGrid(spacing: 24, color: .red.opacity(0.15)))
             
             VStack(spacing: 0) {
                 Spacer(minLength: 80)
