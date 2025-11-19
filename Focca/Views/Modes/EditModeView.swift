@@ -103,7 +103,7 @@ struct EditModeView: View {
                 .padding(.top, 16)
                 
                 VStack(spacing: 4) {
-                    Text("Edit mode")
+                    Text("Editar modo")
                         .font(.system(size: 14, weight: .regular))
                         .foregroundColor(Color(hex: "8E8E93"))
                     
@@ -115,11 +115,11 @@ struct EditModeView: View {
                 VStack(spacing: 16) {
                     VStack(spacing: 4) {
                         HStack {
-                            Text("Mode name")
+                            Text("Nome do modo")
                                 .font(.system(size: 15, weight: .regular))
                                 .foregroundColor(Color(hex: "8E8E93"))
                             Spacer()
-                            TextField("e.g. Work, Family Time", text: $editedModeName)
+                            TextField("ex.: Trabalho, Família", text: $editedModeName)
                                 .font(.system(size: 17, weight: .regular))
                                 .foregroundColor(Color(hex: "1C1C1E"))
                                 .multilineTextAlignment(.trailing)
@@ -134,7 +134,7 @@ struct EditModeView: View {
                         if !editedModeName.isEmpty && editedModeName.count < 4 {
                             HStack {
                                 Spacer()
-                                Text("Mode name must be at least 4 characters")
+                                Text("O nome do modo precisa ter pelo menos 4 caracteres")
                                     .font(.system(size: 12, weight: .regular))
                                     .foregroundColor(.red.opacity(0.7))
                             }
@@ -142,7 +142,7 @@ struct EditModeView: View {
                         } else if editedModeName.count > 18 {
                             HStack {
                                 Spacer()
-                                Text("Mode name must be at most 18 characters")
+                                Text("O nome do modo precisa ter no máximo 18 caracteres")
                                     .font(.system(size: 12, weight: .regular))
                                     .foregroundColor(.red.opacity(0.7))
                             }
@@ -157,7 +157,7 @@ struct EditModeView: View {
                     // Seção de Schedule (dias/horários) — opcional
                     VStack(spacing: 12) {
                         HStack {
-                            Text("Schedule")
+                            Text("Agendamento")
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(Color(hex: "1C1C1E"))
                             Spacer()
@@ -206,7 +206,7 @@ struct EditModeView: View {
                             // Horário inicial e final
                             HStack(spacing: 12) {
                                 VStack(alignment: .leading, spacing: 6) {
-                                    Text("Start")
+                                    Text("Início")
                                         .font(.system(size: 13, weight: .medium))
                                         .foregroundColor(Color(hex: "8E8E93"))
                                     DatePicker("", selection: Binding(
@@ -223,7 +223,7 @@ struct EditModeView: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
 
                                 VStack(alignment: .leading, spacing: 6) {
-                                    Text("End")
+                                    Text("Fim")
                                         .font(.system(size: 13, weight: .medium))
                                         .foregroundColor(Color(hex: "8E8E93"))
                                     DatePicker("", selection: $endTime, displayedComponents: .hourAndMinute)
@@ -243,7 +243,7 @@ struct EditModeView: View {
                             }
                             
                             if !scheduleDurationIsValid {
-                                Text("Schedule must be at least 5 minutes long")
+                                Text("O agendamento deve ter pelo menos 5 minutos")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundColor(.red)
                                     .padding(.horizontal, 16)
@@ -269,7 +269,7 @@ struct EditModeView: View {
                     // Toggle para display na tela bloqueada
                     VStack(spacing: 12) {
                         HStack {
-                            Text("Display on Lock Screen")
+                            Text("Mostrar na tela bloqueada")
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(Color(hex: "1C1C1E"))
                             Spacer()
@@ -296,7 +296,7 @@ struct EditModeView: View {
                             presentationMode.wrappedValue.dismiss()
                         }
                     }) {
-                        Text("Save")
+                        Text("Salvar")
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(canSave ? .white : Color(hex: "9E9EA3"))
                             .frame(maxWidth: .infinity)
@@ -317,14 +317,14 @@ struct EditModeView: View {
                             .cornerRadius(14)
                     }
                     .disabled(!canDelete)
-                    .alert("Delete Mode", isPresented: $showDeleteConfirmation) {
-                        Button("Cancel", role: .cancel) {}
-                        Button("Delete", role: .destructive) {
+                    .alert("Excluir modo", isPresented: $showDeleteConfirmation) {
+                        Button("Cancelar", role: .cancel) {}
+                        Button("Excluir", role: .destructive) {
                             deleteMode()
                             presentationMode.wrappedValue.dismiss()
                         }
                     } message: {
-                        Text("Are you sure you want to delete this mode? This action cannot be undone.")
+                        Text("Tem certeza de que deseja excluir este modo? Essa ação não pode ser desfeita.")
                     }
                 }
                 .padding(.horizontal, 20)
@@ -334,15 +334,15 @@ struct EditModeView: View {
         .sheet(isPresented: $showAppPicker) {
             AppPickerSheet(selection: $selection)
         }
-        .alert("Duplicate Name", isPresented: $showDuplicateNameAlert) {
+        .alert("Nome duplicado", isPresented: $showDuplicateNameAlert) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text("A mode with the name '\(editedModeName)' already exists. Please choose a different name.")
+            Text("Já existe um modo com o nome '\(editedModeName)'. Escolha um nome diferente.")
         }
-        .alert("Invalid Name", isPresented: $showInvalidNameAlert) {
+        .alert("Nome inválido", isPresented: $showInvalidNameAlert) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text("Mode name must be between 4 and 18 characters.")
+            Text("O nome do modo deve ter entre 4 e 18 caracteres.")
         }
         .onAppear {
             loadModeData()
@@ -562,13 +562,13 @@ struct EditModeView: View {
 private func weekdayAbbrev(for day: Int) -> String {
     // 1=Sun, 2=Mon, ... 7=Sat
     switch day {
-    case 1: return "S"
-    case 2: return "M"
-    case 3: return "T"
-    case 4: return "W"
-    case 5: return "T"
-    case 6: return "F"
-    case 7: return "S"
+    case 1: return "DOM"
+    case 2: return "SEG"
+    case 3: return "TER"
+    case 4: return "QUA"
+    case 5: return "QUI"
+    case 6: return "SEX"
+    case 7: return "SAB"
     default: return "?"
     }
 }

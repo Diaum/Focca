@@ -61,14 +61,14 @@ struct CreateModeView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
                 
-                Text("Create mode")
+                Text("Criar modo")
                     .font(.system(size: 24, weight: .semibold))
                     .foregroundColor(Color(hex: "1C1C1E"))
                 
                 VStack(spacing: 16) {
                     VStack(spacing: 4) {
                         HStack {
-                            TextField("e.g. Work, Family Time", text: $modeName)
+                            TextField("ex.: Trabalho, Família", text: $modeName)
                                 .font(.system(size: 16, weight: .regular))
                                 .foregroundColor(Color(hex: "1C1C1E"))
                         }
@@ -81,7 +81,7 @@ struct CreateModeView: View {
                         
                         if !modeName.isEmpty && modeName.count < 4 {
                             HStack {
-                                Text("Mode name must be at least 4 characters")
+                                Text("O nome do modo deve ter pelo menos 4 caracteres")
                                     .font(.system(size: 12, weight: .regular))
                                     .foregroundColor(.red.opacity(0.7))
                                 Spacer()
@@ -89,7 +89,7 @@ struct CreateModeView: View {
                             .padding(.horizontal, 20)
                         } else if modeName.count > 18 {
                             HStack {
-                                Text("Mode name must be at most 18 characters")
+                                Text("O nome do modo deve ter no máximo 18 caracteres")
                                     .font(.system(size: 12, weight: .regular))
                                     .foregroundColor(.red.opacity(0.7))
                                 Spacer()
@@ -105,7 +105,7 @@ struct CreateModeView: View {
                     // Seção de Schedule (dias/horários) — opcional
                     VStack(spacing: 12) {
                         HStack {
-                            Text("Schedule")
+                            Text("Agendamento")
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(Color(hex: "1C1C1E"))
                             Spacer()
@@ -141,7 +141,7 @@ struct CreateModeView: View {
                             // Horário inicial e final
                             HStack(spacing: 12) {
                                 VStack(alignment: .leading, spacing: 6) {
-                                    Text("Start")
+                                    Text("Início")
                                         .font(.system(size: 13, weight: .medium))
                                         .foregroundColor(Color(hex: "8E8E93"))
                                     DatePicker("", selection: Binding(
@@ -159,7 +159,7 @@ struct CreateModeView: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
 
                                 VStack(alignment: .leading, spacing: 6) {
-                                    Text("End")
+                                    Text("Fim")
                                         .font(.system(size: 13, weight: .medium))
                                         .foregroundColor(Color(hex: "8E8E93"))
                                     DatePicker("", selection: $endTime, displayedComponents: .hourAndMinute)
@@ -179,7 +179,7 @@ struct CreateModeView: View {
                             }
                             
                             if !scheduleDurationIsValid {
-                                Text("Schedule must be at least 5 minutes long")
+                                Text("O agendamento deve ter pelo menos 5 minutos")
                                     .font(.system(size: 11, weight: .regular))
                                     .foregroundColor(.red)
                                     .padding(.horizontal, 16)
@@ -205,7 +205,7 @@ struct CreateModeView: View {
                     // Toggle para display na tela bloqueada
                     VStack(spacing: 12) {
                         HStack {
-                            Text("Display on Lock Screen")
+                            Text("Mostrar na tela bloqueada")
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(Color(hex: "1C1C1E"))
                             Spacer()
@@ -239,7 +239,7 @@ struct CreateModeView: View {
                 Button(action: {
                     saveMode()
                 }) {
-                    Text("Save mode")
+                    Text("Salvar modo")
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(canSave ? Color(hex: "1C1C1E") : Color(hex: "9E9EA3"))
                         .frame(maxWidth: .infinity)
@@ -429,13 +429,13 @@ struct CreateModeView: View {
 private func weekdayAbbrev(for day: Int) -> String {
     // 1=Sun, 2=Mon, ... 7=Sat
     switch day {
-    case 1: return "S"
-    case 2: return "M"
-    case 3: return "T"
-    case 4: return "W"
-    case 5: return "T"
-    case 6: return "F"
-    case 7: return "S"
+    case 1: return "DOM"
+    case 2: return "SEG"
+    case 3: return "TER"
+    case 4: return "QUA"
+    case 5: return "QUI"
+    case 6: return "SEX"
+    case 7: return "SAB"
     default: return "?"
     }
 }
@@ -459,7 +459,7 @@ struct AppPickerSheet: View {
                     Button(action: {
                         presentationMode.wrappedValue.dismiss()
                     }) {
-                        Text("Done")
+                        Text("Concluir")
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)

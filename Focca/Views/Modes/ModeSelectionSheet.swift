@@ -41,7 +41,7 @@ struct ModeSelectionSheet: View {
                 .padding(.top, 16)
                 .padding(.bottom, 20)
 
-                Text("Select mode")
+                Text("Selecionar modo")
                     .font(.system(size: 24, weight: .semibold))
                     .foregroundColor(Color(hex: "1C1C1E"))
                     .padding(.bottom, 70)
@@ -75,7 +75,7 @@ struct ModeSelectionSheet: View {
                             NotificationCenter.default.post(name: NSNotification.Name("OpenCreateMode"), object: nil)
                         }
                     }) {
-                        Text("Create new mode")
+                        Text("Criar novo modo")
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -86,7 +86,7 @@ struct ModeSelectionSheet: View {
                     .padding(.horizontal, 20)
                     .padding(.bottom, 24)
                 } else {
-                    Text("Maximum number of modes reached (6)")
+                    Text("Limite máximo de modos atingido (6)")
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(Color(hex: "FF6B6B"))
                         .padding(.horizontal, 20)
@@ -219,7 +219,7 @@ struct ModeRow: View {
             }
 
             Button(action: onEdit) {
-                Text("Edit")
+                Text("Editar")
                     .font(.system(size: 15, weight: .regular))
                     .foregroundColor(Color(hex: "1C1C1E"))
                     .padding(.horizontal, 16)

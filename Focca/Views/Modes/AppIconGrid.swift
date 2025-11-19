@@ -9,7 +9,7 @@ struct AppIconGrid: View {
         Button(action: onTap) {
             VStack(spacing: 0) {
                 HStack {
-                    Text(selection.applicationTokens.count > 0 ? "Apps Selected" : "Select Apps")
+                    Text(selection.applicationTokens.count > 0 ? "Apps selecionados" : "Selecionar apps")
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(Color(hex: "1C1C1E"))
                     Spacer()
