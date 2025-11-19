@@ -217,6 +217,10 @@ class ScheduleManager: ObservableObject {
         if let selection = blockedSelection {
             AppBlockingTracker.shared.endBlocking(selection: selection, endDate: Date())
         }
+        
+        // Finaliza TODAS as sessões ativas do dia atual para garantir que não continue contando
+        AppBlockingTracker.shared.endAllActiveSessions(for: Date(), endDate: Date())
+        
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             // Se havia um schedule atual, marca como desativado para hoje para evitar reativação
@@ -227,6 +231,7 @@ class ScheduleManager: ObservableObject {
             self.isBlockedBySchedule = false
             UserDefaults.standard.removeObject(forKey: "blocked_by_schedule")
             UserDefaults.standard.removeObject(forKey: "blocked_start_date")
+            self.sharedDefaults.removeObject(forKey: "blocked_start_date")
             
             // Notifica o app para mudar para UnlockedView
             NotificationCenter.default.post(name: NSNotification.Name("ScheduleDeactivated"), object: nil)
@@ -437,6 +442,9 @@ class ScheduleManager: ObservableObject {
             AppBlockingTracker.shared.endBlocking(selection: selection, endDate: Date())
         }
         
+        // Finaliza TODAS as sessões ativas do dia atual para garantir que não continue contando
+        AppBlockingTracker.shared.endAllActiveSessions(for: Date(), endDate: Date())
+        
         // Computa o tempo no TimerStorage
         if let startDate = userDefaults.object(forKey: "blocked_start_date") as? Date {
             let duration = Date().timeIntervalSince(startDate)
@@ -447,6 +455,7 @@ class ScheduleManager: ObservableObject {
         
         userDefaults.removeObject(forKey: "blocked_start_date")
         userDefaults.removeObject(forKey: "blocked_by_schedule")
+        sharedDefaults.removeObject(forKey: "blocked_start_date")
         
         currentSchedule = nil
         isBlockedBySchedule = false

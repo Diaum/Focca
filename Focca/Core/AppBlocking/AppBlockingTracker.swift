@@ -174,6 +174,31 @@ class AppBlockingTracker {
         saveDailyBlocking(dailyBlocking, for: dateKey)
     }
     
+    /// Finaliza TODAS as sessões ativas de uma data específica
+    /// Usado quando desbloqueamos para garantir que nenhuma sessão ativa continue contando
+    func endAllActiveSessions(for date: Date, endDate: Date = Date()) {
+        let dateKey = formatDate(date)
+        guard var dailyBlocking = loadDailyBlocking(for: dateKey) else {
+            return
+        }
+        
+        var hasChanges = false
+        for index in dailyBlocking.sessions.indices {
+            if dailyBlocking.sessions[index].endDate == nil {
+                dailyBlocking.sessions[index] = AppBlockingSession(
+                    appTokenHash: dailyBlocking.sessions[index].appTokenHash,
+                    startDate: dailyBlocking.sessions[index].startDate,
+                    endDate: endDate
+                )
+                hasChanges = true
+            }
+        }
+        
+        if hasChanges {
+            saveDailyBlocking(dailyBlocking, for: dateKey)
+        }
+    }
+    
     /// Retorna o tempo total bloqueado em uma data específica
     /// IMPORTANTE: Calcula o tempo de bloqueio geral (união de todos os períodos de bloqueio),
     /// não a soma dos tempos de cada app individualmente.
@@ -208,13 +233,36 @@ class AppBlockingTracker {
         let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart)!
         let now = Date()
         
+        // Verifica se há bloqueio ativo quando consultando o dia atual
+        let isCurrentlyBlocked: Bool
+        if dateDay == today {
+            let sharedDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
+            let standardDefaults = UserDefaults.standard
+            isCurrentlyBlocked = (sharedDefaults.object(forKey: "blocked_start_date") != nil) ||
+                                 (standardDefaults.object(forKey: "blocked_start_date") != nil) ||
+                                 standardDefaults.bool(forKey: "blocked_by_schedule")
+        } else {
+            isCurrentlyBlocked = false
+        }
+        
         // Cria uma lista de intervalos de bloqueio (start, end) para todas as sessões
         var blockingIntervals: [(start: Date, end: Date)] = []
         
         for session in dailyBlocking.sessions {
             // Ignora sessões muito curtas (< 5 segundos)
             let sessionStart = session.startDate
-            let sessionEnd = session.endDate ?? now
+            // Se a sessão está ativa (sem endDate), só conta se realmente há bloqueio ativo
+            let sessionEnd: Date
+            if session.endDate == nil {
+                if isCurrentlyBlocked {
+                    sessionEnd = now
+                } else {
+                    // Se não há bloqueio ativo, não conta sessões ativas
+                    continue
+                }
+            } else {
+                sessionEnd = session.endDate!
+            }
             
             // Ajusta para o início e fim do dia
             let adjustedStart = max(sessionStart, dayStart)

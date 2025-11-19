@@ -77,6 +77,9 @@ struct BlockedView: View {
                         }
                     }
                     
+                    // Finaliza TODAS as sessões ativas do dia atual para garantir que não continue contando
+                    AppBlockingTracker.shared.endAllActiveSessions(for: Date(), endDate: Date())
+                    
                     // Desbloqueia os apps
                     let store = ManagedSettingsStore()
                     store.application.blockedApplications = nil
