@@ -9,13 +9,13 @@ struct TabBar: View {
             TabItem(title: "Focca", isSelected: selectedTab == 0)
                 .onTapGesture { selectedTab = 0 }
             
-            TabItem(title: "Activity", isSelected: selectedTab == 1)
+            TabItem(title: "Atividade", isSelected: selectedTab == 1)
                 .onTapGesture { selectedTab = 1 }
             
-//            TabItem(title: "Awards", isSelected: selectedTab == 2)
+//            TabItem(title: "Prêmios", isSelected: selectedTab == 2)
 //                .onTapGesture { selectedTab = 2 }
             
-            TabItem(title: "Settings", isSelected: selectedTab == 3)
+            TabItem(title: "Ajustes", isSelected: selectedTab == 3)
                 .onTapGesture { selectedTab = 3 }
         }
         .frame(height: 90)
