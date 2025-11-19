@@ -15,11 +15,11 @@ struct WhiteRoundedBottomPlain: View {
                     colors: isBlocked
                         ? [
                             Color(hex: "181818"),
-                            Color(hex: "").opacity(0.6)
+                            Color(hex: "181818").opacity(0)
                         ]
                         : [
                             Color(hex: "F9F4F0"),
-                            Color(hex: "").opacity(0.9)
+                            Color(hex: "F9F4F0").opacity(0)
                         ],
                     startPoint: .bottom,
                     endPoint: .top
@@ -29,7 +29,7 @@ struct WhiteRoundedBottomPlain: View {
             .padding(.horizontal, 0)
             .padding(.bottom, 0)
             .clipShape(
-                RoundedCorner(radius: 40, corners: [.topLeft, .topRight])
+                RoundedCorner(radius: 8, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
             )
             .shadow(color: Color.black.opacity(0.08), radius: 20, x: 0, y: 8)
             .allowsHitTesting(false)
