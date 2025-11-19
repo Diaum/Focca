@@ -51,7 +51,7 @@ struct OnboardingStep4: View {
                 .padding(.bottom, 60)
                 
                 // 🔹 Imagem do Brick
-                Image("focca-rectangle-yellow")
+                Image("focca-rectangle-gray")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 300, height: 197)
