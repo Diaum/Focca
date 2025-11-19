@@ -35,8 +35,8 @@ class NotificationManager {
         
         await MainActor.run {
             let content = UNMutableNotificationContent()
-            content.title = "Schedule Starting Soon"
-            content.body = "Your '\(schedule.modeName)' schedule starts in 3 minutes"
+            content.title = "Agendamento Começando em Breve"
+            content.body = "Seu agendamento '\(schedule.modeName)' começa em 3 minutos"
             content.sound = .default
             content.badge = 1
             content.categoryIdentifier = "SCHEDULE_REMINDER"

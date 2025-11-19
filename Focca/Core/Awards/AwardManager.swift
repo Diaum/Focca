@@ -277,8 +277,8 @@ class AwardManager: ObservableObject {
         if weeklyGoalsCompleted >= 1 {
             unlockAward("complete_weekly_goal")
             NotificationManager.shared.sendInfoNotification(
-                title: "🎉 Award Unlocked!",
-                body: "You've completed your first weekly goal!"
+                title: "🎉 Conquista Desbloqueada!",
+                body: "Você completou sua primeira meta semanal!"
             )
             print("✅ [AwardManager] Weekly goal completion award unlocked!")
         }
@@ -296,8 +296,8 @@ class AwardManager: ObservableObject {
         if monthlyGoalsCompleted >= 1 {
             unlockAward("complete_monthly_goal")
             NotificationManager.shared.sendInfoNotification(
-                title: "🎉 Award Unlocked!",
-                body: "You've completed your first monthly goal!"
+                title: "🎉 Conquista Desbloqueada!",
+                body: "Você completou sua primeira meta mensal!"
             )
             print("✅ [AwardManager] Monthly goal completion award unlocked!")
         }

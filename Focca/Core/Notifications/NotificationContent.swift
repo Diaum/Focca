@@ -11,10 +11,10 @@ struct NotificationContent {
         let content = UNMutableNotificationContent()
         
         // Título claro e conciso (melhor prática Apple)
-        content.title = "Schedule Starting Soon"
+        content.title = "Agendamento Começando em Breve"
         
         // Mensagem personalizada com o nome do modo
-        content.body = "Your '\(schedule.modeName)' schedule starts in 10 minutes"
+        content.body = "Seu agendamento '\(schedule.modeName)' começa em 10 minutos"
         
         // Som padrão do sistema
         content.sound = .default

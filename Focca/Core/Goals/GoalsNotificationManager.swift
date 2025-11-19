@@ -13,12 +13,12 @@ class GoalsNotificationManager {
         
         // Mínimo de 1 hora
         if totalMinutes < 60 {
-            return (false, "Weekly goal must be at least 1 hour")
+            return (false, "Meta semanal deve ter pelo menos 1 hora")
         }
         
         // Mínimo de 7 horas semanais
         if totalMinutes < 420 { // 7 horas = 420 minutos
-            return (false, "Weekly goal must be at least 7 hours")
+            return (false, "Meta semanal deve ter pelo menos 7 horas")
         }
         
         return (true, nil)
@@ -29,12 +29,12 @@ class GoalsNotificationManager {
         
         // Mínimo de 1 hora
         if totalMinutes < 60 {
-            return (false, "Monthly goal must be at least 1 hour")
+            return (false, "Meta mensal deve ter pelo menos 1 hora")
         }
         
         // Mínimo de 30 horas mensais
         if totalMinutes < 1800 { // 30 horas = 1800 minutos
-            return (false, "Monthly goal must be at least 30 hours")
+            return (false, "Meta mensal deve ter pelo menos 30 horas")
         }
         
         return (true, nil)
@@ -52,9 +52,10 @@ class GoalsNotificationManager {
             let goalTime = TimeInterval(hours * 3600 + minutes * 60)
             let percentage = goalTime > 0 ? Int((currentProgress / goalTime) * 100) : 0
             
-            let title = goalType == .weekly ? "Weekly Goal Created! 🎯" : "Monthly Goal Created! 🎯"
+            let title = goalType == .weekly ? "Meta Semanal Criada! 🎯" : "Meta Mensal Criada! 🎯"
             let timeText = formatTime(hours: hours, minutes: minutes)
-            let body = "Your \(goalType.rawValue) goal of \(timeText) has been set. You're currently at \(percentage)% of your goal."
+            let goalTypeText = goalType == .weekly ? "semanal" : "mensal"
+            let body = "Sua meta \(goalTypeText) de \(timeText) foi definida. Você está atualmente em \(percentage)% da sua meta."
             
             let content = UNMutableNotificationContent()
             content.title = title
@@ -169,12 +170,14 @@ class GoalsNotificationManager {
         let body: String
         
         if percentage == 100 {
-            title = goalType == .weekly ? "Weekly Goal Achieved! 🎉" : "Monthly Goal Achieved! 🎉"
-            body = "Congratulations! You've reached 100% of your \(goalType.rawValue) goal!"
+            title = goalType == .weekly ? "Meta Semanal Atingida! 🎉" : "Meta Mensal Atingida! 🎉"
+            let goalTypeText = goalType == .weekly ? "semanal" : "mensal"
+            body = "Parabéns! Você atingiu 100% da sua meta \(goalTypeText)!"
         } else {
-            title = goalType == .weekly ? "Halfway There! 🎯" : "Halfway There! 🎯"
+            title = "Na Metade do Caminho! 🎯"
             let progressText = formatTimeInterval(currentProgress)
-            body = "You're at 50% of your \(goalType.rawValue) goal! Current progress: \(progressText)"
+            let goalTypeText = goalType == .weekly ? "semanal" : "mensal"
+            body = "Você está em 50% da sua meta \(goalTypeText)! Progresso atual: \(progressText)"
         }
         
         let content = UNMutableNotificationContent()
@@ -261,14 +264,14 @@ class GoalsNotificationManager {
                 let currentAverageMins = currentAverageTotalMinutes % 60
                 let currentAverageText = currentAverageTotalMinutes >= 60 
                     ? "\(currentAverageHours)h \(currentAverageMins)m"
-                    : "\(currentAverageTotalMinutes) minutes"
+                    : "\(currentAverageTotalMinutes) minutos"
                 
                 // Formata tempo necessário
                 let neededHours = neededTotalMinutes / 60
                 let neededMins = neededTotalMinutes % 60
                 let neededText = neededTotalMinutes >= 60
                     ? "\(neededHours)h \(neededMins)m"
-                    : "\(neededTotalMinutes) minutes"
+                    : "\(neededTotalMinutes) minutos"
                 
                 // Verifica se já foi notificado hoje
                 let userDefaults = UserDefaults.standard
@@ -278,9 +281,10 @@ class GoalsNotificationManager {
                 
                 // Só envia se não foi notificado hoje
                 if lastNotificationDate < todayTimestamp {
-                    let title = "Goal Alert ⚠️"
+                    let title = "Alerta de Meta ⚠️"
                     let goalText = formatTime(hours: hours, minutes: minutes)
-                    let body = "I set a \(goalType.rawValue) goal of \(goalText) and my current daily blocking is \(currentAverageText). Increase your time away from apps to \(neededText) per day."
+                    let goalTypeText = goalType == .weekly ? "semanal" : "mensal"
+                    let body = "Defini uma meta \(goalTypeText) de \(goalText) e meu bloqueio diário atual é \(currentAverageText). Aumente seu tempo longe dos apps para \(neededText) por dia."
                     
                     let content = UNMutableNotificationContent()
                     content.title = title
