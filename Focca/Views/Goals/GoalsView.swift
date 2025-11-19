@@ -63,7 +63,7 @@ struct GoalsView: View {
                 }
                 
                 VStack(spacing: 4) {
-                    Text("Goals")
+                    Text("Metas")
                         .font(.system(size: 24, weight: .medium))
                         .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 }
@@ -108,11 +108,11 @@ struct GoalsView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 105)
-                    .alert("Delete Goal Warning", isPresented: $showEditWarning) {
-                        Button("Cancel", role: .cancel) {
+                    .alert("Aviso de Exclusão de Meta", isPresented: $showEditWarning) {
+                        Button("Cancelar", role: .cancel) {
                             pendingEditType = nil
                         }
-                        Button("Delete", role: .destructive) {
+                        Button("Excluir", role: .destructive) {
                             if let editType = pendingEditType {
                                 switch editType {
                                 case .weekly:
@@ -146,9 +146,9 @@ struct GoalsView: View {
                             pendingEditType = nil
                         }
                     } message: {
-                        Text("Deleting a goal is irreversible. All progress accumulated for the current period will be lost. Are you sure you want to delete this goal?")
+                        Text("Excluir uma meta é irreversível. Todo o progresso acumulado para o período atual será perdido. Tem certeza que deseja excluir esta meta?")
                     }
-                    .alert("Invalid Goal", isPresented: $showValidationError) {
+                    .alert("Meta Inválida", isPresented: $showValidationError) {
                         Button("OK", role: .cancel) {}
                     } message: {
                         Text(validationErrorMessage)
@@ -163,20 +163,20 @@ struct GoalsView: View {
                                         .font(.system(size: 18))
                                         .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8"))
                                     
-                                    Text("Weekly Goal")
+                                    Text("Meta Semanal")
                                         .font(.system(size: 20, weight: .semibold))
                                         .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8"))
                                     
                                     Spacer()
                                 }
                                 
-                                Text("The minimum weekly time you ideally want to stay away from your apps.")
+                                Text("O tempo mínimo semanal que você idealmente deseja ficar longe dos seus apps.")
                                     .font(.system(size: 13, weight: .regular))
                                     .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8"))
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                             
-                            Text("Goals are currently disabled. Enable them in Settings to use this feature.")
+                            Text("As metas estão desabilitadas. Ative-as em Ajustes para usar este recurso.")
                                 .font(.system(size: 14, weight: .regular))
                                 .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                                 .multilineTextAlignment(.center)
@@ -198,20 +198,20 @@ struct GoalsView: View {
                                         .font(.system(size: 18))
                                         .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8"))
                                     
-                                    Text("Monthly Goal")
+                                    Text("Meta Mensal")
                                         .font(.system(size: 20, weight: .semibold))
                                         .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8"))
                                     
                                     Spacer()
                                 }
                                 
-                                Text("The minimum monthly time you ideally want to stay away from your apps.")
+                                Text("O tempo mínimo mensal que você idealmente deseja ficar longe dos seus apps.")
                                     .font(.system(size: 13, weight: .regular))
                                     .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8"))
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                             
-                            Text("Goals are currently disabled. Enable them in Settings to use this feature.")
+                            Text("As metas estão desabilitadas. Ative-as em Ajustes para usar este recurso.")
                                 .font(.system(size: 14, weight: .regular))
                                 .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                                 .multilineTextAlignment(.center)
@@ -362,7 +362,7 @@ struct GoalsView: View {
         let validation = GoalsNotificationManager.shared.validateWeeklyGoal(hours: weeklyGoalHours, minutes: weeklyGoalMinutes)
         guard validation.isValid else {
             // Show error alert
-            validationErrorMessage = validation.errorMessage ?? "Weekly goal must be at least 7 hours"
+            validationErrorMessage = validation.errorMessage ?? "A meta semanal deve ter no mínimo 7 horas"
             showValidationError = true
             print("❌ [Goals] Validation failed: \(validation.errorMessage ?? "Unknown error")")
             return
@@ -459,7 +459,7 @@ struct GoalsView: View {
         let validation = GoalsNotificationManager.shared.validateMonthlyGoal(hours: monthlyGoalHours, minutes: monthlyGoalMinutes)
         guard validation.isValid else {
             // Show error alert
-            validationErrorMessage = validation.errorMessage ?? "Monthly goal must be at least 30 hours"
+            validationErrorMessage = validation.errorMessage ?? "A meta mensal deve ter no mínimo 30 horas"
             showValidationError = true
             print("❌ [Goals] Validation failed: \(validation.errorMessage ?? "Unknown error")")
             return
@@ -663,7 +663,7 @@ struct TimeInputView: View {
         VStack(spacing: 16) {
             HStack(spacing: 20) {
                 VStack(spacing: 8) {
-                    Text("Hours")
+                    Text("Horas")
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                     
@@ -708,7 +708,7 @@ struct TimeInputView: View {
                     .padding(.top, 20)
                 
                 VStack(spacing: 8) {
-                    Text("Minutes")
+                    Text("Minutos")
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                     

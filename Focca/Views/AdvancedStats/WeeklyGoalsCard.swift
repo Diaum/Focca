@@ -19,7 +19,7 @@ struct WeeklyGoalsCard: View {
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 
-                Text("Weekly Average")
+                Text("Média Semanal")
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                     .lineLimit(1)
@@ -43,7 +43,7 @@ struct WeeklyGoalsCard: View {
                 }
                 .multilineTextAlignment(.center)
                 
-                Text("Per Week")
+                Text("Por Semana")
                     .font(.system(size: 11, weight: .regular))
                     .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
             }

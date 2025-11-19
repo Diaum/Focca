@@ -45,7 +45,7 @@ struct AdvancedStatsView: View {
                 
                 // Título
                 VStack(spacing: 4) {
-                    Text("Advanced Statistics")
+                    Text("Estatísticas Avançadas")
                         .font(.system(size: 24, weight: .medium))
                         .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 }
@@ -62,7 +62,7 @@ struct AdvancedStatsView: View {
                                     .font(.system(size: 16, weight: .medium))
                                     .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                                 
-                                Text("Total Blocked Time")
+                                Text("Tempo Total Bloqueado")
                                     .font(.system(size: 15, weight: .medium))
                                     .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                             }
@@ -78,7 +78,7 @@ struct AdvancedStatsView: View {
                                 HStack(spacing: 4) {
                                     Image(systemName: showTimeInDays ? "clock" : "calendar")
                                         .font(.system(size: 10, weight: .medium))
-                                    Text(showTimeInDays ? "Hours" : "Days")
+                                    Text(showTimeInDays ? "Horas" : "Dias")
                                         .font(.system(size: 12, weight: .medium))
                                 }
                                 .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
@@ -159,25 +159,25 @@ struct AdvancedStatsView: View {
                 let hours = Int(totalBlockedTime) / 3600
                 let minutes = (Int(totalBlockedTime) % 3600) / 60
                 if hours > 0 {
-                    return String(format: "%.2f days\n(%dh %dm)", days, hours, minutes)
+                    return String(format: "%.2f dias\n(%dh %dm)", days, hours, minutes)
                 } else {
-                    return String(format: "%.2f days\n(%dm)", days, minutes)
+                    return String(format: "%.2f dias\n(%dm)", days, minutes)
                 }
             } else if days < 7 {
                 let fullDays = Int(days)
                 let remainingHours = Int((days - Double(fullDays)) * 24)
                 if remainingHours > 0 {
-                    return "\(fullDays) day\(fullDays == 1 ? "" : "s"), \(remainingHours) hour\(remainingHours == 1 ? "" : "s")"
+                    return "\(fullDays) \(fullDays == 1 ? "dia" : "dias"), \(remainingHours) \(remainingHours == 1 ? "hora" : "horas")"
                 } else {
-                    return "\(fullDays) day\(fullDays == 1 ? "" : "s")"
+                    return "\(fullDays) \(fullDays == 1 ? "dia" : "dias")"
                 }
             } else {
                 let weeks = Int(days / 7)
                 let remainingDays = Int(days.truncatingRemainder(dividingBy: 7))
                 if remainingDays == 0 {
-                    return "\(weeks) week\(weeks == 1 ? "" : "s")"
+                    return "\(weeks) \(weeks == 1 ? "semana" : "semanas")"
                 } else {
-                    return "\(weeks) week\(weeks == 1 ? "" : "s"), \(remainingDays) day\(remainingDays == 1 ? "" : "s")"
+                    return "\(weeks) \(weeks == 1 ? "semana" : "semanas"), \(remainingDays) \(remainingDays == 1 ? "dia" : "dias")"
                 }
             }
         } else {

@@ -11,7 +11,7 @@ struct StreakCard: View {
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 
-                Text("Current Streak")
+                Text("Sequência Atual")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                 
@@ -25,7 +25,7 @@ struct StreakCard: View {
                     .font(.system(size: 26, weight: .light, design: .rounded))
                     .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 
-                Text(streak == 1 ? "day" : "days")
+                Text(streak == 1 ? "dia" : "dias")
                     .font(.system(size: 11, weight: .regular))
                     .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
             }

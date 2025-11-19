@@ -71,7 +71,7 @@ struct MonthlyGoalCard: View {
                     }
                 }
                 
-                Text("The minimum monthly time you ideally want to stay away from your apps.")
+                Text("O tempo mínimo mensal que você idealmente deseja ficar longe dos seus apps.")
                     .font(.system(size: 13, weight: .regular))
                     .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                     .fixedSize(horizontal: false, vertical: true)
@@ -94,7 +94,7 @@ struct MonthlyGoalCard: View {
                                     Button(action: {
                                         onEditRequest()
                                     }) {
-                                        Text("Delete")
+                                        Text("Excluir")
                                             .font(.system(size: 15, weight: .semibold))
                                             .foregroundColor(isOtherGoalEditing ? (isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8")) : (isBlocked ? .white : Color(hex: "1C1C1E")))
                                             .padding(.horizontal, 20)
@@ -105,7 +105,7 @@ struct MonthlyGoalCard: View {
                                     .disabled(isOtherGoalEditing)
                                     
                                     if isOtherGoalEditing {
-                                        Text("Finish editing the other goal first")
+                                        Text("Termine de editar a outra meta primeiro")
                                             .font(.system(size: 10, weight: .regular))
                                             .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                                             .multilineTextAlignment(.trailing)
@@ -116,7 +116,7 @@ struct MonthlyGoalCard: View {
                     // Progress Bar
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Text("Progress")
+                            Text("Progresso")
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                             
@@ -158,7 +158,7 @@ struct MonthlyGoalCard: View {
                 )
                 
                 Button(action: onSave) {
-                    Text("Create Goal")
+                    Text("Criar Meta")
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
