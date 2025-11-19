@@ -122,7 +122,7 @@ struct UnlockedView: View {
                 .padding(.bottom, 0)
                 
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, 12)
+                    .padding(.bottom, 0)
             }
         }
         .preferredColorScheme(.light)

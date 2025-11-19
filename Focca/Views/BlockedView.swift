@@ -19,7 +19,7 @@ struct BlockedView: View {
 //                .overlay(ReferenceGrid(spacing: 24, color: .red.opacity(0.15)))
             
             VStack(spacing: 0) {
-                Spacer(minLength: 140)
+                Spacer(minLength: 145)
                 
                 
                 TimerComponent(isActive: isBlocked)
@@ -107,7 +107,7 @@ struct BlockedView: View {
                 .padding(.bottom, 0)
                 
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, 12)
+                    .padding(.bottom, 60)
             }
         }
         .preferredColorScheme(.dark)
