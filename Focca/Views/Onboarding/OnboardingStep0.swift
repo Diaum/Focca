@@ -1,5 +1,6 @@
 import SwiftUI
 import UserNotifications
+import UIKit
 
 struct OnboardingStep0: View {
     @State private var showStep1 = false
@@ -7,34 +8,38 @@ struct OnboardingStep0: View {
     
     var body: some View {
         ZStack {
-            Color.black
-                .ignoresSafeArea()
+            LinearGradient(
+                colors: [Color(hex: "F7F7F8"), Color(hex: "FFFFFF")],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Status Bar
                 HStack {
                     Text("14:34")
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(.white)
+                        .foregroundColor(Color(hex: "1C1C1E"))
                     
                     Spacer()
                     
                     HStack(spacing: 4) {
                         Image(systemName: "signal.bars.3")
                             .font(.system(size: 12))
-                            .foregroundColor(.white)
+                            .foregroundColor(Color(hex: "1C1C1E"))
                         
                         Image(systemName: "wifi")
                             .font(.system(size: 12))
-                            .foregroundColor(.white)
+                            .foregroundColor(Color(hex: "1C1C1E"))
                         
                         Text("91")
                             .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(.white)
+                            .foregroundColor(Color(hex: "1C1C1E"))
                         
                         Image(systemName: "battery.100")
                             .font(.system(size: 12))
-                            .foregroundColor(.white)
+                            .foregroundColor(Color(hex: "1C1C1E"))
                     }
                 }
                 .padding(.horizontal, 20)
@@ -47,30 +52,31 @@ struct OnboardingStep0: View {
                     VStack(spacing: 0) {
                         // Notification Card
                         HStack(spacing: 12) {
-                            // App Icon
-                            ZStack {
-                                Circle()
-                                    .stroke(Color.blue, lineWidth: 2)
+                            // App Icon - Logo do Focca
+                            if let appIcon = UIImage.appIcon {
+                                Image(uiImage: appIcon)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
                                     .frame(width: 44, height: 44)
-                                
-                                Text("A")
-                                    .font(.system(size: 20, weight: .bold))
-                                    .foregroundColor(.white)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            } else {
+                                Image("focca-rectangle-black")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 44, height: 44)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                             }
                             
-                            // Notification Content (simulated with lines)
+                            // Notification Content
                             VStack(alignment: .leading, spacing: 4) {
-                                RoundedRectangle(cornerRadius: 2)
-                                    .fill(Color(hex: "2C2C2E"))
-                                    .frame(width: 120, height: 8)
+                                Text("Focca")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(Color(hex: "1C1C1E"))
                                 
-                                RoundedRectangle(cornerRadius: 2)
-                                    .fill(Color(hex: "2C2C2E"))
-                                    .frame(width: 180, height: 6)
-                                
-                                RoundedRectangle(cornerRadius: 2)
-                                    .fill(Color(hex: "2C2C2E"))
-                                    .frame(width: 160, height: 6)
+                                Text("Seu bloqueio está ativo")
+                                    .font(.system(size: 13, weight: .regular))
+                                    .foregroundColor(Color(hex: "8E8E93"))
+                                    .lineLimit(2)
                             }
                             
                             Spacer()
@@ -79,7 +85,8 @@ struct OnboardingStep0: View {
                         .padding(.vertical, 12)
                         .background(
                             RoundedRectangle(cornerRadius: 16)
-                                .fill(Color(hex: "1C1C1E"))
+                                .fill(Color.white)
+                                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
                         )
                         .padding(.horizontal, 20)
                         .padding(.top, 40)
@@ -91,12 +98,12 @@ struct OnboardingStep0: View {
                             // Flashlight
                             Button(action: {}) {
                                 Circle()
-                                    .fill(Color(hex: "2C2C2E"))
+                                    .fill(Color(hex: "E5E5EA"))
                                     .frame(width: 60, height: 60)
                                     .overlay(
                                         Image(systemName: "flashlight.off.fill")
                                             .font(.system(size: 20))
-                                            .foregroundColor(.white)
+                                            .foregroundColor(Color(hex: "1C1C1E"))
                                     )
                             }
                             
@@ -105,12 +112,12 @@ struct OnboardingStep0: View {
                             // Camera
                             Button(action: {}) {
                                 Circle()
-                                    .fill(Color(hex: "2C2C2E"))
+                                    .fill(Color(hex: "E5E5EA"))
                                     .frame(width: 60, height: 60)
                                     .overlay(
                                         Image(systemName: "camera.fill")
                                             .font(.system(size: 20))
-                                            .foregroundColor(.white)
+                                            .foregroundColor(Color(hex: "1C1C1E"))
                                     )
                             }
                         }
@@ -119,7 +126,7 @@ struct OnboardingStep0: View {
                         
                         // Home Indicator
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(Color.white.opacity(0.3))
+                            .fill(Color(hex: "1C1C1E").opacity(0.3))
                             .frame(width: 134, height: 5)
                             .padding(.bottom, 8)
                     }
@@ -129,18 +136,21 @@ struct OnboardingStep0: View {
                 }
                 
                 // Main Content
-                VStack(spacing: 16) {
-                    Text("Get Notified About Your Blocking Sessions")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(.white)
+                VStack(spacing: 20) {
+                    Text("Mantenha-se informado")
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundColor(Color(hex: "1C1C1E"))
                         .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.8)
                         .padding(.horizontal, 40)
+                        .padding(.top, 20)
                     
-                    Text("Get notified about your app blocking sessions, schedule reminders, and important updates.")
-                        .font(.system(size: 16))
+                    Text("Receba notificações sobre suas sessões de bloqueio, lembretes de schedules e atualizações importantes do Focca.")
+                        .font(.system(size: 17, weight: .regular))
                         .foregroundColor(Color(hex: "8E8E93"))
                         .multilineTextAlignment(.center)
-                        .lineSpacing(4)
+                        .lineSpacing(6)
                         .padding(.horizontal, 40)
                     
                     Spacer()
@@ -151,13 +161,13 @@ struct OnboardingStep0: View {
                             await requestNotificationPermission()
                         }
                     }) {
-                        Text(isRequestingPermission ? "Requesting..." : "Continue")
+                        Text(isRequestingPermission ? "Solicitando..." : "Permitir notificações")
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
-                            .frame(height: 50)
-                            .background(Color.blue)
-                            .cornerRadius(12)
+                            .frame(height: 56)
+                            .background(Color(hex: "1C1C1E"))
+                            .cornerRadius(16)
                     }
                     .disabled(isRequestingPermission)
                     .padding(.horizontal, 40)
@@ -166,21 +176,20 @@ struct OnboardingStep0: View {
                     Button(action: {
                         showStep1 = true
                     }) {
-                        Text("Not Now")
+                        Text("Agora não")
                             .font(.system(size: 17, weight: .medium))
-                            .foregroundColor(.white)
+                            .foregroundColor(Color(hex: "8E8E93"))
                             .frame(maxWidth: .infinity)
-                            .frame(height: 50)
-                            .background(Color(hex: "2C2C2E"))
-                            .cornerRadius(12)
+                            .frame(height: 56)
+                            .background(Color(hex: "F5F5F5"))
+                            .cornerRadius(16)
                     }
                     .padding(.horizontal, 40)
                     .padding(.bottom, 40)
                 }
-                .padding(.top, 40)
             }
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
         .fullScreenCover(isPresented: $showStep1) {
             OnboardingStep1()
         }

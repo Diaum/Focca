@@ -10,64 +10,67 @@ struct OnboardingStep1: View {
     
     var body: some View {
         ZStack {
-            Color(hex: "E7E2DF")
-                .ignoresSafeArea()
+            LinearGradient(
+                colors: [Color(hex: "F7F7F8"), Color.white],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                Spacer(minLength: 80)
-
-                VStack(spacing: 4) {
-                    Text("Which apps are distractions?")
-                        .font(.system(size: 38, weight: .semibold))
-                        .foregroundColor(.black)
+                Spacer(minLength: 120)
+                
+                VStack(spacing: 16) {
+                    Text("Quais apps te distraem?")
+                        .font(.system(size: 30, weight: .bold, design: .rounded))
+                        .foregroundColor(Color(hex: "1C1C1E"))
                         .multilineTextAlignment(.center)
-                        .padding(.horizontal, 24)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.85)
+                        .padding(.horizontal, 32)
+                    
+                    Text("Comece selecionando de 1 a 3 apps que mais tomam o seu tempo. Vamos bloquear quando for a hora de focar.")
+                        .font(.system(size: 17))
+                        .foregroundColor(Color(hex: "8E8E93"))
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(6)
+                        .padding(.horizontal, 40)
                 }
-                .padding(.bottom, 20)
-
-                Text("We recommend starting with 1–3 apps that you find to occupy too much of your time")
-                    .font(.system(size: 16))
-                    .foregroundColor(Color(hex: "7D7C80"))
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(5)
-                    .padding(.horizontal, 40)
-
+                
                 Spacer()
-
-                ZStack {
-                    RoundedRectangle(cornerRadius: 40)
+                
+                ZStack(alignment: .bottom) {
+                    RoundedRectangle(cornerRadius: 36)
                         .fill(Color.white)
-                        .shadow(color: Color.black.opacity(0.08), radius: 25, x: 0, y: -4)
+                        .shadow(color: Color.black.opacity(0.08), radius: 25, x: 0, y: -6)
                         .ignoresSafeArea(edges: .bottom)
-
-                    VStack {
-                        Spacer()
-                        
+                    
+                    VStack(spacing: 32) {
                         Image("onboardingstep1")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(width: 400)
-                            .padding(.bottom, 10)
-
+                            .frame(maxWidth: 420)
+                            .padding(.top, 40)
+                        
                         Button(action: {
                             Task {
                                 await requestPermissions()
                             }
                         }) {
                             Text(getButtonText())
-                                .font(.system(size: 15, weight: .medium))
-                                .foregroundColor(.black)
-                                .frame(width: 200)
-                                .frame(height: 50)
-                                .background(Color(hex: "E7E2DF"))
-                                .cornerRadius(25)
-                                .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
+                                .background(Color(hex: "1C1C1E"))
+                                .cornerRadius(18)
                         }
                         .disabled(isRequestingPermission || isRequestingNotification)
-                        .padding(.bottom, 50)
+                        .padding(.horizontal, 32)
+                        .padding(.bottom, 44)
                     }
                 }
-                .frame(height: UIScreen.main.bounds.height * 0.45)
+                .frame(height: UIScreen.main.bounds.height * 0.5)
             }
         }
         .sheet(isPresented: $showStep2) {
@@ -85,13 +88,11 @@ struct OnboardingStep1: View {
     
     private func getButtonText() -> String {
         if isRequestingNotification {
-            return "Requesting notification permission..."
+            return "Solicitando permissão de notificações..."
         } else if isRequestingPermission {
-            return "Requesting permission..."
-        } else if !notificationPermissionGranted {
-            return "Enable permissions"
+            return "Solicitando permissão..."
         } else {
-            return "Select apps to limit"
+            return "Escolher apps"
         }
     }
     
