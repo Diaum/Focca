@@ -19,23 +19,23 @@ struct OnboardingStep3: View {
                 Color(hex: "E3DEDB").ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    Text("\(appInfos.count) distractions selected")
+                    Text("\(appInfos.count) distrações selecionadas")
                         .font(.system(size: 32, weight: .bold))
                         .foregroundColor(Color(hex: "1D1D1F"))
                         .padding(.top, 40)
 
                     if isLoading {
                         Spacer()
-                        ProgressView("Loading apps...")
+                        ProgressView("Carregando apps...")
                             .padding()
                         Spacer()
                     } else if appInfos.isEmpty {
                         Spacer()
                         VStack(spacing: 12) {
-                            Text("No apps selected")
+                            Text("Nenhum app selecionado")
                                 .font(.system(size: 18, weight: .medium))
                                 .foregroundColor(Color(hex: "1D1D1F"))
-                            Text("Please select at least 1 app to continue setup")
+                            Text("Selecione pelo menos 1 app para continuar")
                                 .font(.system(size: 15))
                                 .foregroundColor(Color(hex: "7A7A7A"))
                                 .multilineTextAlignment(.center)
@@ -67,7 +67,7 @@ struct OnboardingStep3: View {
                                 showMainView = true
                             }
                         }) {
-                            Text("Complete setup")
+                            Text("Concluir configuração")
                                 .font(.system(size: 17, weight: .medium))
                                 .foregroundColor((appInfos.isEmpty || appInfos.count > 50) ? Color(hex: "9E9EA3") : .white)
                                 .frame(maxWidth: .infinity)
@@ -81,7 +81,7 @@ struct OnboardingStep3: View {
                         Button(action: {
                             showStep2 = true
                         }) {
-                            Text("Edit apps")
+                            Text("Editar apps")
                                 .font(.system(size: 17, weight: .medium))
                                 .foregroundColor(Color(hex: "1D1D1F"))
                         }
@@ -101,13 +101,13 @@ struct OnboardingStep3: View {
                     Task { await refreshSelectionAndApps() }
                 })
             }
-            .alert("Too Many Apps", isPresented: $showAlert) {
-                Button("Edit Apps", action: {
+            .alert("Muitos apps selecionados", isPresented: $showAlert) {
+                Button("Editar apps", action: {
                     showStep2 = true
                 })
                 Button("OK", role: .cancel) { }
             } message: {
-                Text("You can only block up to 50 apps. Please remove some apps to continue.")
+                Text("Você só pode bloquear até 50 apps. Remova alguns para continuar.")
             }
             .task {
                 if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),

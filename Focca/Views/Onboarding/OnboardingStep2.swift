@@ -24,23 +24,23 @@ struct OnboardingStep2: View {
                     HStack(spacing: 12) {
                         VStack(alignment: .leading, spacing: 4) {
                             if selection.applicationTokens.count > 0 {
-                                Text("\(selection.applicationTokens.count)/50 apps selected")
+                                Text("\(selection.applicationTokens.count)/50 apps selecionados")
                                     .font(.system(size: 14))
                                     .foregroundColor(.secondary)
                                 if selection.applicationTokens.count > 50 {
-                                    Text("⚠️ Maximum 50 apps allowed")
+                                    Text("⚠️ Máximo de 50 apps permitidos")
                                         .font(.system(size: 11))
                                         .foregroundColor(.orange)
                                 }
                             } else if selection.categoryTokens.count > 0 {
-                                Text("0/50 apps selected")
+                                Text("0/50 apps selecionados")
                                     .font(.system(size: 14))
                                     .foregroundColor(.secondary)
-                                Text("⚠️ Deselect category → select apps individually")
+                                Text("⚠️ Remova a categoria e escolha os apps individualmente")
                                     .font(.system(size: 11))
                                     .foregroundColor(.orange)
                             } else {
-                                Text("0/50 apps selected")
+                                Text("0/50 apps selecionados")
                                     .font(.system(size: 14))
                                     .foregroundColor(.secondary)
                             }
@@ -59,7 +59,7 @@ struct OnboardingStep2: View {
                                 }
                             }
                         }) {
-                            Text("Next")
+                            Text("Continuar")
                                 .fontWeight(.semibold)
                                 .foregroundColor((selection.applicationTokens.count > 50 || !isAuthorized) ? Color(hex: "9E9EA3") : .white)
                                 .padding(.horizontal, 24)
@@ -81,15 +81,15 @@ struct OnboardingStep2: View {
                     await requestAuthorizationIfNeeded()
                 }
             }
-            .alert("Screen Time Permission Required", isPresented: $showAuthorizationAlert) {
-                Button("Open Settings") {
+            .alert("Permissão de Tempo de Uso necessária", isPresented: $showAuthorizationAlert) {
+                Button("Abrir Ajustes") {
                     if let url = URL(string: UIApplication.openSettingsURLString) {
                         UIApplication.shared.open(url)
                     }
                 }
-                Button("Cancel", role: .cancel) { }
+                Button("Cancelar", role: .cancel) { }
             } message: {
-                Text("You need to authorize Screen Time access to continue. Please enable it in Settings.")
+                Text("Você precisa autorizar o acesso ao Tempo de Uso para continuar. Ative nas Configurações.")
             }
         }
     }

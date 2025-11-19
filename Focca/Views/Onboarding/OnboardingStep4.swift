@@ -17,7 +17,6 @@ struct OnboardingStep4: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // 🔹 Back Button no topo
                 HStack {
                     Button(action: {
                         presentationMode.wrappedValue.dismiss()
@@ -37,17 +36,15 @@ struct OnboardingStep4: View {
                 
                 Spacer()
                 
-                // 🔹 Título
                 VStack(spacing: 4) {
-                    Text("You're ready to take")
-                        .font(.system(size: 32, weight: .semibold))
+                    Text("Retome o controle do seu tempo")
+                        .font(.system(size: 30, weight: .semibold))
                         .foregroundColor(Color(hex: "1D1D1F"))
-                    Text("your time back")
-                        .font(.system(size: 32, weight: .semibold))
-                        .foregroundColor(Color(hex: "1D1D1F"))
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.9)
+                        .padding(.horizontal, 32)
                 }
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
                 .padding(.bottom, 60)
                 
                 // 🔹 Imagem do Brick
@@ -57,13 +54,12 @@ struct OnboardingStep4: View {
                     .frame(width: 300, height: 197)
                     .padding(.bottom, 50)
                 
-                // 🔹 Subtítulo e texto auxiliar
                 VStack(spacing: 10) {
-                    Text("Go grab your Focca")
+                    Text("Pegue o seu Focca")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(Color(hex: "1D1D1F"))
                     
-                    Text("You have 5 emergency unfocus, in case you ever are without your device")
+                    Text("Você tem 5 desbloqueios emergenciais caso fique sem o dispositivo.")
                         .font(.system(size: 15))
                         .foregroundColor(Color(hex: "7A7A7A"))
                         .multilineTextAlignment(.center)
@@ -74,8 +70,6 @@ struct OnboardingStep4: View {
                 
                 Spacer()
                 
-                // 🔹 Botão - Bloqueia apps via ManagedSettingsStore (Screen Time)
-                // blockedApplications remove os apps da tela e impede abertura
                 Button(action: {
                     if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
                        let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data),
@@ -123,7 +117,7 @@ struct OnboardingStep4: View {
                         showBlockedView = true
                     }
                 }) {
-                    Text("Focca your device")
+                    Text("Foccar dispositivo")
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(Color(hex: "1D1D1F"))
                         .frame(maxWidth: .infinity)
