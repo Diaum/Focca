@@ -574,5 +574,5 @@ private func weekdayAbbrev(for day: Int) -> String {
 }
 
 #Preview {
-    EditModeView(modeName: "default")
+    EditModeView(modeName: "padrao")
 }

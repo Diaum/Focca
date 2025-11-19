@@ -78,15 +78,15 @@ struct OnboardingStep4: View {
                         let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
                         store.application.blockedApplications = apps
 
-                        // Marca criação do modo "default" no primeiro bloqueio e persiste a seleção
-                        if UserDefaults.standard.bool(forKey: "mode_default_exists") == false {
-                            UserDefaults.standard.set(true, forKey: "mode_default_exists")
+                        // Marca criação do modo "padrao" no primeiro bloqueio e persiste a seleção
+                        if UserDefaults.standard.bool(forKey: "mode_padrao_exists") == false {
+                            UserDefaults.standard.set(true, forKey: "mode_padrao_exists")
                             if let encoded = try? JSONEncoder().encode(saved) {
-                                UserDefaults.standard.set(encoded, forKey: "mode_default_selection")
+                                UserDefaults.standard.set(encoded, forKey: "mode_padrao_selection")
                             }
                         }
                         // Define o modo ativo e quantidade
-                        UserDefaults.standard.set("default", forKey: "active_mode_name")
+                        UserDefaults.standard.set("padrao", forKey: "active_mode_name")
                         UserDefaults.standard.set(saved.applicationTokens.count, forKey: "active_mode_app_count")
 
                         // Marca o onboarding como completo

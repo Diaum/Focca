@@ -238,7 +238,7 @@ struct UnlockedView: View {
             }
         }
 
-        return "default"
+        return "padrao"
     }
 
     private func startLiveActivity(startDate: Date) {
