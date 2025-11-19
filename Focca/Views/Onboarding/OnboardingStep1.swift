@@ -10,15 +10,11 @@ struct OnboardingStep1: View {
     
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color(hex: "F7F7F8"), Color.white],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            Color(hex: "ECE8E6")
+                .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                Spacer(minLength: 120)
+                Spacer(minLength: 100)
                 
                 VStack(spacing: 16) {
                     Text("Quais apps te distraem?")
@@ -37,20 +33,27 @@ struct OnboardingStep1: View {
                         .padding(.horizontal, 40)
                 }
                 
-                Spacer()
+                Spacer(minLength: 40)
                 
                 ZStack(alignment: .bottom) {
-                    RoundedRectangle(cornerRadius: 36)
+                    RoundedRectangle(cornerRadius: 44)
                         .fill(Color.white)
-                        .shadow(color: Color.black.opacity(0.08), radius: 25, x: 0, y: -6)
+                        .shadow(color: Color.black.opacity(0.1), radius: 25, x: 0, y: -8)
                         .ignoresSafeArea(edges: .bottom)
                     
-                    VStack(spacing: 32) {
+                    VStack(spacing: 24) {
                         Image("onboardingstep1")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(maxWidth: 420)
-                            .padding(.top, 40)
+                            .padding(.top, 48)
+                        
+                        Text("Escolha redes sociais, jogos e apps que mais roubam o seu foco para bloqueá-los automaticamente.")
+                            .font(.system(size: 16))
+                            .foregroundColor(Color(hex: "8E8E93"))
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(5)
+                            .padding(.horizontal, 32)
                         
                         Button(action: {
                             Task {
@@ -63,14 +66,15 @@ struct OnboardingStep1: View {
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 56)
                                 .background(Color(hex: "1C1C1E"))
-                                .cornerRadius(18)
+                                .cornerRadius(20)
                         }
                         .disabled(isRequestingPermission || isRequestingNotification)
                         .padding(.horizontal, 32)
-                        .padding(.bottom, 44)
+                        .padding(.bottom, 48)
                     }
                 }
-                .frame(height: UIScreen.main.bounds.height * 0.5)
+                .frame(height: UIScreen.main.bounds.height * 0.52)
+                .padding(.horizontal, 24)
             }
         }
         .sheet(isPresented: $showStep2) {
