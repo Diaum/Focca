@@ -20,12 +20,8 @@ struct UnlockedView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color(hex: "F0ECEB"), Color(hex: "ECECEC")],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            Color(hex: "ECE8E6")
+                .ignoresSafeArea()
 //            .overlay(ReferenceGrid(spacing: 24, color: .red.opacity(0.15)))
             
             VStack(spacing: 0) {
@@ -36,7 +32,7 @@ struct UnlockedView: View {
                         .font(.system(size: 18, weight: .semibold, design: .rounded))
                         .foregroundColor(Color(hex: "1C1C1E"))
                     
-                    Text("today")
+                    Text("hoje")
                         .font(.system(size: 15, weight: .medium))
                         .foregroundColor(Color(hex: "8A8A8E"))
                         .padding(.top, 4)
@@ -45,8 +41,8 @@ struct UnlockedView: View {
                 .padding(.vertical, 12)
                 .background(
                     RoundedRectangle(cornerRadius: 14)
-                        .fill(Color.white.opacity(0.9))
-                        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+                        .fill(Color.white.opacity(0.6))
+                        .shadow(color: Color.black.opacity(0.03), radius: 3, x: 0, y: 2)
                 )
                 .padding(.bottom, 60)
 
@@ -55,14 +51,14 @@ struct UnlockedView: View {
                 Image("focca-rectangle-gray")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 300, height: 197)
-                    .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
+                    .frame(width: 320, height: 210)
+                    .shadow(color: Color.black.opacity(0.12), radius: 12, x: 0, y: 5)
                     .padding(.bottom, 60)
                 
                 VStack(spacing: 8) {
                     Button(action: { showModeSheet = true }) {
                         HStack(spacing: 6) {
-                            Text("Mode : \(activeModeName)")
+                            Text("Modo : \(activeModeName)")
                                 .font(.system(size: 17, weight: .semibold))
                                 .foregroundColor(Color(hex: "1C1C1E"))
                             
@@ -74,7 +70,7 @@ struct UnlockedView: View {
                     }
                     .buttonStyle(.plain)
                     
-                    Text("Blocking \(activeModeCount) apps")
+                    Text("Bloqueando \(activeModeCount) apps")
                         .font(.system(size: 14))
                         .foregroundColor(Color(hex: "8E8E93"))
                 }

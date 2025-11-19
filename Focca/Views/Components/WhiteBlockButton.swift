@@ -17,8 +17,8 @@ struct WhiteBlockButton: View {
                             .fill(
                                 LinearGradient(
                                     colors: [
-                                        Color(hex: "F9F9F9"),
-                                        Color(hex: "EAEAEC")
+                                        Color(hex: "FBF6F2"),
+                                        Color(hex: "EEE8E3")
                                     ],
                                     startPoint: .top,
                                     endPoint: .bottom
@@ -30,8 +30,8 @@ struct WhiteBlockButton: View {
                                     .stroke(
                                         LinearGradient(
                                             colors: [
-                                                Color.white.opacity(0.8),
-                                                Color.black.opacity(0.05)
+                                                Color.white.opacity(0.9),
+                                                Color.black.opacity(0.04)
                                             ],
                                             startPoint: .topLeading,
                                             endPoint: .bottomTrailing
