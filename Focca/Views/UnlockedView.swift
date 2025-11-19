@@ -18,6 +18,22 @@ struct UnlockedView: View {
 
     private let sharedDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
     
+    private var formattedHours: String {
+        let components = todayTime.components(separatedBy: " ")
+        return components.first ?? "0h"
+    }
+    
+    private var formattedMinutes: String {
+        let components = todayTime.components(separatedBy: " ")
+        guard components.count > 1 else { return "00m" }
+        let minutesComponent = components[1]
+        let minutesValue = minutesComponent.replacingOccurrences(of: "m", with: "")
+        if let minutes = Int(minutesValue) {
+            return String(format: "%02dm", minutes)
+        }
+        return minutesComponent
+    }
+    
     var body: some View {
         ZStack {
             Color(hex: "ECE8E6")
@@ -27,24 +43,25 @@ struct UnlockedView: View {
             VStack(spacing: 0) {
                 Spacer(minLength: 145)
                 Spacer()
-                HStack(spacing: 4) {
-                    Text(todayTime)
+                HStack(spacing: 6) {
+                    Text(formattedHours)
                         .font(.system(size: 18, weight: .semibold, design: .rounded))
                         .foregroundColor(Color(hex: "1C1C1E"))
                     
-                    Text("hoje")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(Color(hex: "8A8A8E"))
-                        .padding(.top, 4)
+                    Text(formattedMinutes)
+                        .font(.system(size: 18, weight: .light, design: .rounded))
+                        .foregroundColor(Color(hex: "1C1C1E"))
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 12)
+                .padding(.horizontal, 26)
+                .padding(.vertical, 16)
                 .background(
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(Color.white.opacity(0.6))
-                        .shadow(color: Color.black.opacity(0.03), radius: 3, x: 0, y: 2)
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color(hex: "F4F0ED"))
+                        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 3)
                 )
-                .padding(.bottom, 60)
+                .padding(.bottom, 8)
+                
+                Spacer().frame(height: 52)
 
 
                 
