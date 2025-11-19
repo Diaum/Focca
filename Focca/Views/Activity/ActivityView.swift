@@ -24,9 +24,9 @@ struct ActivityView: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: isBlocked 
+                colors: isBlocked
                     ? [Color(hex: "0A0A0A"), Color(hex: "0A0A0A")]
-                    : [Color(hex: "F7F7F8"), Color(hex: "ECECEC")],
+                    : [Color(hex: "ECE8E6"), Color(hex: "F7F7F8")],
                 startPoint: .top,
                 endPoint: .bottom
             )
@@ -72,32 +72,42 @@ struct ActivityView: View {
                 
                 HStack(spacing: 80) {
                     VStack(spacing: 4) {
-                        Text("Today")
+                        Text("Hoje")
                             .font(.system(size: 15, weight: .medium))
-                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8A8A8E"))
+                            .foregroundColor(Color(hex: "8A8A8E"))
                         
-                        Text(todayTime)
-                            .font(.system(size: 28, weight: .medium))
-                            .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                        HStack(spacing: 4) {
+                            Text(todayHoursText)
+                                .font(.system(size: 28, weight: .semibold, design: .rounded))
+                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                            Text(todayMinutesText)
+                                .font(.system(size: 28, weight: .light, design: .rounded))
+                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                        }
                     }
                     
                     VStack(spacing: 4) {
-                        Text("Average")
+                        Text("Média/dia")
                             .font(.system(size: 15, weight: .medium))
-                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8A8A8E"))
+                            .foregroundColor(Color(hex: "8A8A8E"))
                         
-                        Text(averageTime)
-                            .font(.system(size: 28, weight: .medium))
-                            .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                        HStack(spacing: 4) {
+                            Text(averageHoursText)
+                                .font(.system(size: 28, weight: .semibold, design: .rounded))
+                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                            Text(averageMinutesText)
+                                .font(.system(size: 28, weight: .light, design: .rounded))
+                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                        }
                     }
                 }
                 .padding(.top, 0)
                 .padding(.bottom, 60)
                 
                 if dailyCards.isEmpty {
-                    Text("Activities will appear after your first day using Brick")
+                    Text("As atividades aparecem após o seu primeiro dia usando o Focca.")
                         .font(.system(size: 15, weight: .regular))
-                        .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "9E9EA3"))
+                        .foregroundColor(Color(hex: "9E9EA3"))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
                         .padding(.top, 40)
@@ -107,7 +117,7 @@ struct ActivityView: View {
                         ScrollView(showsIndicators: false) {
                             cardGrid
                                 .padding(.top, 0)
-                                .padding(.bottom, 250)
+                                .padding(.bottom, 120)
                         }
                         .onChange(of: expandedCardDate) { newValue in
                             if let expandedDate = newValue {
@@ -126,7 +136,7 @@ struct ActivityView: View {
                     }
                 }
             }
-            .padding(.bottom, 105)
+            .padding(.bottom, 60)
 
             VStack(spacing: 0) {
                 Spacer()
@@ -195,6 +205,28 @@ struct ActivityView: View {
         .onDisappear {
             expandedCardDate = nil
         }
+    }
+    
+    private var todayHoursText: String {
+        let parts = todayTime.components(separatedBy: " ")
+        return parts.first ?? "0h"
+    }
+    
+    private var todayMinutesText: String {
+        let parts = todayTime.components(separatedBy: " ")
+        guard parts.count > 1 else { return "00m" }
+        return parts[1]
+    }
+    
+    private var averageHoursText: String {
+        let parts = averageTime.components(separatedBy: " ")
+        return parts.first ?? "0h"
+    }
+    
+    private var averageMinutesText: String {
+        let parts = averageTime.components(separatedBy: " ")
+        guard parts.count > 1 else { return "00m" }
+        return parts[1]
     }
     
     private func loadActivityData() {

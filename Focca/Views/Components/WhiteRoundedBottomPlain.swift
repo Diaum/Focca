@@ -12,25 +12,26 @@ struct WhiteRoundedBottomPlain: View {
         RoundedRectangle(cornerRadius: 120)
             .fill(
                 LinearGradient(
-                    colors: isBlocked 
+                    colors: isBlocked
                         ? [
                             Color(hex: "181818"),
-                            Color(hex: "")
+                            Color(hex: "").opacity(0.6)
                         ]
                         : [
-                            Color.white,
-                            Color(hex: "")
+                            Color(hex: "F9F4F0"),
+                            Color(hex: "").opacity(0.9)
                         ],
                     startPoint: .bottom,
                     endPoint: .top
                 )
             )
-            .frame(height: 120)
+            .frame(height: 90)
             .padding(.horizontal, 0)
             .padding(.bottom, 0)
             .clipShape(
-                RoundedCorner(radius: 8, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
+                RoundedCorner(radius: 40, corners: [.topLeft, .topRight])
             )
+            .shadow(color: Color.black.opacity(0.08), radius: 20, x: 0, y: 8)
             .allowsHitTesting(false)
             .accessibilityHidden(true)
     }
