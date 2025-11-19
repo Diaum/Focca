@@ -14,7 +14,7 @@ struct WhiteRoundedBottomPlain: View {
                 LinearGradient(
                     colors: isBlocked
                         ? [
-                            Color(hex: "181818").opacity(0.7),
+                            Color(hex: "181818").opacity(0.9),
                             Color(hex: "")
                         ]
                         : [

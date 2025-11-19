@@ -1,9 +1,9 @@
 import SwiftUI
 
 enum AwardFilter: String, CaseIterable {
-    case all = "All"
-    case completed = "Completed"
-    case incomplete = "Incomplete"
+    case all = "Todos"
+    case completed = "Concluídas"
+    case incomplete = "Incompletas"
 }
 
 struct AwardFilterView: View {

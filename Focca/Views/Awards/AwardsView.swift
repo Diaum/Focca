@@ -12,19 +12,19 @@ struct AwardsView: View {
     }
     
     let awards: [(id: String, icon: String, title: String, subtitle: String, tint: String)] = [
-        ("30_min_focus", "clock.fill", "30 minutes focused", "Stay focused for 30 minutes in a single session", "1C1C1E"),
-        ("1_hour_focus", "star.fill", "1 hour focused", "Stay focused for 1 hour in a single session", "FFD700"),
-        ("create_goal", "target", "Goal Setter", "Create your first goal", "00A8FF"),
-        ("7_day_streak", "flame", "7-day streak", "Use Focca seven days in a row with at least 1 hour per day", "FF6B6B"),
-        ("10_hours_total", "hourglass", "10 hours total", "Accumulate ten hours of focused time", "0EA5E9"),
-        ("15_day_streak", "flame.fill", "15-day streak", "Use Focca fifteen days in a row with at least 1 hour per day", "FF4500"),
-        ("24_hours_total", "clock.fill", "24 hours total", "Accumulate twenty-four hours of focused time", "8B5CF6"),
-        ("30_day_streak", "flame.fill", "30-day streak", "Use Focca thirty days in a row with at least 1 hour per day", "DC143C"),
-        ("72_hours_total", "clock.badge.checkmark.fill", "72 hours total", "Accumulate seventy-two hours of focused time", "4B0082"),
-        ("scheduled_session", "calendar.badge.clock", "Scheduled session", "Start a focus session using a schedule", "4F46E5"),
-        ("48_hours_total", "clock.badge.fill", "48 hours total", "Accumulate forty-eight hours of focused time", "9370DB"),
-        ("complete_weekly_goal", "calendar.badge.checkmark", "Weekly Goal Master", "Complete a weekly goal", "007AFF"),
-        ("complete_monthly_goal", "calendar.badge.clock.fill", "Monthly Goal Master", "Complete a monthly goal", "5856D6"),
+        ("30_min_focus", "clock.fill", "30 minutos focado", "Fique focado por 30 minutos em uma única sessão", "1C1C1E"),
+        ("1_hour_focus", "star.fill", "1 hora focada", "Fique focado por 1 hora em uma única sessão", "FFD700"),
+        ("create_goal", "target", "Definidor de Metas", "Crie sua primeira meta", "00A8FF"),
+        ("7_day_streak", "flame", "Sequência de 7 dias", "Use o Focca sete dias seguidos com pelo menos 1 hora por dia", "FF6B6B"),
+        ("10_hours_total", "hourglass", "10 horas totais", "Acumule dez horas de tempo focado", "0EA5E9"),
+        ("15_day_streak", "flame.fill", "Sequência de 15 dias", "Use o Focca quinze dias seguidos com pelo menos 1 hora por dia", "FF4500"),
+        ("24_hours_total", "clock.fill", "24 horas totais", "Acumule vinte e quatro horas de tempo focado", "8B5CF6"),
+        ("30_day_streak", "flame.fill", "Sequência de 30 dias", "Use o Focca trinta dias seguidos com pelo menos 1 hora por dia", "DC143C"),
+        ("72_hours_total", "clock.badge.checkmark.fill", "72 horas totais", "Acumule setenta e duas horas de tempo focado", "4B0082"),
+        ("scheduled_session", "calendar.badge.clock", "Sessão agendada", "Inicie uma sessão de foco usando um agendamento", "4F46E5"),
+        ("48_hours_total", "clock.badge.fill", "48 horas totais", "Acumule quarenta e oito horas de tempo focado", "9370DB"),
+        ("complete_weekly_goal", "calendar.badge.checkmark", "Mestre de Meta Semanal", "Complete uma meta semanal", "007AFF"),
+        ("complete_monthly_goal", "calendar.badge.clock.fill", "Mestre de Meta Mensal", "Complete uma meta mensal", "5856D6"),
     ]
     
     var filteredAwards: [(id: String, icon: String, title: String, subtitle: String, tint: String)] {
@@ -82,7 +82,7 @@ struct AwardsView: View {
                 }
                 
                 HStack {
-                    Text("Awards")
+                    Text("Conquistas")
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                     Spacer()
