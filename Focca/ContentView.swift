@@ -8,23 +8,27 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var hasCompletedOnboarding: Bool = UserDefaults.standard.bool(forKey: "has_completed_onboarding")
+    @ObservedObject private var authViewModel = AuthViewModel.shared
     
     var body: some View {
         Group {
-            if hasCompletedOnboarding {
-                // Se o onboarding já foi completado, mostra a view principal
-                PrincipalView()
+            if authViewModel.isLoading && !authViewModel.isAuthenticated {
+                ZStack {
+                    Color(hex: "ECE8E6")
+                        .ignoresSafeArea()
+                    ProgressView()
+                }
+            } else if !authViewModel.isAuthenticated {
+                NavigationView {
+                    OnboardingStep4()
+                        .navigationBarHidden(true)
+                }
             } else {
                 NavigationView {
                     OnboardingStep0()
                         .navigationBarHidden(true)
                 }
             }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("OnboardingCompleted"))) { _ in
-            // Atualiza o estado quando o onboarding é completado
-            hasCompletedOnboarding = true
         }
     }
 }

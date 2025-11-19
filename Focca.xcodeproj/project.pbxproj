@@ -10,7 +10,44 @@
 		3165B7C12EB3C4390090176D /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3165B7C02EB3C4390090176D /* WidgetKit.framework */; };
 		3165B7C32EB3C4390090176D /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3165B7C22EB3C4390090176D /* SwiftUI.framework */; };
 		3165B7D42EB3C43C0090176D /* FoccaWidgetLiveExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3165B7BE2EB3C4390090176D /* FoccaWidgetLiveExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		317EF0B32ECE7E96009EF701 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 317EF0B22ECE7E96009EF701 /* Supabase */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXBuildRule section */
+		317EF0AF2ECE7E57009EF701 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+			);
+			script = "# Type a script or drag a script file from your workspace to insert its path.\n";
+		};
+		317EF0B02ECE7E57009EF701 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+			);
+			script = "# Type a script or drag a script file from your workspace to insert its path.\n";
+		};
+		317EF0B12ECE7E58009EF701 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 1;
+			outputFiles = (
+			);
+			script = "# Type a script or drag a script file from your workspace to insert its path.\n";
+		};
+/* End PBXBuildRule section */
 
 /* Begin PBXContainerItemProxy section */
 		3165B7D22EB3C43C0090176D /* PBXContainerItemProxy */ = {
@@ -95,6 +132,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				317EF0B32ECE7E96009EF701 /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -153,6 +191,9 @@
 				3165B7D92EB3C43C0090176D /* Embed Foundation Extensions */,
 			);
 			buildRules = (
+				317EF0B12ECE7E58009EF701 /* PBXBuildRule */,
+				317EF0B02ECE7E57009EF701 /* PBXBuildRule */,
+				317EF0AF2ECE7E57009EF701 /* PBXBuildRule */,
 			);
 			dependencies = (
 				3165B7D32EB3C43C0090176D /* PBXTargetDependency */,
@@ -162,6 +203,7 @@
 			);
 			name = Focca;
 			packageProductDependencies = (
+				317EF0B22ECE7E96009EF701 /* Supabase */,
 			);
 			productName = Focca;
 			productReference = 315E41752EB03EB500CBD0C8 /* Focca.app */;
@@ -216,6 +258,9 @@
 			);
 			mainGroup = 315E416C2EB03EB500CBD0C8;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				317EF0A82ECE7BA9009EF701 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 315E41762EB03EB500CBD0C8 /* Products */;
 			projectDirPath = "";
@@ -562,6 +607,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		317EF0A82ECE7BA9009EF701 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		317EF0B22ECE7E96009EF701 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 317EF0A82ECE7BA9009EF701 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 315E416D2EB03EB500CBD0C8 /* Project object */;
 }

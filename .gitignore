@@ -41,3 +41,6 @@ DerivedData/
 # Swift Package Manager
 .swiftpm/
 .build/
+
+# Supabase Credentials (não commitar credenciais reais)
+Focca/Core/Auth/SupabaseConfig.swift
