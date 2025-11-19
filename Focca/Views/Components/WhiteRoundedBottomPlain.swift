@@ -26,7 +26,7 @@ struct WhiteRoundedBottomPlain: View {
                 )
             )
             .frame(height: 90)
-            .padding(.horizontal, 0)
+            .padding(.horizontal, 10)
             .padding(.bottom, 0)
             .clipShape(
                 RoundedCorner(radius: 120, corners: [.topLeft, .topRight])
