@@ -26,7 +26,7 @@ struct AdvancedStatsShareControl: View {
                     Image(systemName: "square.and.arrow.up")
                         .font(.system(size: 15, weight: .semibold))
                 }
-                Text(isGeneratingShareImage ? "Preparing..." : "Share my stats")
+                Text(isGeneratingShareImage ? "Preparando..." : "Compartilhar minhas estatísticas")
                     .font(.system(size: 15, weight: .semibold))
             }
             .foregroundColor(configuration.isBlocked ? .white : Color(hex: "1C1C1E"))
@@ -102,11 +102,11 @@ struct AdvancedStatsShareSnapshot: View {
     
     private var metrics: [ShareMetric] {
         [
-            ShareMetric(label: "Total Time", value: configuration.totalTimeText),
-            ShareMetric(label: "Streak", value: "\(configuration.streak) day\(configuration.streak == 1 ? "" : "s")"),
-            ShareMetric(label: "Avg / day", value: configuration.averageTimeText),
-            ShareMetric(label: "Avg / week", value: configuration.weeklyAverage),
-            ShareMetric(label: "Avg / month", value: configuration.monthlyAverage)
+            ShareMetric(label: "Tempo Total", value: configuration.totalTimeText),
+            ShareMetric(label: "Sequência", value: "\(configuration.streak) dia\(configuration.streak == 1 ? "" : "s")"),
+            ShareMetric(label: "Média / dia", value: configuration.averageTimeText),
+            ShareMetric(label: "Média / semana", value: configuration.weeklyAverage),
+            ShareMetric(label: "Média / mês", value: configuration.monthlyAverage)
         ]
     }
     
