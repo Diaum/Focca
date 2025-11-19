@@ -2,9 +2,9 @@ import SwiftUI
 
 struct OnboardingStep6: View {
     @ObservedObject private var authViewModel = AuthViewModel.shared
-    @State private var code: [String] = Array(repeating: "", count: 8)
-    @State private var focusedIndex = 0
+    @State private var code = ""
     @State private var showStep5 = false
+    @FocusState private var isCodeFieldFocused: Bool
     let email: String
     let onBack: (() -> Void)?
     
@@ -23,8 +23,6 @@ struct OnboardingStep6: View {
                     Button(action: {
                         if let onBack = onBack {
                             onBack()
-                        } else {
-                            showStep5 = false
                         }
                     }) {
                         Image(systemName: "chevron.left")
@@ -40,8 +38,10 @@ struct OnboardingStep6: View {
                 .padding(.leading, 20)
                 .padding(.top, 8)
                 
+                Spacer()
+                
                 VStack(spacing: 32) {
-                    Text("Your code")
+                    Text("Seu código")
                         .font(.system(size: 28, weight: .semibold))
                         .foregroundColor(Color(hex: "1D1D1F"))
                         .padding(.top, 40)
@@ -49,21 +49,19 @@ struct OnboardingStep6: View {
                     HStack(spacing: 12) {
                         ForEach(0..<8, id: \.self) { index in
                             CodeDigitBox(
-                                text: code[index],
-                                isFocused: focusedIndex == index,
-                                onTap: {
-                                    focusedIndex = index
-                                }
+                                text: index < code.count ? String(code[code.index(code.startIndex, offsetBy: index)]) : "",
+                                isFocused: isCodeFieldFocused && index == code.count
                             )
                         }
                     }
                     .padding(.horizontal, 24)
                     
-                    Text("Enter the 8-digit code sent to\n\(email)")
+                    Text("Digite o código de 8 dígitos enviado para\n\(email)")
                         .font(.system(size: 15))
                         .foregroundColor(Color(hex: "1D1D1F"))
                         .multilineTextAlignment(.center)
                         .lineSpacing(4)
+                        .padding(.horizontal, 24)
                     
                     if let error = authViewModel.errorMessage {
                         Text(error)
@@ -78,7 +76,7 @@ struct OnboardingStep6: View {
                             await authViewModel.sendOtp(email: email)
                         }
                     }) {
-                        Text("Generate new code")
+                        Text("Gerar novo código")
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(Color(hex: "1D1D1F"))
                             .frame(maxWidth: .infinity)
@@ -94,46 +92,38 @@ struct OnboardingStep6: View {
                 }
                 
                 Spacer()
-                
-                NumericKeypad(
-                    onDigitTapped: { digit in
-                        if focusedIndex < 8 {
-                            code[focusedIndex] = digit
-                            if focusedIndex < 7 {
-                                focusedIndex += 1
-                            } else {
-                                verifyCode()
-                            }
-                        }
-                    },
-                    onDelete: {
-                        if focusedIndex > 0 && code[focusedIndex].isEmpty {
-                            focusedIndex -= 1
-                        }
-                        if focusedIndex >= 0 && focusedIndex < 8 {
-                            code[focusedIndex] = ""
-                        }
-                    }
-                )
             }
         }
         .fullScreenCover(isPresented: $showStep5) {
             OnboardingStep5()
         }
-        .onChange(of: code) { _ in
-            let fullCode = code.joined()
-            if fullCode.count == 8 {
+        .overlay(
+            TextField("", text: $code)
+                .keyboardType(.numberPad)
+                .focused($isCodeFieldFocused)
+                .opacity(0)
+                .frame(width: 0, height: 0)
+        )
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                isCodeFieldFocused = true
+            }
+        }
+        .onChange(of: code) { newValue in
+            let filtered = newValue.filter { $0.isNumber }
+            code = String(filtered.prefix(8))
+            
+            if code.count == 8 {
                 verifyCode()
             }
         }
     }
     
     private func verifyCode() {
-        let fullCode = code.joined()
-        guard fullCode.count == 8 else { return }
+        guard code.count == 8 else { return }
         
         Task {
-            let success = await authViewModel.verifyOtp(email: email, code: fullCode)
+            let success = await authViewModel.verifyOtp(email: email, code: code)
             if success {
                 showStep5 = true
             }
@@ -144,7 +134,6 @@ struct OnboardingStep6: View {
 struct CodeDigitBox: View {
     let text: String
     let isFocused: Bool
-    let onTap: () -> Void
     
     var body: some View {
         ZStack {
@@ -161,86 +150,6 @@ struct CodeDigitBox: View {
                     .font(.system(size: 24, weight: .semibold))
                     .foregroundColor(Color(hex: "1D1D1F"))
             }
-        }
-        .onTapGesture {
-            onTap()
-        }
-    }
-}
-
-struct NumericKeypad: View {
-    let onDigitTapped: (String) -> Void
-    let onDelete: () -> Void
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 12) {
-                KeypadButton(title: "1", subtitle: nil, action: { onDigitTapped("1") })
-                KeypadButton(title: "2", subtitle: "ABC", action: { onDigitTapped("2") })
-                KeypadButton(title: "3", subtitle: "DEF", action: { onDigitTapped("3") })
-            }
-            
-            HStack(spacing: 12) {
-                KeypadButton(title: "4", subtitle: "GHI", action: { onDigitTapped("4") })
-                KeypadButton(title: "5", subtitle: "JKL", action: { onDigitTapped("5") })
-                KeypadButton(title: "6", subtitle: "MNO", action: { onDigitTapped("6") })
-            }
-            
-            HStack(spacing: 12) {
-                KeypadButton(title: "7", subtitle: "PQRS", action: { onDigitTapped("7") })
-                KeypadButton(title: "8", subtitle: "TUV", action: { onDigitTapped("8") })
-                KeypadButton(title: "9", subtitle: "WXYZ", action: { onDigitTapped("9") })
-            }
-            
-            HStack(spacing: 12) {
-                Spacer()
-                KeypadButton(title: "0", subtitle: nil, action: { onDigitTapped("0") })
-                KeypadDeleteButton(action: onDelete)
-            }
-        }
-        .padding(.horizontal, 24)
-        .padding(.bottom, 40)
-        .background(Color(hex: "2C2C2E"))
-    }
-}
-
-struct KeypadButton: View {
-    let title: String
-    let subtitle: String?
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 4) {
-                Text(title)
-                    .font(.system(size: 24, weight: .regular))
-                    .foregroundColor(.white)
-                
-                if let subtitle = subtitle {
-                    Text(subtitle)
-                        .font(.system(size: 10, weight: .regular))
-                        .foregroundColor(.white.opacity(0.7))
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 60)
-            .background(Color(hex: "3A3A3C"))
-            .cornerRadius(12)
-        }
-    }
-}
-
-struct KeypadDeleteButton: View {
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: "delete.backward")
-                .font(.system(size: 20, weight: .medium))
-                .foregroundColor(.white)
-                .frame(width: 60, height: 60)
-                .background(Color(hex: "3A3A3C"))
-                .cornerRadius(12)
         }
     }
 }
