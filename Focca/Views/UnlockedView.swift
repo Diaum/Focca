@@ -75,8 +75,11 @@ struct UnlockedView: View {
                 VStack(spacing: 8) {
                     Button(action: { showModeSheet = true }) {
                         HStack(spacing: 6) {
-                            Text("Modo: \(activeModeName)")
+                            Text("Modo:")
                                 .font(.system(size: 17, weight: .semibold))
+                                .foregroundColor(Color(hex: "1C1C1E"))
+                            Text(activeModeName)
+                                .font(.system(size: 17, weight: .regular))
                                 .foregroundColor(Color(hex: "1C1C1E"))
                             
                             Image(systemName: "chevron.down")

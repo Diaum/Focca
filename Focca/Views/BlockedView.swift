@@ -32,9 +32,12 @@ struct BlockedView: View {
                     .padding(.bottom, 60)
                 
                 VStack(spacing: 6) {
-                    HStack(spacing: 6) {
-                        Text("Modo: \(activeModeName)")
-                            .font(.system(size: 16, weight: .medium))
+                    HStack(spacing: 4) {
+                        Text("Modo:")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.white)
+                        Text(activeModeName)
+                            .font(.system(size: 16, weight: .regular))
                             .foregroundColor(.white)
                     }
                     
