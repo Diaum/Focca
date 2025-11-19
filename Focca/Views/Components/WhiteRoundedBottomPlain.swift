@@ -9,17 +9,17 @@ struct WhiteRoundedBottomPlain: View {
     }
     
     var body: some View {
-        RoundedRectangle(cornerRadius: 120)
+        RoundedRectangle(cornerRadius: 150)
             .fill(
                 LinearGradient(
                     colors: isBlocked
                         ? [
                             Color(hex: "181818"),
-                            Color(hex: "181818").opacity(0)
+                            Color(hex: "").opacity(0.4)
                         ]
                         : [
                             Color(hex: "F9F4F0"),
-                            Color(hex: "F9F4F0").opacity(0)
+                            Color(hex: "").opacity(0.4)
                         ],
                     startPoint: .bottom,
                     endPoint: .top
@@ -29,7 +29,7 @@ struct WhiteRoundedBottomPlain: View {
             .padding(.horizontal, 0)
             .padding(.bottom, 0)
             .clipShape(
-                RoundedCorner(radius: 8, corners: [.topLeft, .topRight, .bottomLeft, .bottomRight])
+                RoundedCorner(radius: 120, corners: [.topLeft, .topRight])
             )
             .shadow(color: Color.black.opacity(0.08), radius: 20, x: 0, y: 8)
             .allowsHitTesting(false)

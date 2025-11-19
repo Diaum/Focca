@@ -36,9 +36,12 @@ struct UnlockedView: View {
     
     var body: some View {
         ZStack {
-            Color(hex: "ECE8E6")
-                .ignoresSafeArea()
-//            .overlay(ReferenceGrid(spacing: 24, color: .red.opacity(0.15)))
+            LinearGradient(
+                colors: [Color(hex: "ECE8E6"), Color(hex: "F7F7F8")],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 Spacer(minLength: 145)
@@ -56,12 +59,10 @@ struct UnlockedView: View {
                 .padding(.vertical, 16)
                 .background(
                     RoundedRectangle(cornerRadius: 20)
-                        .fill(Color(hex: "F4F0ED"))
-                        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 3)
+                        .fill(Color.white.opacity(0.85))
+                        .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
                 )
-                .padding(.bottom, 8)
-                
-                Spacer().frame(height: 52)
+                .padding(.bottom, 52)
 
 
                 
@@ -95,56 +96,24 @@ struct UnlockedView: View {
                         .foregroundColor(Color(hex: "8E8E93"))
                 }
                 .padding(.bottom, 60)
-                
-                Spacer()
-                
-                WhiteRoundedBottom(action: {
-                    let activeMode = getValidActiveMode()
-
-                    if let data = UserDefaults.standard.data(forKey: "mode_\(activeMode)_selection"),
-                       let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
-                        let store = ManagedSettingsStore()
-                        let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
-                        store.application.blockedApplications = apps
-                        
-                        let now = Date()
-                        sharedDefaults.set(now, forKey: "blocked_start_date")
-                        sharedDefaults.synchronize()
-                        
-                        // Salva também no standardDefaults para garantir acesso
-                        UserDefaults.standard.set(now, forKey: "blocked_start_date")
-                        UserDefaults.standard.synchronize()
-                        
-                        // Registra início de bloqueio por app
-                        AppBlockingTracker.shared.startBlocking(selection: saved, startDate: now)
-
-                        // Start Live Activity apenas se o modo permitir
-                        let modeName = UserDefaults.standard.string(forKey: "active_mode_name") ?? ""
-                        let showLiveActivity = UserDefaults.standard.object(forKey: "mode_\(modeName)_show_live_activity") as? Bool ?? true
-                        if showLiveActivity {
-                            startLiveActivity(startDate: now)
-                        }
-                        
-                        // Atualiza o widget imediatamente
-                        WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
-                        
-                        // Força uma atualização adicional após um pequeno delay
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
-                        }
-                        
-                        // Notifica que o bloqueio iniciou (para o timer iniciar)
-                        NotificationCenter.default.post(name: NSNotification.Name("BlockingStarted"), object: nil)
-
-                        isBlocked = true
-                    }
-                })
-                .padding(.bottom, 0)
-                
-                TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, 0)
             }
+            .padding(.bottom, 200)
         }
+        .overlay(
+            VStack(spacing: 0) {
+                Spacer()
+                ZStack(alignment: .top) {
+                    WhiteRoundedBottomPlain()
+                    WhiteBlockButton(action: activateCurrentMode)
+                        .padding(.horizontal, 36)
+                        .offset(y: -24)
+                }
+                .padding(.bottom, 5)
+                TabBar(selectedTab: $selectedTab)
+                    .padding(.bottom, -12)
+            }
+            .ignoresSafeArea(edges: .bottom)
+        )
         .preferredColorScheme(.light)
         .sheet(isPresented: $showModeSheet, onDismiss: {
             let validMode = getValidActiveMode()
@@ -224,6 +193,39 @@ struct UnlockedView: View {
         let hours = Int(totalTime) / 3600
         let minutes = (Int(totalTime) % 3600) / 60
         todayTime = String(format: "%dh %dm", hours, minutes)
+    }
+    
+    private func activateCurrentMode() {
+        let activeMode = getValidActiveMode()
+        
+        if let data = UserDefaults.standard.data(forKey: "mode_\(activeMode)_selection"),
+           let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+            let store = ManagedSettingsStore()
+            let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
+            store.application.blockedApplications = apps
+            
+            let now = Date()
+            sharedDefaults.set(now, forKey: "blocked_start_date")
+            sharedDefaults.synchronize()
+            UserDefaults.standard.set(now, forKey: "blocked_start_date")
+            UserDefaults.standard.synchronize()
+            
+            AppBlockingTracker.shared.startBlocking(selection: saved, startDate: now)
+            
+            let modeName = UserDefaults.standard.string(forKey: "active_mode_name") ?? ""
+            let showLiveActivity = UserDefaults.standard.object(forKey: "mode_\(modeName)_show_live_activity") as? Bool ?? true
+            if showLiveActivity {
+                startLiveActivity(startDate: now)
+            }
+            
+            WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
+            }
+            
+            NotificationCenter.default.post(name: NSNotification.Name("BlockingStarted"), object: nil)
+            isBlocked = true
+        }
     }
 
     private func getValidActiveMode() -> String {
