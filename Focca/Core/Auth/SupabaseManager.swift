@@ -135,6 +135,13 @@ class SupabaseManager {
         let date: String
         let duration_minutes: Int
     }
+
+    struct UserAwardRecord: Decodable {
+        let id: UUID
+        let user_id: UUID
+        let award_id: String
+        let unlocked_at: Date?
+    }
     
     func getSessions(from startDate: Date? = nil, to endDate: Date? = nil) async throws -> [FocusSessionRecord] {
         guard let client = client else {
@@ -170,6 +177,62 @@ class SupabaseManager {
         }
         
         return allSessions
+    }
+
+    func fetchAwards() async throws -> [String] {
+        guard let client = client else {
+            throw SupabaseError.clientNotInitialized
+        }
+        
+        guard let session = try? await client.auth.session else {
+            throw SupabaseError.userNotAuthenticated
+        }
+        
+        let userId = session.user.id
+        
+        let records: [UserAwardRecord] = try await client.database
+            .from("user_awards")
+            .select()
+            .eq("user_id", value: userId.uuidString)
+            .order("unlocked_at", ascending: true)
+            .execute()
+            .value
+        
+        return records.map { $0.award_id }
+    }
+    
+    func saveAward(_ awardId: String) async throws {
+        guard let client = client else {
+            throw SupabaseError.clientNotInitialized
+        }
+        
+        guard let session = try? await client.auth.session else {
+            throw SupabaseError.userNotAuthenticated
+        }
+        
+        let userId = session.user.id
+        
+        let existing: [UserAwardRecord] = try await client.database
+            .from("user_awards")
+            .select()
+            .eq("user_id", value: userId.uuidString)
+            .eq("award_id", value: awardId)
+            .execute()
+            .value
+        
+        guard existing.isEmpty else { return }
+        
+        struct InsertAward: Encodable {
+            let user_id: UUID
+            let award_id: String
+        }
+        
+        let record = InsertAward(user_id: userId, award_id: awardId)
+        
+        try await client.database
+            .from("user_awards")
+            .insert(record)
+            .execute()
     }
 }
 

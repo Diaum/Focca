@@ -44,6 +44,10 @@ class AuthViewModel: ObservableObject {
                         await TimerStorage.shared.fetchAndCacheFromDatabase()
                     }
                 }
+                
+                Task {
+                    await AwardManager.shared.refreshAwards()
+                }
             } else {
                 await MainActor.run {
                     isAuthenticated = userDefaults.bool(forKey: authKey)
@@ -89,6 +93,10 @@ class AuthViewModel: ObservableObject {
             // Força busca do banco após login para popular cache
             Task {
                 await TimerStorage.shared.fetchAndCacheFromDatabase()
+            }
+            
+            Task {
+                await AwardManager.shared.refreshAwards()
             }
             
             isLoading = false
