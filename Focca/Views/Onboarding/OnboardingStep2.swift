@@ -74,6 +74,7 @@ struct OnboardingStep2: View {
                 }
             }
             .navigationBarTitle("", displayMode: .inline)
+            .preferredColorScheme(.light)
             .onAppear {
                 loadSavedSelection()
                 checkAuthorizationStatus()
