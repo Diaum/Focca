@@ -8,6 +8,7 @@ struct OnboardingStep5: View {
     @State private var timeRemaining = 59
     @State private var timer: Timer?
     @State private var canResend = false
+    @State private var resendCount = 0
     let email: String
     let onBack: (() -> Void)?
     
@@ -72,23 +73,44 @@ struct OnboardingStep5: View {
                             .padding(.horizontal, 24)
                             .padding(.top, 8)
                     } else {
-                        Button(action: {
-                            Task {
-                                let success = await authViewModel.sendOtp(email: email)
-                                if success {
-                                    resetTimer()
+                        VStack(spacing: 12) {
+                            Button(action: {
+                                Task {
+                                    let success = await authViewModel.sendOtp(email: email)
+                                    if success {
+                                        resendCount += 1
+                                        resetTimer()
+                                    }
+                                }
+                            }) {
+                                Text("Gerar novo código")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(Color(hex: "1D1D1F"))
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 50)
+                                    .background(Color(hex: "E5E5E5"))
+                                    .cornerRadius(12)
+                            }
+                            .disabled(authViewModel.isLoading || resendCount >= 2)
+                            
+                            if resendCount >= 1 {
+                                Button(action: {
+                                    onBack?()
+                                }) {
+                                    Text("Voltar e corrigir e-mail")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(Color(hex: "1D1D1F"))
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 50)
+                                        .background(Color.white)
+                                        .cornerRadius(12)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(Color(hex: "E5E5E5"), lineWidth: 1)
+                                        )
                                 }
                             }
-                        }) {
-                            Text("Gerar novo código")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color(hex: "1D1D1F"))
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 50)
-                                .background(Color(hex: "E5E5E5"))
-                                .cornerRadius(12)
                         }
-                        .disabled(authViewModel.isLoading)
                         .padding(.horizontal, 24)
                         .padding(.top, 8)
                     }

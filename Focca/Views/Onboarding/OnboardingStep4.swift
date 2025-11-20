@@ -75,13 +75,14 @@ struct OnboardingStep4: View {
                                 TextField(
                                     "",
                                     text: $email,
-                                    prompt: Text("seu@email.com")
+                                    prompt: Text("Seu melhor email")
+                                        .foregroundColor(Color(hex: "ccc"))
                                 )
                                 .textContentType(.emailAddress)
                                 .keyboardType(.emailAddress)
                                 .autocapitalization(.none)
                                 .font(.system(size: 17))
-                                .foregroundColor(Color(hex: "8E8E93"))
+                                .foregroundColor(Color(hex: "111"))
                                 .focused($isEmailFieldFocused)
                                 .padding(.horizontal, 16)
                                 .frame(height: 56)

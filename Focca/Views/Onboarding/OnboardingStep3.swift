@@ -21,7 +21,7 @@ struct OnboardingStep3: View {
                 VStack(spacing: 0) {
                     Text("\(appInfos.count) distrações selecionadas")
                         .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(Color(hex: "1D1D1F"))
+                        .foregroundColor(Color(hex: ""))
                         .padding(.top, 40)
                         .padding(.horizontal, 20)
                         .multilineTextAlignment(.center)
