@@ -259,9 +259,18 @@ class TimerStorage {
             return
         }
         
+        await fetchAndCacheFromDatabase()
+    }
+    
+    func fetchAndCacheFromDatabase() async {
         do {
             let sessions = try await SupabaseManager.shared.getSessions()
+            let calendar = Calendar.current
+            let today = calendar.startOfDay(for: Date())
+            let sevenDaysAgo = calendar.date(byAdding: .day, value: -7, to: today)!
+            
             await MainActor.run {
+                // Atualiza cache completo
                 cachedSessions.removeAll()
                 for session in sessions {
                     cachedSessions[session.date] = session.duration_minutes
@@ -269,10 +278,37 @@ class TimerStorage {
                 lastFetchDate = Date()
                 saveCachedSessions()
                 print("✅ [TimerStorage] Cache atualizado com \(sessions.count) sessões do banco")
+                
+                // Salva os últimos 7 dias localmente para cache rápido
+                for session in sessions {
+                    if let date = parseDate(session.date), date >= sevenDaysAgo {
+                        let timeInterval = TimeInterval(session.duration_minutes * 60)
+                        // Só salva se não existir dado local mais recente
+                        let existingTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
+                        if existingTime == 0 {
+                            // Salva como daily_time_ para compatibilidade
+                            let dateKey = formatDate(date)
+                            userDefaults.set(timeInterval, forKey: "daily_time_\(dateKey)")
+                        }
+                    }
+                }
+                userDefaults.synchronize()
+                print("✅ [TimerStorage] Últimos 7 dias salvos localmente para cache")
             }
         } catch {
             print("⚠️ [TimerStorage] Erro ao buscar do banco: \(error.localizedDescription)")
         }
+    }
+    
+    func hasLocalCache() -> Bool {
+        // Verifica se há dados locais ou cache do banco
+        let hasLocalData = !userDefaults.dictionaryRepresentation().keys.filter { 
+            $0.hasPrefix("app_blocking_") || $0.hasPrefix("daily_time_") 
+        }.isEmpty
+        
+        let hasCachedSessions = !cachedSessions.isEmpty
+        
+        return hasLocalData || hasCachedSessions
     }
     
     func updateCacheForDate(date: Date, durationMinutes: Int) async {
@@ -287,51 +323,8 @@ class TimerStorage {
     }
     
     func getAllDailyTimesSync() -> [(date: Date, time: TimeInterval)] {
-        // Versão síncrona para compatibilidade (retorna apenas últimos 7 dias)
-        var result: [(date: Date, time: TimeInterval)] = []
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let sevenDaysAgo = calendar.date(byAdding: .day, value: -7, to: today)!
-        let allKeys = userDefaults.dictionaryRepresentation().keys
-        
-        let blockingKeys = allKeys.filter { $0.hasPrefix("app_blocking_") }
-        var processedDates = Set<String>()
-        
-        for key in blockingKeys {
-            let dateString = key.replacingOccurrences(of: "app_blocking_", with: "")
-            
-            if processedDates.contains(dateString) {
-                continue
-            }
-            processedDates.insert(dateString)
-            
-            if let date = parseDate(dateString), date >= sevenDaysAgo {
-                let totalTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
-                if totalTime > 0 {
-                    result.append((date: date, time: totalTime))
-                }
-            }
-        }
-        
-        let timeKeys = allKeys.filter { $0.hasPrefix("daily_time_") }
-        for key in timeKeys {
-            let time = userDefaults.double(forKey: key)
-            if time > 0 {
-                let dateString = key.replacingOccurrences(of: "daily_time_", with: "")
-                if let date = parseDate(dateString), date >= sevenDaysAgo {
-                    if let existingIndex = result.firstIndex(where: { Calendar.current.isDate($0.date, inSameDayAs: date) }) {
-                        if time > result[existingIndex].time {
-                            result[existingIndex] = (date: result[existingIndex].date, time: time)
-                        }
-                    } else {
-                        result.append((date: date, time: time))
-                    }
-                }
-            }
-        }
-        
-        result.sort { $0.date > $1.date }
-        return result
+        // Versão síncrona que retorna cache local + cache do banco
+        return getCachedDailyTimes()
     }
     
     func getAverageTime() async -> TimeInterval {

@@ -37,6 +37,13 @@ class AuthViewModel: ObservableObject {
                     saveAuthState(email: session.user.email)
                     isLoading = false
                 }
+                
+                // Se não há cache local, força busca do banco
+                if !TimerStorage.shared.hasLocalCache() {
+                    Task {
+                        await TimerStorage.shared.fetchAndCacheFromDatabase()
+                    }
+                }
             } else {
                 await MainActor.run {
                     isAuthenticated = userDefaults.bool(forKey: authKey)
@@ -78,6 +85,12 @@ class AuthViewModel: ObservableObject {
             isAuthenticated = true
             currentEmail = session.user.email
             saveAuthState(email: session.user.email)
+            
+            // Força busca do banco após login para popular cache
+            Task {
+                await TimerStorage.shared.fetchAndCacheFromDatabase()
+            }
+            
             isLoading = false
             return true
         } catch {
