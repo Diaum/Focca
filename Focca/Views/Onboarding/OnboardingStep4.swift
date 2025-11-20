@@ -72,21 +72,36 @@ struct OnboardingStep4: View {
                         
                         if showEmailInput {
                             VStack(spacing: 16) {
-                                TextField("seu@email.com", text: $email)
-                                    .textContentType(.emailAddress)
-                                    .keyboardType(.emailAddress)
-                                    .autocapitalization(.none)
-                                    .font(.system(size: 17))
-                                    .foregroundColor(Color(hex: "1D1D1F"))
-                                    .focused($isEmailFieldFocused)
-                                    .padding(.horizontal, 16)
-                                    .frame(height: 56)
-                                    .background(Color.white)
-                                    .cornerRadius(12)
-                                    .onChange(of: email) { _ in
-                                        isValidEmail = isValidEmailFormat(email)
+                                ZStack(alignment: .leading) {
+                                    if email.isEmpty {
+                                        Text("seu@email.com")
+                                            .font(.system(size: 17))
+                                            .foregroundColor(Color(hex: "8E8E93"))
+                                            .padding(.horizontal, 16)
                                     }
-                                    .padding(.horizontal, 24)
+                                    
+                                    TextField("", text: $email)
+                                        .textContentType(.emailAddress)
+                                        .keyboardType(.emailAddress)
+                                        .autocapitalization(.none)
+                                        .font(.system(size: 17))
+                                        .foregroundColor(Color(hex: "1D1D1F"))
+                                        .focused($isEmailFieldFocused)
+                                        .padding(.horizontal, 16)
+                                }
+                                .frame(height: 56)
+                                .background(Color.white)
+                                .cornerRadius(12)
+                                .onChange(of: email) { _ in
+                                    isValidEmail = isValidEmailFormat(email)
+                                }
+                                .padding(.horizontal, 24)
+                                .task(id: showEmailInput) {
+                                    if showEmailInput {
+                                        try? await Task.sleep(nanoseconds: 400_000_000)
+                                        isEmailFieldFocused = true
+                                    }
+                                }
                                 
                                 if let error = authViewModel.errorMessage {
                                     Text(error)
@@ -122,7 +137,7 @@ struct OnboardingStep4: View {
                     .animation(.easeInOut(duration: 0.3), value: showEmailInput)
                     .onChange(of: showEmailInput) { newValue in
                         if newValue {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
                                 isEmailFieldFocused = true
                             }
                         }
