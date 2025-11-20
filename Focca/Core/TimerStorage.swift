@@ -48,22 +48,9 @@ class TimerStorage {
         let targetDate = calendar.startOfDay(for: date)
         let daysDifference = calendar.dateComponents([.day], from: targetDate, to: today).day ?? 0
         
-        var remoteTime: TimeInterval = 0
-        if let cachedMinutes = cachedSessions[dateKey] {
-            remoteTime = TimeInterval(cachedMinutes * 60)
-        }
-        
-        var localTime: TimeInterval = 0
-        if daysDifference <= 7 {
-            localTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
-        }
-        
-        let syncedLocal = getSyncedLocalSeconds(for: dateKey)
-        let additionalLocal = max(0, localTime - syncedLocal)
-        let combinedTime = remoteTime + additionalLocal
-        
-        if combinedTime > 0 {
-            return max(combinedTime, localTime)
+        let combined = combinedTime(for: date, remoteMinutes: cachedSessions[dateKey])
+        if combined > 0 {
+            return combined
         }
         
         // Para datas antigas (>7 dias), busca do banco de dados
@@ -130,6 +117,15 @@ class TimerStorage {
         // Remove dados de daily_time_ antigos (>7 dias)
         for key in allKeys where key.hasPrefix("daily_time_") {
             let dateString = key.replacingOccurrences(of: "daily_time_", with: "")
+            if let date = parseDate(dateString),
+               date < sevenDaysAgo {
+                userDefaults.removeObject(forKey: key)
+            }
+        }
+        
+        // Remove dados de sincronização local antigos (>7 dias)
+        for key in allKeys where key.hasPrefix(syncedLocalPrefix) {
+            let dateString = key.replacingOccurrences(of: syncedLocalPrefix, with: "")
             if let date = parseDate(dateString),
                date < sevenDaysAgo {
                 userDefaults.removeObject(forKey: key)
@@ -204,58 +200,50 @@ class TimerStorage {
     }
     
     private func getCachedDailyTimes() -> [(date: Date, time: TimeInterval)] {
-        var result: [(date: Date, time: TimeInterval)] = []
+        var timeByDate: [String: TimeInterval] = [:]
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         let sevenDaysAgo = calendar.date(byAdding: .day, value: -7, to: today)!
         
-        // Primeiro: busca dados locais dos últimos 7 dias (mais recentes)
-        let allKeys = userDefaults.dictionaryRepresentation().keys
-        let blockingKeys = allKeys.filter { $0.hasPrefix("app_blocking_") }
-        var processedDates = Set<String>()
-        
-        for key in blockingKeys {
-            let dateString = key.replacingOccurrences(of: "app_blocking_", with: "")
-            
-            if processedDates.contains(dateString) {
-                continue
-            }
-            processedDates.insert(dateString)
-            
-            if let date = parseDate(dateString), date >= sevenDaysAgo {
-                let totalTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
-                if totalTime > 0 {
-                    result.append((date: date, time: totalTime))
-                }
-            }
-        }
-        
-        // Segundo: adiciona dados do cache do banco (histórico)
+        // Inclui dados remotos em cache
         for (dateString, minutes) in cachedSessions {
             if let date = parseDate(dateString) {
-                // Evita duplicatas com dados locais
-                if !result.contains(where: { Calendar.current.isDate($0.date, inSameDayAs: date) }) {
-                    let time = TimeInterval(minutes * 60)
-                    result.append((date: date, time: time))
-                }
+                let time = combinedTime(for: date, remoteMinutes: minutes)
+                timeByDate[dateString] = time
             }
         }
         
-        // Terceiro: busca dados antigos de daily_time_ (apenas últimos 7 dias)
+        let allKeys = userDefaults.dictionaryRepresentation().keys
+        let blockingKeys = allKeys.filter { $0.hasPrefix("app_blocking_") }
+        
+        // Inclui dados locais recentes (últimos 7 dias)
+        for key in blockingKeys {
+            let dateString = key.replacingOccurrences(of: "app_blocking_", with: "")
+            guard let date = parseDate(dateString), date >= sevenDaysAgo else { continue }
+            let time = combinedTime(for: date, remoteMinutes: cachedSessions[dateString])
+            if time > 0 {
+                timeByDate[dateString] = time
+            }
+        }
+        
+        // Fallback daily_time_
         let timeKeys = allKeys.filter { $0.hasPrefix("daily_time_") }
         for key in timeKeys {
             let time = userDefaults.double(forKey: key)
             if time > 0 {
                 let dateString = key.replacingOccurrences(of: "daily_time_", with: "")
                 if let date = parseDate(dateString), date >= sevenDaysAgo {
-                    if let existingIndex = result.firstIndex(where: { Calendar.current.isDate($0.date, inSameDayAs: date) }) {
-                        if time > result[existingIndex].time {
-                            result[existingIndex] = (date: result[existingIndex].date, time: time)
-                        }
-                    } else {
-                        result.append((date: date, time: time))
-                    }
+                    let key = formatDate(date)
+                    let existing = timeByDate[key] ?? 0
+                    timeByDate[key] = max(existing, time)
                 }
+            }
+        }
+        
+        var result: [(date: Date, time: TimeInterval)] = []
+        for (dateString, time) in timeByDate {
+            if let date = parseDate(dateString) {
+                result.append((date: date, time: time))
             }
         }
         
@@ -381,6 +369,17 @@ class TimerStorage {
     
     private func setSyncedLocalSeconds(_ value: TimeInterval, for dateKey: String) {
         userDefaults.set(value, forKey: "\(syncedLocalPrefix)\(dateKey)")
+    }
+    
+    private func combinedTime(for date: Date, remoteMinutes: Int?) -> TimeInterval {
+        let dateKey = formatDate(date)
+        let remoteMinutesValue = remoteMinutes ?? cachedSessions[dateKey]
+        let remoteTime = TimeInterval((remoteMinutesValue ?? 0) * 60)
+        let localTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
+        let syncedLocal = getSyncedLocalSeconds(for: dateKey)
+        let additionalLocal = max(0, localTime - syncedLocal)
+        let combined = remoteTime + additionalLocal
+        return max(combined, localTime)
     }
 }
 
