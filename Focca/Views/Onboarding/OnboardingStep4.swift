@@ -12,7 +12,7 @@ struct OnboardingStep4: View {
     var body: some View {
         ZStack {
             if showCodeView {
-                OnboardingStep6(email: savedEmail, onBack: {
+                OnboardingStep5(email: savedEmail, onBack: {
                     showCodeView = false
                     authViewModel.errorMessage = nil
                 })

@@ -1,20 +1,13 @@
 import SwiftUI
+import FamilyControls
+import ManagedSettings
+import ActivityKit
 
 struct OnboardingStep6: View {
-    @ObservedObject private var authViewModel = AuthViewModel.shared
-    @State private var code = ""
-    @State private var showStep5 = false
-    @FocusState private var isCodeFieldFocused: Bool
-    @State private var timeRemaining = 59
-    @State private var timer: Timer?
-    @State private var canResend = false
-    let email: String
-    let onBack: (() -> Void)?
-    
-    init(email: String, onBack: (() -> Void)? = nil) {
-        self.email = email
-        self.onBack = onBack
-    }
+    @State private var showBlockedView = false
+    @State private var currentActivity: Activity<FoccaWidgetLiveAttributes>?
+
+    private let sharedDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
     
     var body: some View {
         ZStack {
@@ -24,199 +17,108 @@ struct OnboardingStep6: View {
             VStack(spacing: 0) {
                 Spacer()
                 
-                VStack(spacing: 32) {
-                    Text("Seu código")
-                        .font(.system(size: 28, weight: .semibold))
+                VStack(spacing: 4) {
+                    Text("Você está pronto para")
+                        .font(.system(size: 32, weight: .semibold))
+                        .foregroundColor(Color(hex: "1D1D1F"))
+                    Text("recuperar seu tempo")
+                        .font(.system(size: 32, weight: .semibold))
+                        .foregroundColor(Color(hex: "1D1D1F"))
+                }
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+                .padding(.bottom, 60)
+                
+                Image("focca-rectangle-gray")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 300, height: 197)
+                    .padding(.bottom, 50)
+                
+                VStack(spacing: 10) {
+                    Text("Pegue seu Focca")
+                        .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(Color(hex: "1D1D1F"))
                     
-                    GeometryReader { geometry in
-                        let totalSpacing: CGFloat = 8 * 7
-                        let availableWidth = geometry.size.width - 48
-                        let boxWidth = min((availableWidth - totalSpacing) / 8, 38)
-                        let boxHeight = boxWidth * 1.3
-                        
-                        HStack(spacing: 8) {
-                            ForEach(0..<8, id: \.self) { index in
-                                CodeDigitBox(
-                                    text: index < code.count ? String(code[code.index(code.startIndex, offsetBy: index)]) : "",
-                                    isFocused: isCodeFieldFocused && index == code.count,
-                                    width: boxWidth,
-                                    height: boxHeight
-                                )
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
-                    }
-                    .frame(height: 65)
-                    .padding(.horizontal, 24)
-                    
-                    Text("Digite o código de 8 dígitos enviado para\n\(email)")
+                    Text("Você tem 5 emergências de desfoco, caso esteja sem seu dispositivo")
                         .font(.system(size: 15))
-                        .foregroundColor(Color(hex: "8E8E93"))
+                        .foregroundColor(Color(hex: "7A7A7A"))
                         .multilineTextAlignment(.center)
-                        .lineSpacing(4)
-                        .padding(.horizontal, 24)
-                    
-                    if let error = authViewModel.errorMessage {
-                        Text(translateError(error))
-                            .font(.system(size: 13))
-                            .foregroundColor(.red)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 24)
-                    }
-                    
-                    if !canResend {
-                        Text("Você pode gerar um novo código em \(formatTime(timeRemaining))")
-                            .font(.system(size: 13))
-                            .foregroundColor(Color(hex: "8E8E93"))
-                            .padding(.horizontal, 24)
-                            .padding(.top, 8)
-                    } else {
-                        Button(action: {
-                            Task {
-                                let success = await authViewModel.sendOtp(email: email)
-                                if success {
-                                    resetTimer()
-                                }
-                            }
-                        }) {
-                            Text("Gerar novo código")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color(hex: "1D1D1F"))
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 50)
-                                .background(Color(hex: "E5E5E5"))
-                                .cornerRadius(12)
-                        }
-                        .disabled(authViewModel.isLoading)
-                        .padding(.horizontal, 24)
-                        .padding(.top, 8)
-                    }
-                    
-                    Spacer()
+                        .lineSpacing(3)
+                        .padding(.horizontal, 50)
                 }
-                .padding(.top, 60)
+                .padding(.bottom, 80)
                 
                 Spacer()
+                
+                Button(action: {
+                    if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
+                       let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data),
+                       saved.applicationTokens.count > 0 {
+                        let store = ManagedSettingsStore()
+                        let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
+                        store.application.blockedApplications = apps
+
+                        if UserDefaults.standard.bool(forKey: "mode_default_exists") == false {
+                            UserDefaults.standard.set(true, forKey: "mode_default_exists")
+                            if let encoded = try? JSONEncoder().encode(saved) {
+                                UserDefaults.standard.set(encoded, forKey: "mode_default_selection")
+                            }
+                        }
+                        UserDefaults.standard.set("default", forKey: "active_mode_name")
+                        UserDefaults.standard.set(saved.applicationTokens.count, forKey: "active_mode_app_count")
+
+                        let now = Date()
+                        sharedDefaults.set(now, forKey: "blocked_start_date")
+                        sharedDefaults.synchronize()
+                        
+                        UserDefaults.standard.set(now, forKey: "blocked_start_date")
+                        UserDefaults.standard.synchronize()
+                        
+                        AppBlockingTracker.shared.startBlocking(selection: saved, startDate: now)
+                        
+                        NotificationCenter.default.post(name: NSNotification.Name("BlockingStarted"), object: nil)
+
+                        startLiveActivity(startDate: now)
+
+                        showBlockedView = true
+                    }
+                }) {
+                    Text("Focar seu dispositivo")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(Color(hex: "1D1D1F"))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(Color.white.opacity(0.9))
+                        .cornerRadius(28)
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 40)
             }
         }
-        .fullScreenCover(isPresented: $showStep5) {
-            OnboardingStep5()
+        .fullScreenCover(isPresented: $showBlockedView) {
+            PrincipalView()
         }
-        .overlay(
-            TextField("", text: $code)
-                .keyboardType(.numberPad)
-                .textContentType(.oneTimeCode)
-                .focused($isCodeFieldFocused)
-                .opacity(0)
-                .frame(width: 0, height: 0)
+    }
+
+    private func startLiveActivity(startDate: Date) {
+        let attributes = FoccaWidgetLiveAttributes()
+        let contentState = FoccaWidgetLiveAttributes.ContentState(
+            startDate: startDate,
+            isActive: true
         )
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                isCodeFieldFocused = true
-            }
-            startTimer()
-        }
-        .onDisappear {
-            timer?.invalidate()
-            timer = nil
-        }
-        .onChange(of: code) { newValue in
-            let filtered = newValue.filter { $0.isNumber }
-            code = String(filtered.prefix(8))
-            
-            if code.count == 8 {
-                verifyCode()
-            }
-        }
-    }
-    
-    private func startTimer() {
-        timer?.invalidate()
-        timeRemaining = 59
-        canResend = false
-        
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
-            if timeRemaining > 0 {
-                timeRemaining -= 1
-            } else {
-                canResend = true
-                timer.invalidate()
-                self.timer = nil
-            }
-        }
-        
-        if let timer = timer {
-            RunLoop.main.add(timer, forMode: .common)
-        }
-    }
-    
-    private func resetTimer() {
-        startTimer()
-    }
-    
-    private func formatTime(_ seconds: Int) -> String {
-        let minutes = seconds / 60
-        let secs = seconds % 60
-        return String(format: "%02d:%02d", minutes, secs)
-    }
-    
-    private func translateError(_ error: String) -> String {
-        let lowercased = error.lowercased()
-        
-        if lowercased.contains("invalid") || lowercased.contains("código inválido") {
-            return "Código inválido. Tente novamente."
-        }
-        
-        if lowercased.contains("expired") || lowercased.contains("expirado") {
-            return "Código expirado. Solicite um novo."
-        }
-        
-        if lowercased.contains("too many") || lowercased.contains("muitas") {
-            return "Muitas tentativas. Aguarde um momento."
-        }
-        
-        if lowercased.contains("network") || lowercased.contains("rede") {
-            return "Erro de conexão. Verifique sua internet."
-        }
-        
-        return "Erro ao verificar código. Tente novamente."
-    }
-    
-    private func verifyCode() {
-        guard code.count == 8 else { return }
-        
-        Task {
-            let success = await authViewModel.verifyOtp(email: email, code: code)
-            if success {
-                showStep5 = true
-            }
+
+        do {
+            let activity = try Activity.request(
+                attributes: attributes,
+                content: .init(state: contentState, staleDate: nil),
+                pushType: nil
+            )
+            currentActivity = activity
+            sharedDefaults.set(activity.id, forKey: "live_activity_id")
+            print("✅ Live Activity iniciada com sucesso! ID: \(activity.id)")
+        } catch {
+            print("❌ Erro ao iniciar Live Activity: \(error.localizedDescription)")
         }
     }
 }
-
-struct CodeDigitBox: View {
-    let text: String
-    let isFocused: Bool
-    let width: CGFloat
-    let height: CGFloat
-    
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(text.isEmpty ? Color(hex: "E5E5E5") : Color.white)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(isFocused ? Color(hex: "1D1D1F") : Color.clear, lineWidth: 2)
-                )
-            
-            if !text.isEmpty {
-                Text(text)
-                    .font(.system(size: min(width * 0.6, 24), weight: .semibold))
-                    .foregroundColor(Color(hex: "1D1D1F"))
-            }
-        }
-        .frame(width: width, height: height)
-    }
-}
-
