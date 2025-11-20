@@ -5,6 +5,9 @@ struct OnboardingStep6: View {
     @State private var code = ""
     @State private var showStep5 = false
     @FocusState private var isCodeFieldFocused: Bool
+    @State private var timeRemaining = 59
+    @State private var timer: Timer?
+    @State private var canResend = false
     let email: String
     let onBack: (() -> Void)?
     
@@ -19,25 +22,6 @@ struct OnboardingStep6: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                HStack {
-                    Button(action: {
-                        if let onBack = onBack {
-                            onBack()
-                        }
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(Color(hex: "1D1D1F"))
-                            .frame(width: 44, height: 44)
-                            .background(Color.white)
-                            .clipShape(Circle())
-                            .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
-                    }
-                    Spacer()
-                }
-                .padding(.leading, 20)
-                .padding(.top, 8)
-                
                 Spacer()
                 
                 VStack(spacing: 32) {
@@ -74,29 +58,40 @@ struct OnboardingStep6: View {
                         .padding(.horizontal, 24)
                     
                     if let error = authViewModel.errorMessage {
-                        Text(error)
-                            .font(.system(size: 14))
+                        Text(translateError(error))
+                            .font(.system(size: 13))
                             .foregroundColor(.red)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 24)
                     }
                     
-                    Button(action: {
-                        Task {
-                            await authViewModel.sendOtp(email: email)
+                    if !canResend {
+                        Text("Você pode gerar um novo código em \(formatTime(timeRemaining))")
+                            .font(.system(size: 13))
+                            .foregroundColor(Color(hex: "8E8E93"))
+                            .padding(.horizontal, 24)
+                            .padding(.top, 8)
+                    } else {
+                        Button(action: {
+                            Task {
+                                let success = await authViewModel.sendOtp(email: email)
+                                if success {
+                                    resetTimer()
+                                }
+                            }
+                        }) {
+                            Text("Gerar novo código")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color(hex: "1D1D1F"))
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 50)
+                                .background(Color(hex: "E5E5E5"))
+                                .cornerRadius(12)
                         }
-                    }) {
-                        Text("Gerar novo código")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(hex: "1D1D1F"))
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 50)
-                            .background(Color(hex: "E5E5E5"))
-                            .cornerRadius(12)
+                        .disabled(authViewModel.isLoading)
+                        .padding(.horizontal, 24)
+                        .padding(.top, 8)
                     }
-                    .disabled(authViewModel.isLoading)
-                    .padding(.horizontal, 24)
-                    .padding(.top, 8)
                     
                     Spacer()
                 }
@@ -120,6 +115,11 @@ struct OnboardingStep6: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 isCodeFieldFocused = true
             }
+            startTimer()
+        }
+        .onDisappear {
+            timer?.invalidate()
+            timer = nil
         }
         .onChange(of: code) { newValue in
             let filtered = newValue.filter { $0.isNumber }
@@ -129,6 +129,63 @@ struct OnboardingStep6: View {
                 verifyCode()
             }
         }
+    }
+    
+    private func startTimer() {
+        timer?.invalidate()
+        timeRemaining = 59
+        canResend = false
+        
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
+            guard let self = self else {
+                timer.invalidate()
+                return
+            }
+            
+            if self.timeRemaining > 0 {
+                self.timeRemaining -= 1
+            } else {
+                self.canResend = true
+                timer.invalidate()
+                self.timer = nil
+            }
+        }
+        
+        if let timer = timer {
+            RunLoop.main.add(timer, forMode: .common)
+        }
+    }
+    
+    private func resetTimer() {
+        startTimer()
+    }
+    
+    private func formatTime(_ seconds: Int) -> String {
+        let minutes = seconds / 60
+        let secs = seconds % 60
+        return String(format: "%02d:%02d", minutes, secs)
+    }
+    
+    private func translateError(_ error: String) -> String {
+        let lowercased = error.lowercased()
+        
+        if lowercased.contains("invalid") || lowercased.contains("código inválido") {
+            return "Código inválido. Tente novamente."
+        }
+        
+        if lowercased.contains("expired") || lowercased.contains("expirado") {
+            return "Código expirado. Solicite um novo."
+        }
+        
+        if lowercased.contains("too many") || lowercased.contains("muitas") {
+            return "Muitas tentativas. Aguarde um momento."
+        }
+        
+        if lowercased.contains("network") || lowercased.contains("rede") {
+            return "Erro de conexão. Verifique sua internet."
+        }
+        
+        return "Erro ao verificar código. Tente novamente."
     }
     
     private func verifyCode() {

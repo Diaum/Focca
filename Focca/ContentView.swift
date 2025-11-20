@@ -25,7 +25,7 @@ struct ContentView: View {
                 }
             } else {
                 NavigationView {
-                    OnboardingStep0()
+                    OnboardingStep1()
                         .navigationBarHidden(true)
                 }
             }

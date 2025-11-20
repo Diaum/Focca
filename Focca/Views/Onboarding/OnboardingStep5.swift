@@ -16,23 +16,6 @@ struct OnboardingStep5: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                HStack {
-                    Button(action: {
-                        presentationMode.wrappedValue.dismiss()
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(Color(hex: "1D1D1F"))
-                            .frame(width: 44, height: 44)
-                            .background(Color.white)
-                            .clipShape(Circle())
-                            .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
-                    }
-                    Spacer()
-                }
-                .padding(.leading, 20)
-                .padding(.top, 8)
-                
                 Spacer()
                 
                 VStack(spacing: 4) {
