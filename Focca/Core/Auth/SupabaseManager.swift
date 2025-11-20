@@ -75,23 +75,36 @@ class SupabaseManager {
         let existingRecord = try await fetchSessionRecord(dateString: dateString, userId: userId)
         let existingMinutes = existingRecord?.duration_minutes ?? 0
         let totalMinutes = existingMinutes + durationMinutes
+        let userEmail = session.user.email
         
         struct FocusSession: Encodable {
             let user_id: UUID
             let date: String
             let duration_minutes: Int
+            let user_email: String?
         }
         
         let sessionData = FocusSession(
             user_id: userId,
             date: dateString,
-            duration_minutes: totalMinutes
+            duration_minutes: totalMinutes,
+            user_email: userEmail
         )
         
         if let record = existingRecord {
+            struct UpdateSession: Encodable {
+                let duration_minutes: Int
+                let user_email: String?
+            }
+            
+            let updateData = UpdateSession(
+                duration_minutes: totalMinutes,
+                user_email: userEmail
+            )
+            
             try await client.database
                 .from("focus_sessions")
-                .update(["duration_minutes": totalMinutes])
+                .update(updateData)
                 .eq("id", value: record.id.uuidString)
                 .execute()
         } else {
@@ -124,6 +137,7 @@ class SupabaseManager {
         let user_id: UUID
         let date: String
         let duration_minutes: Int
+        let user_email: String?
     }
 
     struct UserAwardRecord: Decodable {

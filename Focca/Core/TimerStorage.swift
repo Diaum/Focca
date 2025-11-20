@@ -9,6 +9,7 @@ class TimerStorage {
     private let cacheValidityInterval: TimeInterval = 300 // 5 minutos
     private let cachedSessionsKey = "cached_focus_sessions"
     private let lastFetchDateKey = "last_fetch_date"
+    private let syncedLocalPrefix = "synced_local_seconds_"
 
     private init() {}
     
@@ -47,21 +48,22 @@ class TimerStorage {
         let targetDate = calendar.startOfDay(for: date)
         let daysDifference = calendar.dateComponents([.day], from: targetDate, to: today).day ?? 0
         
-        var accumulatedTime: TimeInterval = 0
-        
-        // Se for hoje ou dos últimos 7 dias, busca do AppBlockingTracker primeiro
-        if daysDifference <= 7 {
-            let totalTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
-            accumulatedTime = max(accumulatedTime, totalTime)
-        }
-        
+        var remoteTime: TimeInterval = 0
         if let cachedMinutes = cachedSessions[dateKey] {
-            let cachedTime = TimeInterval(cachedMinutes * 60)
-            accumulatedTime = max(accumulatedTime, cachedTime)
+            remoteTime = TimeInterval(cachedMinutes * 60)
         }
         
-        if accumulatedTime > 0 {
-            return accumulatedTime
+        var localTime: TimeInterval = 0
+        if daysDifference <= 7 {
+            localTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
+        }
+        
+        let syncedLocal = getSyncedLocalSeconds(for: dateKey)
+        let additionalLocal = max(0, localTime - syncedLocal)
+        let combinedTime = remoteTime + additionalLocal
+        
+        if combinedTime > 0 {
+            return max(combinedTime, localTime)
         }
         
         // Para datas antigas (>7 dias), busca do banco de dados
@@ -100,7 +102,7 @@ class TimerStorage {
             await MainActor.run {
                 cachedSessions.removeAll()
                 for session in sessions {
-                    cachedSessions[session.date] = session.duration_minutes
+                    upsertCachedSession(session)
                 }
                 lastFetchDate = Date()
             }
@@ -282,7 +284,7 @@ class TimerStorage {
                 // Atualiza cache completo
                 cachedSessions.removeAll()
                 for session in sessions {
-                    cachedSessions[session.date] = session.duration_minutes
+                    upsertCachedSession(session)
                 }
                 lastFetchDate = Date()
                 saveCachedSessions()
@@ -329,6 +331,9 @@ class TimerStorage {
             let existingMinutes = cachedSessions[dateString] ?? 0
             cachedSessions[dateString] = existingMinutes + durationMinutes
             saveCachedSessions()
+            
+            let localTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
+            setSyncedLocalSeconds(localTime, for: dateString)
         }
     }
     
@@ -353,10 +358,29 @@ class TimerStorage {
         return totalTime / Double(dailyTimes.count)
     }
     
+    private func upsertCachedSession(_ session: SupabaseManager.FocusSessionRecord) {
+        cachedSessions[session.date] = session.duration_minutes
+        
+        if let date = parseDate(session.date) {
+            let remoteSeconds = TimeInterval(session.duration_minutes * 60)
+            let localTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
+            let syncedValue = min(localTime, remoteSeconds)
+            setSyncedLocalSeconds(syncedValue, for: formatDate(date))
+        }
+    }
+    
     private func parseDate(_ dateString: String) -> Date? {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.date(from: dateString)
+    }
+    
+    private func getSyncedLocalSeconds(for dateKey: String) -> TimeInterval {
+        return userDefaults.double(forKey: "\(syncedLocalPrefix)\(dateKey)")
+    }
+    
+    private func setSyncedLocalSeconds(_ value: TimeInterval, for dateKey: String) {
+        userDefaults.set(value, forKey: "\(syncedLocalPrefix)\(dateKey)")
     }
 }
 
