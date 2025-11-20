@@ -30,8 +30,8 @@ struct SettingsView: View {
                     isBlocked: isBlocked
                 )
                     .padding(.horizontal, 16)
-                    .padding(.top, 16)
-                    .padding(.bottom, 18)
+                    .padding(.top, 40)
+                    .padding(.bottom, 36)
                 
                 VStack(spacing: 14) {
                     SettingsSection(
