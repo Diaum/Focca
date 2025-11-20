@@ -7,6 +7,7 @@ struct OnboardingStep4: View {
     @State private var isValidEmail = false
     @State private var savedEmail = ""
     @State private var showEmailInput = false
+    @FocusState private var isEmailFieldFocused: Bool
     
     var body: some View {
         ZStack {
@@ -77,6 +78,7 @@ struct OnboardingStep4: View {
                                     .autocapitalization(.none)
                                     .font(.system(size: 17))
                                     .foregroundColor(Color(hex: "1D1D1F"))
+                                    .focused($isEmailFieldFocused)
                                     .padding(.horizontal, 16)
                                     .frame(height: 56)
                                     .background(Color.white)
@@ -118,6 +120,13 @@ struct OnboardingStep4: View {
                         }
                     }
                     .animation(.easeInOut(duration: 0.3), value: showEmailInput)
+                    .onChange(of: showEmailInput) { newValue in
+                        if newValue {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                isEmailFieldFocused = true
+                            }
+                        }
+                    }
                 }
                 .padding(.bottom, 100)
                 
