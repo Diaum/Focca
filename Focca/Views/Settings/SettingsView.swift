@@ -4,6 +4,7 @@ struct SettingsView: View {
     @Binding var selectedTab: Int
     let isBlocked: Bool
     @State private var showNotificationsView = false
+    @ObservedObject private var authViewModel = AuthViewModel.shared
     @ObservedObject private var awardManager = AwardManager.shared
     @ObservedObject private var statsAchievementManager = StatsAchievementManager.shared
     
@@ -24,19 +25,10 @@ struct SettingsView: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                RoundedRectangle(cornerRadius: 18)
-                    .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white.opacity(0.85))
-                    .frame(height: 66)
-                    .overlay(
-                        HStack {
-                            Text("Conta")
-                                .font(.system(size: 20, weight: .semibold))
-                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
-                            Spacer()
-                        }
-                        .padding(.horizontal, 18)
-                    )
-                    .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+                ProfileHeaderView(
+                    email: authViewModel.currentEmail ?? "usuário@focca.app",
+                    isBlocked: isBlocked
+                )
                     .padding(.horizontal, 16)
                     .padding(.top, 16)
                     .padding(.bottom, 18)
