@@ -136,16 +136,11 @@ struct OnboardingStep6: View {
         timeRemaining = 59
         canResend = false
         
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
-            guard let self = self else {
-                timer.invalidate()
-                return
-            }
-            
-            if self.timeRemaining > 0 {
-                self.timeRemaining -= 1
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
+            if timeRemaining > 0 {
+                timeRemaining -= 1
             } else {
-                self.canResend = true
+                canResend = true
                 timer.invalidate()
                 self.timer = nil
             }
