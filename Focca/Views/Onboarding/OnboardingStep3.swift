@@ -96,6 +96,7 @@ struct OnboardingStep3: View {
                 }
             }
             .navigationBarItems(leading: BackButton(action: { showStep2 = true }))
+            .preferredColorScheme(.light)
             .fullScreenCover(isPresented: $showMainView) {
                 OnboardingStep4()
             }
