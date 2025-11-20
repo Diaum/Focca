@@ -35,7 +35,7 @@ struct SettingsView: View {
                 
                 VStack(spacing: 14) {
                     SettingsSection(
-                        title: "Sobre o Focca",
+                        title: nil,
                         items: [
                             SettingsItem(title: "Sobre o Focca", hasArrow: true),
                             SettingsItem(title: "Política de Privacidade", hasArrow: true)
