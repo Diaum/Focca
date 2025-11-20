@@ -41,75 +41,83 @@ struct OnboardingStep4: View {
                             .lineSpacing(4)
                     }
                     
-                    if !showEmailInput {
-                        Button(action: {
-                            withAnimation {
-                                showEmailInput = true
-                            }
-                        }) {
-                            HStack {
-                                Text("Entrar com e-mail")
-                                    .font(.system(size: 17, weight: .medium))
-                                    .foregroundColor(Color(hex: "1D1D1F"))
-                                
-                                Spacer()
-                                
-                                Image(systemName: "arrow.right")
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(Color(hex: "1D1D1F"))
-                            }
-                            .padding(.horizontal, 20)
-                            .frame(height: 56)
-                            .background(Color.white)
-                            .cornerRadius(12)
-                        }
-                        .disabled(authViewModel.isLoading)
-                        .padding(.horizontal, 24)
-                    } else {
-                        VStack(spacing: 16) {
-                            TextField("seu@email.com", text: $email)
-                                .textContentType(.emailAddress)
-                                .keyboardType(.emailAddress)
-                                .autocapitalization(.none)
-                                .font(.system(size: 17))
-                                .foregroundColor(Color(hex: "1D1D1F"))
-                                .padding(.horizontal, 16)
+                    VStack(spacing: 16) {
+                        if !showEmailInput {
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    showEmailInput = true
+                                }
+                            }) {
+                                HStack {
+                                    Text("Entrar com e-mail")
+                                        .font(.system(size: 17, weight: .medium))
+                                        .foregroundColor(Color(hex: "1D1D1F"))
+                                    
+                                    Spacer()
+                                    
+                                    Image(systemName: "arrow.right")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(Color(hex: "1D1D1F"))
+                                }
+                                .padding(.horizontal, 20)
                                 .frame(height: 56)
                                 .background(Color.white)
                                 .cornerRadius(12)
-                                .onChange(of: email) { _ in
-                                    isValidEmail = isValidEmailFormat(email)
-                                }
-                                .padding(.horizontal, 24)
-                            
-                            if let error = authViewModel.errorMessage {
-                                Text(error)
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.red)
-                                    .multilineTextAlignment(.center)
-                                    .padding(.horizontal, 24)
                             }
-                            
-                            Button(action: {
-                                sendOtp()
-                            }) {
-                                if authViewModel.isLoading {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                } else {
-                                    Text("Enviar código")
-                                        .font(.system(size: 17, weight: .semibold))
-                                        .foregroundColor(.white)
-                                }
-                            }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(isValidEmail && !authViewModel.isLoading ? Color(hex: "1D1D1F") : Color(hex: "DAD7D6"))
-                            .cornerRadius(12)
-                            .disabled(!isValidEmail || authViewModel.isLoading)
+                            .disabled(authViewModel.isLoading)
                             .padding(.horizontal, 24)
+                            .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                        }
+                        
+                        if showEmailInput {
+                            VStack(spacing: 16) {
+                                TextField("seu@email.com", text: $email)
+                                    .textContentType(.emailAddress)
+                                    .keyboardType(.emailAddress)
+                                    .autocapitalization(.none)
+                                    .font(.system(size: 17))
+                                    .foregroundColor(Color(hex: "1D1D1F"))
+                                    .padding(.horizontal, 16)
+                                    .frame(height: 56)
+                                    .background(Color.white)
+                                    .cornerRadius(12)
+                                    .onChange(of: email) { _ in
+                                        isValidEmail = isValidEmailFormat(email)
+                                    }
+                                    .padding(.horizontal, 24)
+                                
+                                if let error = authViewModel.errorMessage {
+                                    Text(error)
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.red)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal, 24)
+                                        .transition(.opacity)
+                                }
+                                
+                                Button(action: {
+                                    sendOtp()
+                                }) {
+                                    if authViewModel.isLoading {
+                                        ProgressView()
+                                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    } else {
+                                        Text("Enviar código")
+                                            .font(.system(size: 17, weight: .semibold))
+                                            .foregroundColor(.white)
+                                    }
+                                }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
+                                .background(isValidEmail && !authViewModel.isLoading ? Color(hex: "1D1D1F") : Color(hex: "DAD7D6"))
+                                .cornerRadius(12)
+                                .disabled(!isValidEmail || authViewModel.isLoading)
+                                .padding(.horizontal, 24)
+                            }
+                            .transition(.opacity.combined(with: .move(edge: .top)))
                         }
                     }
+                    .animation(.easeInOut(duration: 0.3), value: showEmailInput)
                 }
                 .padding(.bottom, 100)
                 
