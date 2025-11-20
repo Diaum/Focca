@@ -44,21 +44,31 @@ struct OnboardingStep6: View {
                     Text("Seu código")
                         .font(.system(size: 28, weight: .semibold))
                         .foregroundColor(Color(hex: "1D1D1F"))
-                        .padding(.top, 40)
                     
-                    HStack(spacing: 12) {
-                        ForEach(0..<8, id: \.self) { index in
-                            CodeDigitBox(
-                                text: index < code.count ? String(code[code.index(code.startIndex, offsetBy: index)]) : "",
-                                isFocused: isCodeFieldFocused && index == code.count
-                            )
+                    GeometryReader { geometry in
+                        let totalSpacing: CGFloat = 8 * 7
+                        let availableWidth = geometry.size.width - 48
+                        let boxWidth = min((availableWidth - totalSpacing) / 8, 38)
+                        let boxHeight = boxWidth * 1.3
+                        
+                        HStack(spacing: 8) {
+                            ForEach(0..<8, id: \.self) { index in
+                                CodeDigitBox(
+                                    text: index < code.count ? String(code[code.index(code.startIndex, offsetBy: index)]) : "",
+                                    isFocused: isCodeFieldFocused && index == code.count,
+                                    width: boxWidth,
+                                    height: boxHeight
+                                )
+                            }
                         }
+                        .frame(maxWidth: .infinity)
                     }
+                    .frame(height: 65)
                     .padding(.horizontal, 24)
                     
                     Text("Digite o código de 8 dígitos enviado para\n\(email)")
                         .font(.system(size: 15))
-                        .foregroundColor(Color(hex: "1D1D1F"))
+                        .foregroundColor(Color(hex: "8E8E93"))
                         .multilineTextAlignment(.center)
                         .lineSpacing(4)
                         .padding(.horizontal, 24)
@@ -86,10 +96,11 @@ struct OnboardingStep6: View {
                     }
                     .disabled(authViewModel.isLoading)
                     .padding(.horizontal, 24)
-                    .padding(.top, 20)
+                    .padding(.top, 8)
                     
                     Spacer()
                 }
+                .padding(.top, 60)
                 
                 Spacer()
             }
@@ -100,6 +111,7 @@ struct OnboardingStep6: View {
         .overlay(
             TextField("", text: $code)
                 .keyboardType(.numberPad)
+                .textContentType(.oneTimeCode)
                 .focused($isCodeFieldFocused)
                 .opacity(0)
                 .frame(width: 0, height: 0)
@@ -134,12 +146,13 @@ struct OnboardingStep6: View {
 struct CodeDigitBox: View {
     let text: String
     let isFocused: Bool
+    let width: CGFloat
+    let height: CGFloat
     
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 12)
                 .fill(text.isEmpty ? Color(hex: "E5E5E5") : Color.white)
-                .frame(width: 50, height: 60)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
                         .stroke(isFocused ? Color(hex: "1D1D1F") : Color.clear, lineWidth: 2)
@@ -147,10 +160,11 @@ struct CodeDigitBox: View {
             
             if !text.isEmpty {
                 Text(text)
-                    .font(.system(size: 24, weight: .semibold))
+                    .font(.system(size: min(width * 0.6, 24), weight: .semibold))
                     .foregroundColor(Color(hex: "1D1D1F"))
             }
         }
+        .frame(width: width, height: height)
     }
 }
 
