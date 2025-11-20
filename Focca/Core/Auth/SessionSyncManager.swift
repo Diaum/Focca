@@ -11,6 +11,9 @@ class SessionSyncManager {
                 let durationMinutes = Int(duration / 60)
                 try await SupabaseManager.shared.syncSession(date: date, durationMinutes: durationMinutes)
                 print("✅ [SessionSync] Sessão sincronizada: \(durationMinutes) minutos em \(date)")
+                
+                // Atualiza cache local imediatamente
+                await TimerStorage.shared.updateCacheForDate(date: date, durationMinutes: durationMinutes)
             } catch {
                 print("❌ [SessionSync] Erro ao sincronizar sessão: \(error.localizedDescription)")
             }

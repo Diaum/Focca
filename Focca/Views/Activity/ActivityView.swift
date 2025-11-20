@@ -230,10 +230,24 @@ struct ActivityView: View {
     }
     
     private func loadActivityData() {
+        // Carrega cache instantaneamente (síncrono)
+        let cachedCards = TimerStorage.shared.getAllDailyTimesSync()
+        dailyCards = cachedCards
+        
+        let cachedAvgTime = TimerStorage.shared.getAverageTimeSync()
+        let hours = Int(cachedAvgTime) / 3600
+        let minutes = (Int(cachedAvgTime) % 3600) / 60
+        averageTime = String(format: "%dh %dm", hours, minutes)
+        
+        // Em paralelo, busca do banco e atualiza
         Task {
             let cards = await TimerStorage.shared.getAllDailyTimes()
             await MainActor.run {
-                dailyCards = cards
+                // Só atualiza se houver diferença (evita flicker)
+                if cards.count != dailyCards.count || 
+                   !cards.elementsEqual(dailyCards, by: { $0.date == $1.date && abs($0.time - $1.time) < 1.0 }) {
+                    dailyCards = cards
+                }
             }
             
             let avgTime = await TimerStorage.shared.getAverageTime()

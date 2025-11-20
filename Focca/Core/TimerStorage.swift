@@ -7,6 +7,8 @@ class TimerStorage {
     private var cachedSessions: [String: Int] = [:]
     private var lastFetchDate: Date?
     private let cacheValidityInterval: TimeInterval = 300 // 5 minutos
+    private let cachedSessionsKey = "cached_focus_sessions"
+    private let lastFetchDateKey = "last_fetch_date"
 
     private init() {}
     
@@ -16,6 +18,26 @@ class TimerStorage {
             userDefaults.set(today, forKey: "first_launch_date")
         }
         cleanOldLocalData()
+        loadCachedSessions()
+    }
+    
+    private func loadCachedSessions() {
+        if let data = userDefaults.data(forKey: cachedSessionsKey),
+           let decoded = try? JSONDecoder().decode([String: Int].self, from: data) {
+            cachedSessions = decoded
+        }
+        
+        if let lastFetch = userDefaults.object(forKey: lastFetchDateKey) as? Date {
+            lastFetchDate = lastFetch
+        }
+    }
+    
+    private func saveCachedSessions() {
+        if let encoded = try? JSONEncoder().encode(cachedSessions) {
+            userDefaults.set(encoded, forKey: cachedSessionsKey)
+            userDefaults.set(Date(), forKey: lastFetchDateKey)
+            userDefaults.synchronize()
+        }
     }
     
     func getDailyTime(for date: Date) -> TimeInterval {
@@ -153,58 +175,74 @@ class TimerStorage {
     }
     
     func getAllDailyTimes() async -> [(date: Date, time: TimeInterval)] {
+        // Primeiro retorna dados do cache (instantâneo)
+        let cachedResult = getCachedDailyTimes()
+        
+        // Em paralelo, busca do banco e atualiza cache
+        Task {
+            await fetchAndUpdateFromDatabase()
+        }
+        
+        return cachedResult
+    }
+    
+    func getAllDailyTimesWithRefresh() async -> [(date: Date, time: TimeInterval)] {
+        // Força atualização do banco
+        await fetchAndUpdateFromDatabase()
+        return getCachedDailyTimes()
+    }
+    
+    private func getCachedDailyTimes() -> [(date: Date, time: TimeInterval)] {
         var result: [(date: Date, time: TimeInterval)] = []
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         let sevenDaysAgo = calendar.date(byAdding: .day, value: -7, to: today)!
         
-        // Busca dados do banco de dados primeiro
-        do {
-            let sessions = try await SupabaseManager.shared.getSessions()
-            for session in sessions {
-                if let date = parseDate(session.date) {
-                    let time = TimeInterval(session.duration_minutes * 60)
+        // Primeiro: busca dados locais dos últimos 7 dias (mais recentes)
+        let allKeys = userDefaults.dictionaryRepresentation().keys
+        let blockingKeys = allKeys.filter { $0.hasPrefix("app_blocking_") }
+        var processedDates = Set<String>()
+        
+        for key in blockingKeys {
+            let dateString = key.replacingOccurrences(of: "app_blocking_", with: "")
+            
+            if processedDates.contains(dateString) {
+                continue
+            }
+            processedDates.insert(dateString)
+            
+            if let date = parseDate(dateString), date >= sevenDaysAgo {
+                let totalTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
+                if totalTime > 0 {
+                    result.append((date: date, time: totalTime))
+                }
+            }
+        }
+        
+        // Segundo: adiciona dados do cache do banco (histórico)
+        for (dateString, minutes) in cachedSessions {
+            if let date = parseDate(dateString) {
+                // Evita duplicatas com dados locais
+                if !result.contains(where: { Calendar.current.isDate($0.date, inSameDayAs: date) }) {
+                    let time = TimeInterval(minutes * 60)
                     result.append((date: date, time: time))
                 }
             }
-        } catch {
-            print("⚠️ [TimerStorage] Erro ao buscar do banco, usando cache local: \(error.localizedDescription)")
-            
-            // Fallback: busca dados locais dos últimos 7 dias
-            let allKeys = userDefaults.dictionaryRepresentation().keys
-            let blockingKeys = allKeys.filter { $0.hasPrefix("app_blocking_") }
-            var processedDates = Set<String>()
-            
-            for key in blockingKeys {
-                let dateString = key.replacingOccurrences(of: "app_blocking_", with: "")
-                
-                if processedDates.contains(dateString) {
-                    continue
-                }
-                processedDates.insert(dateString)
-                
+        }
+        
+        // Terceiro: busca dados antigos de daily_time_ (apenas últimos 7 dias)
+        let timeKeys = allKeys.filter { $0.hasPrefix("daily_time_") }
+        for key in timeKeys {
+            let time = userDefaults.double(forKey: key)
+            if time > 0 {
+                let dateString = key.replacingOccurrences(of: "daily_time_", with: "")
                 if let date = parseDate(dateString), date >= sevenDaysAgo {
-                    let totalTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
-                    if totalTime > 0 {
-                        result.append((date: date, time: totalTime))
-                    }
-                }
-            }
-            
-            // Também busca dados antigos de daily_time_ (apenas últimos 7 dias)
-            let timeKeys = allKeys.filter { $0.hasPrefix("daily_time_") }
-            for key in timeKeys {
-                let time = userDefaults.double(forKey: key)
-                if time > 0 {
-                    let dateString = key.replacingOccurrences(of: "daily_time_", with: "")
-                    if let date = parseDate(dateString), date >= sevenDaysAgo {
-                        if let existingIndex = result.firstIndex(where: { Calendar.current.isDate($0.date, inSameDayAs: date) }) {
-                            if time > result[existingIndex].time {
-                                result[existingIndex] = (date: result[existingIndex].date, time: time)
-                            }
-                        } else {
-                            result.append((date: date, time: time))
+                    if let existingIndex = result.firstIndex(where: { Calendar.current.isDate($0.date, inSameDayAs: date) }) {
+                        if time > result[existingIndex].time {
+                            result[existingIndex] = (date: result[existingIndex].date, time: time)
                         }
+                    } else {
+                        result.append((date: date, time: time))
                     }
                 }
             }
@@ -212,6 +250,40 @@ class TimerStorage {
         
         result.sort { $0.date > $1.date }
         return result
+    }
+    
+    private func fetchAndUpdateFromDatabase() async {
+        // Evita buscar muito frequentemente
+        if let lastFetch = lastFetchDate,
+           Date().timeIntervalSince(lastFetch) < cacheValidityInterval {
+            return
+        }
+        
+        do {
+            let sessions = try await SupabaseManager.shared.getSessions()
+            await MainActor.run {
+                cachedSessions.removeAll()
+                for session in sessions {
+                    cachedSessions[session.date] = session.duration_minutes
+                }
+                lastFetchDate = Date()
+                saveCachedSessions()
+                print("✅ [TimerStorage] Cache atualizado com \(sessions.count) sessões do banco")
+            }
+        } catch {
+            print("⚠️ [TimerStorage] Erro ao buscar do banco: \(error.localizedDescription)")
+        }
+    }
+    
+    func updateCacheForDate(date: Date, durationMinutes: Int) async {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        let dateString = formatter.string(from: date)
+        
+        await MainActor.run {
+            cachedSessions[dateString] = durationMinutes
+            saveCachedSessions()
+        }
     }
     
     func getAllDailyTimesSync() -> [(date: Date, time: TimeInterval)] {
