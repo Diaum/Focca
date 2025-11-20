@@ -61,7 +61,7 @@ struct OnboardingStep6: View {
                                 UserDefaults.standard.set(encoded, forKey: "mode_default_selection")
                             }
                         }
-                        UserDefaults.standard.set("default", forKey: "active_mode_name")
+                        UserDefaults.standard.set("padrão", forKey: "active_mode_name")
                         UserDefaults.standard.set(saved.applicationTokens.count, forKey: "active_mode_app_count")
 
                         let now = Date()
