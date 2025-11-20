@@ -47,12 +47,21 @@ class TimerStorage {
         let targetDate = calendar.startOfDay(for: date)
         let daysDifference = calendar.dateComponents([.day], from: targetDate, to: today).day ?? 0
         
+        var accumulatedTime: TimeInterval = 0
+        
         // Se for hoje ou dos últimos 7 dias, busca do AppBlockingTracker primeiro
         if daysDifference <= 7 {
             let totalTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
-            if totalTime > 0 {
-                return totalTime
-            }
+            accumulatedTime = max(accumulatedTime, totalTime)
+        }
+        
+        if let cachedMinutes = cachedSessions[dateKey] {
+            let cachedTime = TimeInterval(cachedMinutes * 60)
+            accumulatedTime = max(accumulatedTime, cachedTime)
+        }
+        
+        if accumulatedTime > 0 {
+            return accumulatedTime
         }
         
         // Para datas antigas (>7 dias), busca do banco de dados
@@ -317,7 +326,8 @@ class TimerStorage {
         let dateString = formatter.string(from: date)
         
         await MainActor.run {
-            cachedSessions[dateString] = durationMinutes
+            let existingMinutes = cachedSessions[dateString] ?? 0
+            cachedSessions[dateString] = existingMinutes + durationMinutes
             saveCachedSessions()
         }
     }

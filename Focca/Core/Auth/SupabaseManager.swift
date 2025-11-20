@@ -72,7 +72,9 @@ class SupabaseManager {
         formatter.dateFormat = "yyyy-MM-dd"
         let dateString = formatter.string(from: dateOnly)
         
-        let exists = try await checkSessionExists(date: date)
+        let existingRecord = try await fetchSessionRecord(dateString: dateString, userId: userId)
+        let existingMinutes = existingRecord?.duration_minutes ?? 0
+        let totalMinutes = existingMinutes + durationMinutes
         
         struct FocusSession: Encodable {
             let user_id: UUID
@@ -83,15 +85,14 @@ class SupabaseManager {
         let sessionData = FocusSession(
             user_id: userId,
             date: dateString,
-            duration_minutes: durationMinutes
+            duration_minutes: totalMinutes
         )
         
-        if exists {
+        if let record = existingRecord {
             try await client.database
                 .from("focus_sessions")
-                .update(sessionData)
-                .eq("user_id", value: userId.uuidString)
-                .eq("date", value: dateString)
+                .update(["duration_minutes": totalMinutes])
+                .eq("id", value: record.id.uuidString)
                 .execute()
         } else {
             try await client.database
@@ -101,32 +102,21 @@ class SupabaseManager {
         }
     }
     
-    func checkSessionExists(date: Date) async throws -> Bool {
+    private func fetchSessionRecord(dateString: String, userId: UUID) async throws -> FocusSessionRecord? {
         guard let client = client else {
             throw SupabaseError.clientNotInitialized
         }
-        
-        guard let session = try? await client.auth.session else {
-            throw SupabaseError.userNotAuthenticated
-        }
-        
-        let userId = session.user.id
-        
-        let calendar = Calendar.current
-        let dateOnly = calendar.startOfDay(for: date)
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        let dateString = formatter.string(from: dateOnly)
         
         let response: [FocusSessionRecord] = try await client.database
             .from("focus_sessions")
             .select()
             .eq("user_id", value: userId.uuidString)
             .eq("date", value: dateString)
+            .limit(1)
             .execute()
             .value
         
-        return !response.isEmpty
+        return response.first
     }
     
     struct FocusSessionRecord: Decodable {
