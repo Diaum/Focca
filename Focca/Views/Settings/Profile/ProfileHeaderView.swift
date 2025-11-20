@@ -54,10 +54,6 @@ struct ProfileHeaderView: View {
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                     .lineLimit(2)
-                
-                Text("Toque para alterar sua foto")
-                    .font(.system(size: 13))
-                    .foregroundColor(Color(hex: "8E8E93"))
             }
             
             Spacer()
