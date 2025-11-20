@@ -21,15 +21,13 @@ struct OnboardingStep1: View {
                         .font(.system(size: 30, weight: .bold, design: .rounded))
                         .foregroundColor(Color(hex: "1C1C1E"))
                         .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.85)
-                        .padding(.horizontal, 32)
+                        .lineLimit(nil)
                     
                     Text("Comece selecionando de 1 a 3 apps que mais tomam o seu tempo. Vamos bloquear quando for a hora de focar.")
-                        .font(.system(size: 17))
+                        .font(.system(size: 15))
                         .foregroundColor(Color(hex: "8E8E93"))
                         .multilineTextAlignment(.center)
-                        .lineSpacing(6)
+                        .lineSpacing(4)
                         .padding(.horizontal, 40)
                 }
                 
@@ -45,15 +43,8 @@ struct OnboardingStep1: View {
                         Image("onboardingstep1")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(maxWidth: 420)
+                            .frame(maxWidth: .infinity)
                             .padding(.top, 48)
-                        
-                        Text("Escolha redes sociais, jogos e apps que mais roubam o seu foco para bloqueá-los automaticamente.")
-                            .font(.system(size: 16))
-                            .foregroundColor(Color(hex: "8E8E93"))
-                            .multilineTextAlignment(.center)
-                            .lineSpacing(5)
-                            .padding(.horizontal, 32)
                         
                         Button(action: {
                             Task {
@@ -74,7 +65,6 @@ struct OnboardingStep1: View {
                     }
                 }
                 .frame(height: UIScreen.main.bounds.height * 0.52)
-                .padding(.horizontal, 24)
             }
         }
         .sheet(isPresented: $showStep2) {
