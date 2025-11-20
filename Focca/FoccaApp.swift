@@ -16,6 +16,9 @@ struct FoccaApp: App {
     
     // Inicializa o ScheduleManager quando o app abre
     init() {
+        // Inicializa TimerStorage e limpa dados antigos
+        TimerStorage.shared.initializeFirstLaunch()
+        
         // Acessa o singleton para inicializar o monitoramento
         _ = ScheduleManager.shared
         print("📱 [FoccaApp] App iniciado, ScheduleManager inicializado")

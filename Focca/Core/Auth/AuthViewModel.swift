@@ -37,10 +37,6 @@ class AuthViewModel: ObservableObject {
                     saveAuthState(email: session.user.email)
                     isLoading = false
                 }
-                
-                Task {
-                    await SessionSyncManager.shared.migrateHistoricalData()
-                }
             } else {
                 await MainActor.run {
                     isAuthenticated = userDefaults.bool(forKey: authKey)
@@ -82,11 +78,6 @@ class AuthViewModel: ObservableObject {
             isAuthenticated = true
             currentEmail = session.user.email
             saveAuthState(email: session.user.email)
-            
-            Task {
-                await SessionSyncManager.shared.migrateHistoricalData()
-            }
-            
             isLoading = false
             return true
         } catch {

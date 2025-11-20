@@ -230,12 +230,19 @@ struct ActivityView: View {
     }
     
     private func loadActivityData() {
-        dailyCards = TimerStorage.shared.getAllDailyTimes()
-        
-        let avgTime = TimerStorage.shared.getAverageTime()
-        let hours = Int(avgTime) / 3600
-        let minutes = (Int(avgTime) % 3600) / 60
-        averageTime = String(format: "%dh %dm", hours, minutes)
+        Task {
+            let cards = await TimerStorage.shared.getAllDailyTimes()
+            await MainActor.run {
+                dailyCards = cards
+            }
+            
+            let avgTime = await TimerStorage.shared.getAverageTime()
+            let hours = Int(avgTime) / 3600
+            let minutes = (Int(avgTime) % 3600) / 60
+            await MainActor.run {
+                averageTime = String(format: "%dh %dm", hours, minutes)
+            }
+        }
     }
     
     private var compactCards: [(date: Date, time: TimeInterval)] {

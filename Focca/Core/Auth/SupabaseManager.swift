@@ -135,6 +135,42 @@ class SupabaseManager {
         let date: String
         let duration_minutes: Int
     }
+    
+    func getSessions(from startDate: Date? = nil, to endDate: Date? = nil) async throws -> [FocusSessionRecord] {
+        guard let client = client else {
+            throw SupabaseError.clientNotInitialized
+        }
+        
+        guard let session = try? await client.auth.session else {
+            throw SupabaseError.userNotAuthenticated
+        }
+        
+        let userId = session.user.id
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        
+        // Busca todas as sessões do usuário
+        var allSessions: [FocusSessionRecord] = try await client.database
+            .from("focus_sessions")
+            .select()
+            .eq("user_id", value: userId.uuidString)
+            .order("date", ascending: false)
+            .execute()
+            .value
+        
+        // Filtra por data no Swift se necessário
+        if let startDate = startDate {
+            let startString = formatter.string(from: startDate)
+            allSessions = allSessions.filter { $0.date >= startString }
+        }
+        
+        if let endDate = endDate {
+            let endString = formatter.string(from: endDate)
+            allSessions = allSessions.filter { $0.date <= endString }
+        }
+        
+        return allSessions
+    }
 }
 
 enum SupabaseError: LocalizedError {

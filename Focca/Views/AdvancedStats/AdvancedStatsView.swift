@@ -192,36 +192,46 @@ struct AdvancedStatsView: View {
     }
     
     private func loadTotalBlockedTime() {
-        let dailyTimes = TimerStorage.shared.getAllDailyTimes()
-        totalBlockedTime = dailyTimes.reduce(0) { $0 + $1.time }
-        averageTimePerDay = TimerStorage.shared.getAverageTime()
-        currentStreak = calculateStreak(dailyTimes: dailyTimes)
+        Task {
+            let dailyTimes = await TimerStorage.shared.getAllDailyTimes()
+            let avgTime = await TimerStorage.shared.getAverageTime()
+            
+            await MainActor.run {
+                totalBlockedTime = dailyTimes.reduce(0) { $0 + $1.time }
+                averageTimePerDay = avgTime
+                currentStreak = calculateStreak(dailyTimes: dailyTimes)
+            }
+        }
     }
     
     private func loadAverages() {
-        let dailyTimes = TimerStorage.shared.getAllDailyTimes()
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        
-        var weeklyTotals: [Date: TimeInterval] = [:]
-        var monthlyTotals: [Date: TimeInterval] = [:]
-        
-        for (date, time) in dailyTimes {
-            let dayStart = calendar.startOfDay(for: date)
+        Task {
+            let dailyTimes = await TimerStorage.shared.getAllDailyTimes()
+            let calendar = Calendar.current
+            let today = calendar.startOfDay(for: Date())
             
-            if dayStart < today {
-                if let weekStart = calendar.dateInterval(of: .weekOfYear, for: dayStart)?.start {
-                    weeklyTotals[weekStart, default: 0] += time
-                }
+            var weeklyTotals: [Date: TimeInterval] = [:]
+            var monthlyTotals: [Date: TimeInterval] = [:]
+            
+            for (date, time) in dailyTimes {
+                let dayStart = calendar.startOfDay(for: date)
                 
-                if let monthStart = calendar.dateInterval(of: .month, for: dayStart)?.start {
-                    monthlyTotals[monthStart, default: 0] += time
+                if dayStart < today {
+                    if let weekStart = calendar.dateInterval(of: .weekOfYear, for: dayStart)?.start {
+                        weeklyTotals[weekStart, default: 0] += time
+                    }
+                    
+                    if let monthStart = calendar.dateInterval(of: .month, for: dayStart)?.start {
+                        monthlyTotals[monthStart, default: 0] += time
+                    }
                 }
             }
+            
+            await MainActor.run {
+                weeklyAverageTime = weeklyTotals.isEmpty ? 0 : weeklyTotals.values.reduce(0, +) / Double(weeklyTotals.count)
+                monthlyAverageTime = monthlyTotals.isEmpty ? 0 : monthlyTotals.values.reduce(0, +) / Double(monthlyTotals.count)
+            }
         }
-        
-        weeklyAverageTime = weeklyTotals.isEmpty ? 0 : weeklyTotals.values.reduce(0, +) / Double(weeklyTotals.count)
-        monthlyAverageTime = monthlyTotals.isEmpty ? 0 : monthlyTotals.values.reduce(0, +) / Double(monthlyTotals.count)
     }
     
     private var formattedAverageTime: String {

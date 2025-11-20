@@ -235,7 +235,7 @@ class GoalsNotificationManager {
             }
             
             // Calcula média diária
-            let averageDaily = TimerStorage.shared.getAverageTime()
+            let averageDaily = TimerStorage.shared.getAverageTimeSync()
             
             // Dias já passados e dias restantes
             let daysPassed = max(1, calendar.dateComponents([.day], from: startDay, to: today).day ?? 1)

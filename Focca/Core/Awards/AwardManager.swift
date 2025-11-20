@@ -111,7 +111,7 @@ class AwardManager: ObservableObject {
     }
     
     private func checkHistoricalAwards() {
-        let dailyTimes = TimerStorage.shared.getAllDailyTimes()
+        let dailyTimes = TimerStorage.shared.getAllDailyTimesSync()
         
         var maxSingleSession: TimeInterval = 0
         var totalTime: TimeInterval = 0
@@ -174,7 +174,7 @@ class AwardManager: ObservableObject {
     }
     
     private func checkStreakAwards() {
-        let dailyTimes = TimerStorage.shared.getAllDailyTimes()
+        let dailyTimes = TimerStorage.shared.getAllDailyTimesSync()
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         
