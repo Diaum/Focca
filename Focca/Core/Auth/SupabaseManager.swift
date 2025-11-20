@@ -72,6 +72,8 @@ class SupabaseManager {
         formatter.dateFormat = "yyyy-MM-dd"
         let dateString = formatter.string(from: dateOnly)
         
+        let exists = try await checkSessionExists(date: date)
+        
         struct FocusSession: Encodable {
             let user_id: UUID
             let date: String
@@ -84,10 +86,54 @@ class SupabaseManager {
             duration_minutes: durationMinutes
         )
         
-        try await client.database
+        if exists {
+            try await client.database
+                .from("focus_sessions")
+                .update(sessionData)
+                .eq("user_id", value: userId.uuidString)
+                .eq("date", value: dateString)
+                .execute()
+        } else {
+            try await client.database
+                .from("focus_sessions")
+                .insert(sessionData)
+                .execute()
+        }
+    }
+    
+    func checkSessionExists(date: Date) async throws -> Bool {
+        guard let client = client else {
+            throw SupabaseError.clientNotInitialized
+        }
+        
+        guard let session = try? await client.auth.session else {
+            throw SupabaseError.userNotAuthenticated
+        }
+        
+        let userId = session.user.id
+        
+        let calendar = Calendar.current
+        let dateOnly = calendar.startOfDay(for: date)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        let dateString = formatter.string(from: dateOnly)
+        
+        let response: [FocusSessionRecord] = try await client.database
             .from("focus_sessions")
-            .insert(sessionData)
+            .select()
+            .eq("user_id", value: userId.uuidString)
+            .eq("date", value: dateString)
             .execute()
+            .value
+        
+        return !response.isEmpty
+    }
+    
+    struct FocusSessionRecord: Decodable {
+        let id: UUID
+        let user_id: UUID
+        let date: String
+        let duration_minutes: Int
     }
 }
 
