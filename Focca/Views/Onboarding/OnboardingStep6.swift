@@ -17,17 +17,13 @@ struct OnboardingStep6: View {
             VStack(spacing: 0) {
                 Spacer()
                 
-                VStack(spacing: 4) {
-                    Text("Você está pronto para")
-                        .font(.system(size: 32, weight: .semibold))
-                        .foregroundColor(Color(hex: "1D1D1F"))
-                    Text("recuperar seu tempo")
-                        .font(.system(size: 32, weight: .semibold))
-                        .foregroundColor(Color(hex: "1D1D1F"))
-                }
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-                .padding(.bottom, 60)
+                Text("Você está pronto para\nrecuperar seu tempo?")
+                    .font(.system(size: 32, weight: .semibold))
+                    .foregroundColor(Color(hex: "1D1D1F"))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 60)
                 
                 Image("focca-rectangle-gray")
                     .resizable()
