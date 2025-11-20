@@ -72,23 +72,19 @@ struct OnboardingStep4: View {
                         
                         if showEmailInput {
                             VStack(spacing: 16) {
-                                ZStack(alignment: .leading) {
-                                    if email.isEmpty {
-                                        Text("seu@email.com")
-                                            .font(.system(size: 17))
-                                            .foregroundColor(Color(hex: "8E8E93"))
-                                            .padding(.horizontal, 16)
-                                    }
-                                    
-                                    TextField("", text: $email)
-                                        .textContentType(.emailAddress)
-                                        .keyboardType(.emailAddress)
-                                        .autocapitalization(.none)
-                                        .font(.system(size: 17))
-                                        .foregroundColor(Color(hex: "1D1D1F"))
-                                        .focused($isEmailFieldFocused)
-                                        .padding(.horizontal, 16)
-                                }
+                                TextField(
+                                    "",
+                                    text: $email,
+                                    prompt: Text("seu@email.com")
+                                        .foregroundColor(Color(hex: "8E8E93"))
+                                )
+                                .textContentType(.emailAddress)
+                                .keyboardType(.emailAddress)
+                                .autocapitalization(.none)
+                                .font(.system(size: 17))
+                                .foregroundColor(Color(hex: "1D1D1F"))
+                                .focused($isEmailFieldFocused)
+                                .padding(.horizontal, 16)
                                 .frame(height: 56)
                                 .background(Color.white)
                                 .cornerRadius(12)
@@ -115,19 +111,22 @@ struct OnboardingStep4: View {
                                 Button(action: {
                                     sendOtp()
                                 }) {
-                                    if authViewModel.isLoading {
-                                        ProgressView()
-                                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                    } else {
-                                        Text("Enviar código")
-                                            .font(.system(size: 17, weight: .semibold))
-                                            .foregroundColor(.white)
+                                    ZStack {
+                                        if authViewModel.isLoading {
+                                            ProgressView()
+                                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                        } else {
+                                            Text("Enviar código")
+                                                .font(.system(size: 17, weight: .semibold))
+                                                .foregroundColor(.white)
+                                        }
                                     }
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 56)
+                                    .background(isValidEmail && !authViewModel.isLoading ? Color(hex: "1D1D1F") : Color(hex: "DAD7D6"))
+                                    .cornerRadius(12)
                                 }
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 56)
-                                .background(isValidEmail && !authViewModel.isLoading ? Color(hex: "1D1D1F") : Color(hex: "DAD7D6"))
-                                .cornerRadius(12)
+                                .contentShape(Rectangle())
                                 .disabled(!isValidEmail || authViewModel.isLoading)
                                 .padding(.horizontal, 24)
                             }
