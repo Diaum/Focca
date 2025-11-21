@@ -16,8 +16,8 @@ struct OnboardingStep6: View {
             
             VStack(spacing: 0) {
                 Spacer()
-                
-                Text("Você está pronto para\nrecuperar seu tempo?")
+
+                Text("Vamos fazer seu primeiro bloqueio?")
                     .font(.system(size: 28, weight: .semibold))
                     .foregroundColor(Color(hex: "1D1D1F"))
                     .multilineTextAlignment(.center)
@@ -25,25 +25,13 @@ struct OnboardingStep6: View {
                     .padding(.horizontal, 40)
                     .padding(.bottom, 60)
                 
+                Spacer()
+
                 Image("focca-rectangle-gray")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 300, height: 197)
                     .padding(.bottom, 50)
-                
-                VStack(spacing: 10) {
-                    Text("Pegue seu Focca")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(Color(hex: "1D1D1F"))
-                    
-                    Text("Esconda todos os apps que roumbam sua atencão")
-                        .font(.system(size: 15))
-                        .foregroundColor(Color(hex: "7A7A7A"))
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(3)
-                        .padding(.horizontal, 50)
-                }
-                .padding(.bottom, 80)
                 
                 Spacer()
                 
@@ -80,7 +68,7 @@ struct OnboardingStep6: View {
                         showBlockedView = true
                     }
                 }) {
-                    Text("Permitir bloqueio")
+                    Text("Ativar Focca")
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(Color(hex: "1D1D1F"))
                         .frame(maxWidth: .infinity)
