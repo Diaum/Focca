@@ -78,7 +78,7 @@ struct SettingsView: View {
                     SettingsSection(
                         title: nil,
                         items: [
-                            SettingsItem(title: "Amigos", hasArrow: true, action: .friends)
+                            SettingsItem(title: "Amigos (breve)", hasArrow: true, action: .friends)
                         ],
                         showNotificationsView: $showNotificationsView,
                         selectedTab: $selectedTab,
