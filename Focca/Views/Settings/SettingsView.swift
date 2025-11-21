@@ -4,6 +4,7 @@ struct SettingsView: View {
     @Binding var selectedTab: Int
     let isBlocked: Bool
     @State private var showNotificationsView = false
+    @ObservedObject private var authViewModel = AuthViewModel.shared
     @ObservedObject private var awardManager = AwardManager.shared
     @ObservedObject private var statsAchievementManager = StatsAchievementManager.shared
     
@@ -24,26 +25,17 @@ struct SettingsView: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                RoundedRectangle(cornerRadius: 18)
-                    .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white.opacity(0.85))
-                    .frame(height: 66)
-                    .overlay(
-                        HStack {
-                            Text("Conta")
-                                .font(.system(size: 20, weight: .semibold))
-                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
-                            Spacer()
-                        }
-                        .padding(.horizontal, 18)
-                    )
-                    .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+                ProfileHeaderView(
+                    email: authViewModel.currentEmail ?? "usuário@focca.app",
+                    isBlocked: isBlocked
+                )
                     .padding(.horizontal, 16)
-                    .padding(.top, 16)
-                    .padding(.bottom, 18)
+                    .padding(.top, 40)
+                    .padding(.bottom, 36)
                 
                 VStack(spacing: 14) {
                     SettingsSection(
-                        title: "Sobre o Focca",
+                        title: nil,
                         items: [
                             SettingsItem(title: "Sobre o Focca", hasArrow: true),
                             SettingsItem(title: "Política de Privacidade", hasArrow: true)
@@ -77,6 +69,16 @@ struct SettingsView: View {
                         title: nil,
                         items: [
                             SettingsItem(title: "Estatísticas Avançadas", hasArrow: true, action: .advancedStats)
+                        ],
+                        showNotificationsView: $showNotificationsView,
+                        selectedTab: $selectedTab,
+                        isBlocked: isBlocked
+                    )
+                    
+                    SettingsSection(
+                        title: nil,
+                        items: [
+                            SettingsItem(title: "Amigos (breve)", hasArrow: true, action: .friends)
                         ],
                         showNotificationsView: $showNotificationsView,
                         selectedTab: $selectedTab,
@@ -200,6 +202,9 @@ struct SettingsRow: View {
                     StatsAchievementManager.shared.markAchievementsAsViewed()
                 case .goals:
                     showGoals = true
+                case .friends:
+                    // TODO: Implementar tela de amigos
+                    break
                 case .goalsToggle:
                     break
                 case .none:
@@ -304,6 +309,7 @@ enum SettingsAction {
     case goals
     case goalsToggle
     case advancedStats
+    case friends
 }
 
 struct SettingsItem {

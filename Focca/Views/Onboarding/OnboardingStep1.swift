@@ -5,8 +5,6 @@ struct OnboardingStep1: View {
     @State private var showStep2 = false
     @State private var showStep3 = false
     @State private var isRequestingPermission = false
-    @State private var isRequestingNotification = false
-    @State private var notificationPermissionGranted = false
     
     var body: some View {
         ZStack {
@@ -14,70 +12,70 @@ struct OnboardingStep1: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                Spacer(minLength: 100)
+                Spacer()
                 
-                VStack(spacing: 16) {
-                    Text("Quais apps te distraem?")
-                        .font(.system(size: 30, weight: .bold, design: .rounded))
-                        .foregroundColor(Color(hex: "1C1C1E"))
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.85)
-                        .padding(.horizontal, 32)
+                Text("Você está pronto para\nrecuperar seu tempo?")
+                    .font(.system(size: 28, weight: .semibold))
+                    .foregroundColor(Color(hex: "1D1D1F"))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 60)
+                
+                Image("focca-rectangle-gray")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 300, height: 197)
+                    .padding(.bottom, 50)
+                
+                VStack(spacing: 10) {
+                    Text("Pegue seu Focca")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(Color(hex: "1D1D1F"))
                     
-                    Text("Comece selecionando de 1 a 3 apps que mais tomam o seu tempo. Vamos bloquear quando for a hora de focar.")
-                        .font(.system(size: 17))
-                        .foregroundColor(Color(hex: "8E8E93"))
+                    Text("Esconda todos os apps que roumbam sua atencão e volte a viver")
+                        .font(.system(size: 15))
+                        .foregroundColor(Color(hex: "7A7A7A"))
                         .multilineTextAlignment(.center)
-                        .lineSpacing(6)
-                        .padding(.horizontal, 40)
+                        .lineSpacing(3)
+                        .padding(.horizontal, 50)
                 }
+                .padding(.bottom, 80)
                 
-                Spacer(minLength: 40)
+                Spacer()
                 
-                ZStack(alignment: .bottom) {
-                    RoundedRectangle(cornerRadius: 44)
-                        .fill(Color.white)
-                        .shadow(color: Color.black.opacity(0.1), radius: 25, x: 0, y: -8)
-                        .ignoresSafeArea(edges: .bottom)
-                    
-                    VStack(spacing: 24) {
-                        Image("onboardingstep1")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(maxWidth: 420)
-                            .padding(.top, 48)
-                        
-                        Text("Escolha redes sociais, jogos e apps que mais roubam o seu foco para bloqueá-los automaticamente.")
-                            .font(.system(size: 16))
-                            .foregroundColor(Color(hex: "8E8E93"))
-                            .multilineTextAlignment(.center)
-                            .lineSpacing(5)
-                            .padding(.horizontal, 32)
-                        
-                        Button(action: {
-                            Task {
-                                await requestPermissions()
-                            }
-                        }) {
-                            Text(getButtonText())
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 56)
-                                .background(Color(hex: "1C1C1E"))
-                                .cornerRadius(20)
-                        }
-                        .disabled(isRequestingPermission || isRequestingNotification)
-                        .padding(.horizontal, 32)
-                        .padding(.bottom, 48)
+                Button(action: {
+                    Task {
+                        await requestScreenTimePermission()
                     }
+                }) {
+                    ZStack {
+                        if isRequestingPermission {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: Color(hex: "1D1D1F")))
+                        } else {
+                            Text("Permitir bloqueio")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundColor(Color(hex: "1D1D1F"))
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 56)
+                    .background(Color.white.opacity(0.9))
+                    .cornerRadius(28)
+                    .contentShape(Rectangle())
                 }
-                .frame(height: UIScreen.main.bounds.height * 0.52)
+                .disabled(isRequestingPermission)
                 .padding(.horizontal, 24)
+                .padding(.bottom, 40)
+            }
+            
+            VStack {
+                Spacer()
+                WhiteRoundedBottomPlain()
             }
         }
-        .sheet(isPresented: $showStep2) {
+        .fullScreenCover(isPresented: $showStep2) {
             OnboardingStep2(didComplete: {
                 showStep2 = false
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -90,45 +88,10 @@ struct OnboardingStep1: View {
         }
     }
     
-    private func getButtonText() -> String {
-        if isRequestingNotification {
-            return "Solicitando permissão de notificações..."
-        } else if isRequestingPermission {
-            return "Solicitando permissão..."
-        } else {
-            return "Escolher apps"
+    private func requestScreenTimePermission() async {
+        await MainActor.run {
+            isRequestingPermission = true
         }
-    }
-    
-    private func requestPermissions() async {
-        // Primeiro, verifica se precisa pedir permissão de notificações
-        let notificationGranted = UserDefaults.standard.bool(forKey: "notification_permission_granted")
-        
-        if !notificationGranted {
-            // Verifica o status atual de notificações
-            let notificationStatus = await NotificationManager.shared.checkAuthorizationStatus()
-            
-            if notificationStatus != .authorized {
-                isRequestingNotification = true
-                let granted = await NotificationManager.shared.requestAuthorization()
-                await MainActor.run {
-                    isRequestingNotification = false
-                    notificationPermissionGranted = granted
-                    UserDefaults.standard.set(granted, forKey: "notification_permission_granted")
-                }
-            } else {
-                await MainActor.run {
-                    notificationPermissionGranted = true
-                }
-            }
-        } else {
-            await MainActor.run {
-                notificationPermissionGranted = true
-            }
-        }
-        
-        // Depois, pede permissão de Screen Time
-        isRequestingPermission = true
         
         let screenTimePermissions = ScreenTimePermissions()
         let status = screenTimePermissions.checkAuthorizationStatus()
@@ -138,8 +101,6 @@ struct OnboardingStep1: View {
             await MainActor.run {
                 isRequestingPermission = false
                 if granted {
-                    showStep2 = true
-                } else {
                     showStep2 = true
                 }
             }
@@ -155,4 +116,3 @@ struct OnboardingStep1: View {
 #Preview {
     OnboardingStep1()
 }
-

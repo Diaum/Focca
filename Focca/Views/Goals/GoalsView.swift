@@ -57,7 +57,7 @@ struct GoalsView: View {
                             .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                     }
                     .padding(.leading, 16)
-                    .padding(.top, 0)
+                    .padding(.top, 8)
                     
                     Spacer()
                 }
@@ -67,7 +67,7 @@ struct GoalsView: View {
                         .font(.system(size: 24, weight: .medium))
                         .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 }
-                .padding(.top, 8)
+                .padding(.top, 12)
                 .padding(.bottom, 24)
                 
                 if GoalsManager.shared.areGoalsEnabled {
@@ -230,7 +230,7 @@ struct GoalsView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .top)
-            .padding(.top, -90)
+            .padding(.top, 16)
             
             VStack(spacing: 0) {
                 Spacer()
