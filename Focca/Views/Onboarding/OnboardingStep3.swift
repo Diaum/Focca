@@ -8,9 +8,10 @@ struct OnboardingStep3: View {
     @StateObject var model = SelectionModel()
     @State private var appInfos: [AppInfo] = []
     @State private var isLoading = true
-    @State private var showMainView = false
+    @State private var showLoginView = false
     @State private var showStep2 = false
     @State private var showAlert = false
+    @State private var isRequestingNotification = false
     @Environment(\.presentationMode) var presentationMode
 
     var body: some View {
@@ -20,9 +21,13 @@ struct OnboardingStep3: View {
 
                 VStack(spacing: 0) {
                     Text("\(appInfos.count) distrações selecionadas")
-                        .font(.system(size: 32, weight: .bold))
+                        .font(.system(size: 24, weight: .bold))
                         .foregroundColor(Color(hex: "1D1D1F"))
                         .padding(.top, 40)
+                        .padding(.horizontal, 20)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.8)
 
                     if isLoading {
                         Spacer()
@@ -64,19 +69,29 @@ struct OnboardingStep3: View {
                             if appInfos.count > 50 {
                                 showAlert = true
                             } else if model.selection.applicationTokens.count > 0 && model.selection.applicationTokens.count <= 50 {
-                                showMainView = true
+                                Task {
+                                    await requestNotificationPermission()
+                                }
                             }
                         }) {
-                            Text("Concluir configuração")
-                                .font(.system(size: 17, weight: .medium))
-                                .foregroundColor((appInfos.isEmpty || appInfos.count > 50) ? Color(hex: "9E9EA3") : .white)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 50)
-                                .background((appInfos.isEmpty || appInfos.count > 50) ? Color(hex: "DAD7D6") : Color.black)
-                                .cornerRadius(12)
-                                .shadow(color: (appInfos.isEmpty || appInfos.count > 50) ? .clear : Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
+                            ZStack {
+                                if isRequestingNotification {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                } else {
+                                    Text("Concluir configuração")
+                                        .font(.system(size: 17, weight: .medium))
+                                        .foregroundColor(.white)
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 50)
+                            .background((appInfos.isEmpty || appInfos.count > 50 || isRequestingNotification) ? Color(hex: "DAD7D6") : Color.black)
+                            .cornerRadius(12)
+                            .contentShape(Rectangle())
                         }
-                        .disabled(appInfos.isEmpty || appInfos.count > 50)
+                        .shadow(color: (appInfos.isEmpty || appInfos.count > 50 || isRequestingNotification) ? .clear : Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
+                        .disabled(appInfos.isEmpty || appInfos.count > 50 || isRequestingNotification)
 
                         Button(action: {
                             showStep2 = true
@@ -92,7 +107,8 @@ struct OnboardingStep3: View {
                 }
             }
             .navigationBarItems(leading: BackButton(action: { showStep2 = true }))
-            .fullScreenCover(isPresented: $showMainView) {
+            .preferredColorScheme(.light)
+            .fullScreenCover(isPresented: $showLoginView) {
                 OnboardingStep4()
             }
             .sheet(isPresented: $showStep2) {
@@ -121,21 +137,21 @@ struct OnboardingStep3: View {
         }
     }
 
+    @MainActor
     private func refreshSelectionAndApps() async {
         if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
            let savedSelection = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
-            await MainActor.run { model.selection = savedSelection }
+            model.selection = savedSelection
             await loadAppInfos()
         }
     }
 
+    @MainActor
     private func loadAppInfos() async {
         isLoading = true
         let infos = await fetchAppInfo(from: model.selection)
-        await MainActor.run {
-            self.appInfos = infos
-            self.isLoading = false
-        }
+        appInfos = infos
+        isLoading = false
     }
 
     @available(iOS 17.0, *)
@@ -157,6 +173,30 @@ struct OnboardingStep3: View {
         }
 
         return infos
+    }
+    
+    @MainActor
+    private func requestNotificationPermission() async {
+        let notificationGranted = UserDefaults.standard.bool(forKey: "notification_permission_granted")
+        
+        if !notificationGranted {
+            let notificationStatus = await NotificationManager.shared.checkAuthorizationStatus()
+            
+            if notificationStatus != .authorized {
+                isRequestingNotification = true
+                let granted = await NotificationManager.shared.requestAuthorization()
+                isRequestingNotification = false
+                UserDefaults.standard.set(granted, forKey: "notification_permission_granted")
+                if granted {
+                    showLoginView = true
+                }
+            } else {
+                UserDefaults.standard.set(true, forKey: "notification_permission_granted")
+                showLoginView = true
+            }
+        } else {
+            showLoginView = true
+        }
     }
 }
 

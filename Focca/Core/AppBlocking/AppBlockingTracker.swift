@@ -516,7 +516,34 @@ class AppBlockingTracker {
         if let encoded = try? JSONEncoder().encode(blocking) {
             userDefaults.set(encoded, forKey: key)
             userDefaults.synchronize()
+            
+            // Limpa dados antigos (>7 dias) periodicamente
+            cleanOldData()
         }
+    }
+    
+    private func cleanOldData() {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let sevenDaysAgo = calendar.date(byAdding: .day, value: -7, to: today)!
+        
+        let allKeys = userDefaults.dictionaryRepresentation().keys
+        let blockingKeys = allKeys.filter { $0.hasPrefix("app_blocking_") }
+        
+        for key in blockingKeys {
+            let dateString = key.replacingOccurrences(of: "app_blocking_", with: "")
+            if let date = parseDate(dateString), date < sevenDaysAgo {
+                userDefaults.removeObject(forKey: key)
+            }
+        }
+        
+        userDefaults.synchronize()
+    }
+    
+    private func parseDate(_ dateString: String) -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.date(from: dateString)
     }
 }
 

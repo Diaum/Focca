@@ -6,16 +6,21 @@ class AwardManager: ObservableObject {
     
     private let userDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
     private let awardsKey = "unlocked_awards"
+    private let lastSyncKey = "awards_last_sync_date"
     
     @Published var unlockedAwards: Set<String> = []
     @Published var hasNewAwards: Bool = false
     
     private init() {
-        loadUnlockedAwards()
+        loadUnlockedAwardsCache()
         checkNewAwards()
+        
+        Task {
+            await syncAwardsFromSupabase()
+        }
     }
     
-    func loadUnlockedAwards() {
+    func loadUnlockedAwardsCache() {
         if let data = userDefaults.data(forKey: awardsKey),
            let awards = try? JSONDecoder().decode(Set<String>.self, from: data) {
             unlockedAwards = awards
@@ -30,10 +35,19 @@ class AwardManager: ObservableObject {
         guard !unlockedAwards.contains(awardId) else { return }
         
         unlockedAwards.insert(awardId)
-        saveUnlockedAwards()
+        saveUnlockedAwardsCache()
         
         // Marca que há novos awards não visualizados
         markNewAward()
+        
+        Task {
+            do {
+                try await SupabaseManager.shared.saveAward(awardId)
+                userDefaults.set(Date(), forKey: lastSyncKey)
+            } catch {
+                print("⚠️ [AwardManager] Erro ao salvar award no Supabase: \(error.localizedDescription)")
+            }
+        }
         
         DispatchQueue.main.async {
             self.objectWillChange.send()
@@ -69,9 +83,30 @@ class AwardManager: ObservableObject {
         }
     }
     
-    private func saveUnlockedAwards() {
+    private func saveUnlockedAwardsCache() {
         if let data = try? JSONEncoder().encode(unlockedAwards) {
             userDefaults.set(data, forKey: awardsKey)
+        }
+    }
+    
+    @MainActor
+    func refreshAwards() async {
+        await syncAwardsFromSupabase()
+    }
+    
+    private func syncAwardsFromSupabase() async {
+        do {
+            let awards = try await SupabaseManager.shared.fetchAwards()
+            await MainActor.run {
+                let newSet = Set(awards)
+                unlockedAwards = newSet
+                saveUnlockedAwardsCache()
+                checkNewAwards()
+                userDefaults.set(Date(), forKey: lastSyncKey)
+                self.objectWillChange.send()
+            }
+        } catch {
+            print("⚠️ [AwardManager] Erro ao buscar awards do Supabase: \(error.localizedDescription)")
         }
     }
     
@@ -111,7 +146,7 @@ class AwardManager: ObservableObject {
     }
     
     private func checkHistoricalAwards() {
-        let dailyTimes = TimerStorage.shared.getAllDailyTimes()
+        let dailyTimes = TimerStorage.shared.getAllDailyTimesSync()
         
         var maxSingleSession: TimeInterval = 0
         var totalTime: TimeInterval = 0
@@ -174,7 +209,7 @@ class AwardManager: ObservableObject {
     }
     
     private func checkStreakAwards() {
-        let dailyTimes = TimerStorage.shared.getAllDailyTimes()
+        let dailyTimes = TimerStorage.shared.getAllDailyTimesSync()
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         

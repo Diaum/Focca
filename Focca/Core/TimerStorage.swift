@@ -4,6 +4,12 @@ class TimerStorage {
     static let shared = TimerStorage()
 
     private let userDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
+    private var cachedSessions: [String: Int] = [:]
+    private var lastFetchDate: Date?
+    private let cacheValidityInterval: TimeInterval = 300 // 5 minutos
+    private let cachedSessionsKey = "cached_focus_sessions"
+    private let lastFetchDateKey = "last_fetch_date"
+    private let syncedLocalPrefix = "synced_local_seconds_"
 
     private init() {}
     
@@ -12,26 +18,121 @@ class TimerStorage {
             let today = Calendar.current.startOfDay(for: Date())
             userDefaults.set(today, forKey: "first_launch_date")
         }
+        cleanOldLocalData()
+        loadCachedSessions()
+    }
+    
+    private func loadCachedSessions() {
+        if let data = userDefaults.data(forKey: cachedSessionsKey),
+           let decoded = try? JSONDecoder().decode([String: Int].self, from: data) {
+            cachedSessions = decoded
+        }
+        
+        if let lastFetch = userDefaults.object(forKey: lastFetchDateKey) as? Date {
+            lastFetchDate = lastFetch
+        }
+    }
+    
+    private func saveCachedSessions() {
+        if let encoded = try? JSONEncoder().encode(cachedSessions) {
+            userDefaults.set(encoded, forKey: cachedSessionsKey)
+            userDefaults.set(Date(), forKey: lastFetchDateKey)
+            userDefaults.synchronize()
+        }
     }
     
     func getDailyTime(for date: Date) -> TimeInterval {
         let dateKey = formatDate(date)
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let targetDate = calendar.startOfDay(for: date)
+        let daysDifference = calendar.dateComponents([.day], from: targetDate, to: today).day ?? 0
         
-        // Primeiro tenta buscar dados do AppBlockingTracker
-        let totalTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
-        
-        // Se encontrou dados do AppBlockingTracker, retorna
-        if totalTime > 0 {
-            return totalTime
+        let combined = combinedTime(for: date, remoteMinutes: cachedSessions[dateKey])
+        if combined > 0 {
+            return combined
         }
         
-        // Fallback para dados antigos de daily_time_
+        // Para datas antigas (>7 dias), busca do banco de dados
+        if daysDifference > 7 {
+            if let cachedMinutes = cachedSessions[dateKey] {
+                return TimeInterval(cachedMinutes * 60)
+            }
+            
+            // Tenta buscar do banco (síncrono para não bloquear UI)
+            Task {
+                await fetchSessionsFromDatabase()
+            }
+            
+            // Retorna 0 enquanto busca (será atualizado na próxima chamada)
+            return 0
+        }
+        
+        // Fallback para dados antigos de daily_time_ (apenas últimos 7 dias)
         let oldTime = userDefaults.double(forKey: "daily_time_\(dateKey)")
         if oldTime > 0 {
             return oldTime
         }
         
         return 0
+    }
+    
+    private func fetchSessionsFromDatabase() async {
+        // Evita buscar muito frequentemente
+        if let lastFetch = lastFetchDate,
+           Date().timeIntervalSince(lastFetch) < cacheValidityInterval {
+            return
+        }
+        
+        do {
+            let sessions = try await SupabaseManager.shared.getSessions()
+            await MainActor.run {
+                cachedSessions.removeAll()
+                for session in sessions {
+                    upsertCachedSession(session)
+                }
+                lastFetchDate = Date()
+            }
+        } catch {
+            print("⚠️ [TimerStorage] Erro ao buscar sessões do banco: \(error.localizedDescription)")
+        }
+    }
+    
+    private func cleanOldLocalData() {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let sevenDaysAgo = calendar.date(byAdding: .day, value: -7, to: today)!
+        
+        let allKeys = userDefaults.dictionaryRepresentation().keys
+        
+        // Remove dados de app_blocking_ antigos (>7 dias)
+        for key in allKeys where key.hasPrefix("app_blocking_") {
+            let dateString = key.replacingOccurrences(of: "app_blocking_", with: "")
+            if let date = parseDate(dateString),
+               date < sevenDaysAgo {
+                userDefaults.removeObject(forKey: key)
+            }
+        }
+        
+        // Remove dados de daily_time_ antigos (>7 dias)
+        for key in allKeys where key.hasPrefix("daily_time_") {
+            let dateString = key.replacingOccurrences(of: "daily_time_", with: "")
+            if let date = parseDate(dateString),
+               date < sevenDaysAgo {
+                userDefaults.removeObject(forKey: key)
+            }
+        }
+        
+        // Remove dados de sincronização local antigos (>7 dias)
+        for key in allKeys where key.hasPrefix(syncedLocalPrefix) {
+            let dateString = key.replacingOccurrences(of: syncedLocalPrefix, with: "")
+            if let date = parseDate(dateString),
+               date < sevenDaysAgo {
+                userDefaults.removeObject(forKey: key)
+            }
+        }
+        
+        userDefaults.synchronize()
     }
     
     func addDailyTime(_ timeInterval: TimeInterval, for date: Date) {
@@ -80,53 +181,69 @@ class TimerStorage {
         return formatter.string(from: date)
     }
     
-    func getAllDailyTimes() -> [(date: Date, time: TimeInterval)] {
-        var result: [(date: Date, time: TimeInterval)] = []
-        let allKeys = userDefaults.dictionaryRepresentation().keys
+    func getAllDailyTimes() async -> [(date: Date, time: TimeInterval)] {
+        // Primeiro retorna dados do cache (instantâneo)
+        let cachedResult = getCachedDailyTimes()
         
-        // Busca dados de bloqueio de apps do AppBlockingTracker
-        let blockingKeys = allKeys.filter { $0.hasPrefix("app_blocking_") }
+        // Em paralelo, busca do banco e atualiza cache
+        Task {
+            await fetchAndUpdateFromDatabase()
+        }
         
-        // Cria um conjunto de datas já processadas para evitar duplicatas
-        var processedDates = Set<String>()
+        return cachedResult
+    }
+    
+    func getAllDailyTimesWithRefresh() async -> [(date: Date, time: TimeInterval)] {
+        // Força atualização do banco
+        await fetchAndUpdateFromDatabase()
+        return getCachedDailyTimes()
+    }
+    
+    private func getCachedDailyTimes() -> [(date: Date, time: TimeInterval)] {
+        var timeByDate: [String: TimeInterval] = [:]
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let sevenDaysAgo = calendar.date(byAdding: .day, value: -7, to: today)!
         
-        for key in blockingKeys {
-            let dateString = key.replacingOccurrences(of: "app_blocking_", with: "")
-            
-            // Evita processar a mesma data múltiplas vezes
-            if processedDates.contains(dateString) {
-                continue
-            }
-            processedDates.insert(dateString)
-            
+        // Inclui dados remotos em cache
+        for (dateString, minutes) in cachedSessions {
             if let date = parseDate(dateString) {
-                // Usa o método público do AppBlockingTracker para obter o tempo total
-                let totalTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
-                
-                if totalTime > 0 {
-                    result.append((date: date, time: totalTime))
-                }
+                let time = combinedTime(for: date, remoteMinutes: minutes)
+                timeByDate[dateString] = time
             }
         }
         
-        // Também busca dados antigos de daily_time_ para compatibilidade
+        let allKeys = userDefaults.dictionaryRepresentation().keys
+        let blockingKeys = allKeys.filter { $0.hasPrefix("app_blocking_") }
+        
+        // Inclui dados locais recentes (últimos 7 dias)
+        for key in blockingKeys {
+            let dateString = key.replacingOccurrences(of: "app_blocking_", with: "")
+            guard let date = parseDate(dateString), date >= sevenDaysAgo else { continue }
+            let time = combinedTime(for: date, remoteMinutes: cachedSessions[dateString])
+            if time > 0 {
+                timeByDate[dateString] = time
+            }
+        }
+        
+        // Fallback daily_time_
         let timeKeys = allKeys.filter { $0.hasPrefix("daily_time_") }
         for key in timeKeys {
             let time = userDefaults.double(forKey: key)
             if time > 0 {
                 let dateString = key.replacingOccurrences(of: "daily_time_", with: "")
-                if let date = parseDate(dateString) {
-                    // Verifica se já existe uma entrada para esta data
-                    if let existingIndex = result.firstIndex(where: { Calendar.current.isDate($0.date, inSameDayAs: date) }) {
-                        // Se já existe, usa o maior valor (não soma, para evitar duplicação)
-                        if time > result[existingIndex].time {
-                            result[existingIndex] = (date: result[existingIndex].date, time: time)
-                        }
-                    } else {
-                        // Se não existe, adiciona nova entrada
-                        result.append((date: date, time: time))
-                    }
+                if let date = parseDate(dateString), date >= sevenDaysAgo {
+                    let key = formatDate(date)
+                    let existing = timeByDate[key] ?? 0
+                    timeByDate[key] = max(existing, time)
                 }
+            }
+        }
+        
+        var result: [(date: Date, time: TimeInterval)] = []
+        for (dateString, time) in timeByDate {
+            if let date = parseDate(dateString) {
+                result.append((date: date, time: time))
             }
         }
         
@@ -134,18 +251,135 @@ class TimerStorage {
         return result
     }
     
-    func getAverageTime() -> TimeInterval {
-        let dailyTimes = getAllDailyTimes()
+    private func fetchAndUpdateFromDatabase() async {
+        // Evita buscar muito frequentemente
+        if let lastFetch = lastFetchDate,
+           Date().timeIntervalSince(lastFetch) < cacheValidityInterval {
+            return
+        }
+        
+        await fetchAndCacheFromDatabase()
+    }
+    
+    func fetchAndCacheFromDatabase() async {
+        do {
+            let sessions = try await SupabaseManager.shared.getSessions()
+            let calendar = Calendar.current
+            let today = calendar.startOfDay(for: Date())
+            let sevenDaysAgo = calendar.date(byAdding: .day, value: -7, to: today)!
+            
+            await MainActor.run {
+                // Atualiza cache completo
+                cachedSessions.removeAll()
+                for session in sessions {
+                    upsertCachedSession(session)
+                }
+                lastFetchDate = Date()
+                saveCachedSessions()
+                print("✅ [TimerStorage] Cache atualizado com \(sessions.count) sessões do banco")
+                
+                // Salva os últimos 7 dias localmente para cache rápido
+                for session in sessions {
+                    if let date = parseDate(session.date), date >= sevenDaysAgo {
+                        let timeInterval = TimeInterval(session.duration_minutes * 60)
+                        // Só salva se não existir dado local mais recente
+                        let existingTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
+                        if existingTime == 0 {
+                            // Salva como daily_time_ para compatibilidade
+                            let dateKey = formatDate(date)
+                            userDefaults.set(timeInterval, forKey: "daily_time_\(dateKey)")
+                        }
+                    }
+                }
+                userDefaults.synchronize()
+                print("✅ [TimerStorage] Últimos 7 dias salvos localmente para cache")
+            }
+        } catch {
+            print("⚠️ [TimerStorage] Erro ao buscar do banco: \(error.localizedDescription)")
+        }
+    }
+    
+    func hasLocalCache() -> Bool {
+        // Verifica se há dados locais ou cache do banco
+        let hasLocalData = !userDefaults.dictionaryRepresentation().keys.filter { 
+            $0.hasPrefix("app_blocking_") || $0.hasPrefix("daily_time_") 
+        }.isEmpty
+        
+        let hasCachedSessions = !cachedSessions.isEmpty
+        
+        return hasLocalData || hasCachedSessions
+    }
+    
+    func updateCacheForDate(date: Date, durationMinutes: Int) async {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        let dateString = formatter.string(from: date)
+        
+        await MainActor.run {
+            let existingMinutes = cachedSessions[dateString] ?? 0
+            cachedSessions[dateString] = existingMinutes + durationMinutes
+            saveCachedSessions()
+            
+            let localTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
+            setSyncedLocalSeconds(localTime, for: dateString)
+        }
+    }
+    
+    func getAllDailyTimesSync() -> [(date: Date, time: TimeInterval)] {
+        // Versão síncrona que retorna cache local + cache do banco
+        return getCachedDailyTimes()
+    }
+    
+    func getAverageTime() async -> TimeInterval {
+        let dailyTimes = await getAllDailyTimes()
         guard !dailyTimes.isEmpty else { return 0 }
         
         let totalTime = dailyTimes.reduce(0) { $0 + $1.time }
         return totalTime / Double(dailyTimes.count)
     }
     
+    func getAverageTimeSync() -> TimeInterval {
+        let dailyTimes = getAllDailyTimesSync()
+        guard !dailyTimes.isEmpty else { return 0 }
+        
+        let totalTime = dailyTimes.reduce(0) { $0 + $1.time }
+        return totalTime / Double(dailyTimes.count)
+    }
+    
+    private func upsertCachedSession(_ session: SupabaseManager.FocusSessionRecord) {
+        cachedSessions[session.date] = session.duration_minutes
+        
+        if let date = parseDate(session.date) {
+            let remoteSeconds = TimeInterval(session.duration_minutes * 60)
+            let localTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
+            let syncedValue = min(localTime, remoteSeconds)
+            setSyncedLocalSeconds(syncedValue, for: formatDate(date))
+        }
+    }
+    
     private func parseDate(_ dateString: String) -> Date? {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.date(from: dateString)
+    }
+    
+    private func getSyncedLocalSeconds(for dateKey: String) -> TimeInterval {
+        return userDefaults.double(forKey: "\(syncedLocalPrefix)\(dateKey)")
+    }
+    
+    private func setSyncedLocalSeconds(_ value: TimeInterval, for dateKey: String) {
+        userDefaults.set(value, forKey: "\(syncedLocalPrefix)\(dateKey)")
+    }
+    
+    private func combinedTime(for date: Date, remoteMinutes: Int?) -> TimeInterval {
+        let dateKey = formatDate(date)
+        let remoteMinutesValue = remoteMinutes ?? cachedSessions[dateKey]
+        let remoteTime = TimeInterval((remoteMinutesValue ?? 0) * 60)
+        let localTime = AppBlockingTracker.shared.getTotalBlockingTime(for: date)
+        let syncedLocal = getSyncedLocalSeconds(for: dateKey)
+        let additionalLocal = max(0, localTime - syncedLocal)
+        let combined = remoteTime + additionalLocal
+        return max(combined, localTime)
     }
 }
 

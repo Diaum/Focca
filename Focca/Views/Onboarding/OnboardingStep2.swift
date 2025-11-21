@@ -74,12 +74,10 @@ struct OnboardingStep2: View {
                 }
             }
             .navigationBarTitle("", displayMode: .inline)
+            .preferredColorScheme(.light)
             .onAppear {
                 loadSavedSelection()
                 checkAuthorizationStatus()
-                Task {
-                    await requestAuthorizationIfNeeded()
-                }
             }
             .alert("Permissão de Tempo de Uso necessária", isPresented: $showAuthorizationAlert) {
                 Button("Abrir Ajustes") {

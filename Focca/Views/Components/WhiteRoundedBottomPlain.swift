@@ -1,6 +1,5 @@
 import SwiftUI
 
-// Versão sem botão: apenas a base arredondada branca para servir de rodapé visual
 struct WhiteRoundedBottomPlain: View {
     let isBlocked: Bool
     
@@ -14,11 +13,11 @@ struct WhiteRoundedBottomPlain: View {
                 LinearGradient(
                     colors: isBlocked
                         ? [
-                            Color(hex: "181818").opacity(0.9),
+                            Color(hex: "181818").opacity(0.8),
                             Color(hex: "")
                         ]
                         : [
-                            Color(hex: "F9F4F0").opacity(0.7),
+                            Color(hex: "F9F4F0").opacity(0.8),
                             Color(hex: "")
                         ],
                     startPoint: .bottom,

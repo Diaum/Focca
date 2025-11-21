@@ -30,7 +30,7 @@ class StatsAchievementManager: ObservableObject {
     
     // MARK: - Check Achievements
     func checkAchievements() {
-        let dailyTimes = TimerStorage.shared.getAllDailyTimes()
+        let dailyTimes = TimerStorage.shared.getAllDailyTimesSync()
         let totalTime = dailyTimes.reduce(0) { $0 + $1.time }
         let streak = calculateCurrentStreak(dailyTimes: dailyTimes)
         
@@ -73,7 +73,7 @@ class StatsAchievementManager: ObservableObject {
     
     // MARK: - Mark as Viewed
     func markAchievementsAsViewed() {
-        let dailyTimes = TimerStorage.shared.getAllDailyTimes()
+        let dailyTimes = TimerStorage.shared.getAllDailyTimesSync()
         let totalTime = dailyTimes.reduce(0) { $0 + $1.time }
         let streak = calculateCurrentStreak(dailyTimes: dailyTimes)
         

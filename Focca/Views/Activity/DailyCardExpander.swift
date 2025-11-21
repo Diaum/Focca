@@ -24,11 +24,11 @@ struct DailyCardExpander: View {
     }
     
     private var allDailyTimes: [(date: Date, time: TimeInterval)] {
-        TimerStorage.shared.getAllDailyTimes()
+        TimerStorage.shared.getAllDailyTimesSync()
     }
     
     private var dailyAverageTime: TimeInterval {
-        TimerStorage.shared.getAverageTime()
+        TimerStorage.shared.getAverageTimeSync()
     }
     
     private var weekAverageInfo: (average: TimeInterval, startDate: Date?, endDate: Date?) {

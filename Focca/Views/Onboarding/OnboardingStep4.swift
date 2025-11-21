@@ -1,161 +1,205 @@
 import SwiftUI
-import FamilyControls
-import ManagedSettings
-import ActivityKit
 
 struct OnboardingStep4: View {
-    @State private var showBlockedView = false
-    @State private var currentActivity: Activity<FoccaWidgetLiveAttributes>?
-    @Environment(\.presentationMode) var presentationMode
-
-    private let sharedDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
+    @ObservedObject private var authViewModel = AuthViewModel.shared
+    @State private var email = ""
+    @State private var showCodeView = false
+    @State private var isValidEmail = false
+    @State private var savedEmail = ""
+    @State private var showEmailInput = false
+    @FocusState private var isEmailFieldFocused: Bool
     
     var body: some View {
         ZStack {
-            // Fundo ligeiramente mais frio e neutro
+            if showCodeView {
+                OnboardingStep5(email: savedEmail, onBack: {
+                    showCodeView = false
+                    authViewModel.errorMessage = nil
+                })
+                .transition(.move(edge: .trailing))
+            } else {
+                emailInputView
+                    .transition(.move(edge: .leading))
+            }
+        }
+        .animation(.easeInOut(duration: 0.3), value: showCodeView)
+    }
+    
+    private var emailInputView: some View {
+        ZStack {
             Color(hex: "ECE8E6")
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                HStack {
-                    Button(action: {
-                        presentationMode.wrappedValue.dismiss()
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .medium))
+                Spacer()
+                
+                VStack(spacing: 32) {
+                    VStack(spacing: 12) {
+                        Text(showEmailInput ? "Insira seu email e\nreceba um código de acesso" : "Entre para acessar\nsuas configurações")
+                            .font(.system(size: 24, weight: .semibold))
                             .foregroundColor(Color(hex: "1D1D1F"))
-                            .frame(width: 44, height: 44)
-                            .background(Color.white)
-                            .clipShape(Circle())
-                            .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(4)
                     }
-                    Spacer()
-                }
-                .padding(.leading, 20)
-                .padding(.top, 8)
-                
-                Spacer()
-                
-                VStack(spacing: 4) {
-                    Text("Retome o controle do seu tempo")
-                        .font(.system(size: 30, weight: .semibold))
-                        .foregroundColor(Color(hex: "1D1D1F"))
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.9)
-                        .padding(.horizontal, 32)
-                }
-                .padding(.bottom, 60)
-                
-                // 🔹 Imagem do Brick
-                Image("focca-rectangle-gray")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 300, height: 197)
-                    .padding(.bottom, 50)
-                
-                VStack(spacing: 10) {
-                    Text("Pegue o seu Focca")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(Color(hex: "1D1D1F"))
+                    .animation(.easeInOut(duration: 0.3), value: showEmailInput)
                     
-                    Text("Você tem 5 desbloqueios emergenciais caso fique sem o dispositivo.")
-                        .font(.system(size: 15))
-                        .foregroundColor(Color(hex: "7A7A7A"))
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(3)
-                        .padding(.horizontal, 50)
-                }
-                .padding(.bottom, 80)
-                
-                Spacer()
-                
-                Button(action: {
-                    if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
-                       let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data),
-                       saved.applicationTokens.count > 0 {
-                        let store = ManagedSettingsStore()
-                        let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
-                        store.application.blockedApplications = apps
-
-                        // Marca criação do modo "padrao" no primeiro bloqueio e persiste a seleção
-                        if UserDefaults.standard.bool(forKey: "mode_padrao_exists") == false {
-                            UserDefaults.standard.set(true, forKey: "mode_padrao_exists")
-                            if let encoded = try? JSONEncoder().encode(saved) {
-                                UserDefaults.standard.set(encoded, forKey: "mode_padrao_selection")
+                    VStack(spacing: 16) {
+                        if !showEmailInput {
+                            Button(action: {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    showEmailInput = true
+                                }
+                            }) {
+                                HStack {
+                                    Text("Entrar com e-mail")
+                                        .font(.system(size: 17, weight: .medium))
+                                        .foregroundColor(Color(hex: "1D1D1F"))
+                                    
+                                    Spacer()
+                                    
+                                    Image(systemName: "arrow.right")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(Color(hex: "1D1D1F"))
+                                }
+                                .padding(.horizontal, 20)
+                                .frame(height: 56)
+                                .background(Color.white)
+                                .cornerRadius(12)
+                            }
+                            .disabled(authViewModel.isLoading)
+                            .padding(.horizontal, 24)
+                            .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                        }
+                        
+                        if showEmailInput {
+                            VStack(spacing: 16) {
+                                TextField(
+                                    "",
+                                    text: $email,
+                                    prompt: Text("Seu melhor email")
+                                        .foregroundColor(Color(hex: "ccc"))
+                                )
+                                .textContentType(.emailAddress)
+                                .keyboardType(.emailAddress)
+                                .autocapitalization(.none)
+                                .font(.system(size: 17))
+                                .foregroundColor(Color(hex: "111"))
+                                .focused($isEmailFieldFocused)
+                                .padding(.horizontal, 16)
+                                .frame(height: 56)
+                                .background(Color.white)
+                                .cornerRadius(12)
+                                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
+                                .onChange(of: email) { _ in
+                                    isValidEmail = isValidEmailFormat(email)
+                                }
+                                .padding(.horizontal, 24)
+                                .task(id: showEmailInput) {
+                                    if showEmailInput {
+                                        try? await Task.sleep(nanoseconds: 400_000_000)
+                                        isEmailFieldFocused = true
+                                    }
+                                }
+                                
+                                if let error = authViewModel.errorMessage {
+                                    Text(error)
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.red)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal, 24)
+                                        .transition(.opacity)
+                                }
+                                
+                                Button(action: {
+                                    sendOtp()
+                                }) {
+                                    ZStack {
+                                        if authViewModel.isLoading {
+                                            ProgressView()
+                                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                        } else {
+                                            Text("Enviar código")
+                                                .font(.system(size: 17, weight: .semibold))
+                                                .foregroundColor(.white)
+                                        }
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 56)
+                                    .background(isValidEmail && !authViewModel.isLoading ? Color(hex: "1D1D1F") : Color(hex: "DAD7D6"))
+                                    .cornerRadius(12)
+                                }
+                                .contentShape(Rectangle())
+                                .disabled(!isValidEmail || authViewModel.isLoading)
+                                .padding(.horizontal, 24)
+                            }
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
+                    }
+                    .animation(.easeInOut(duration: 0.3), value: showEmailInput)
+                    .onChange(of: showEmailInput) { newValue in
+                        if newValue {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                                isEmailFieldFocused = true
                             }
                         }
-                        // Define o modo ativo e quantidade
-                        UserDefaults.standard.set("padrao", forKey: "active_mode_name")
-                        UserDefaults.standard.set(saved.applicationTokens.count, forKey: "active_mode_app_count")
-
-                        // Marca o onboarding como completo
-                        UserDefaults.standard.set(true, forKey: "has_completed_onboarding")
-                        UserDefaults.standard.synchronize()
-                        
-                        // Notifica que o onboarding foi completado
-                        NotificationCenter.default.post(name: NSNotification.Name("OnboardingCompleted"), object: nil)
-
-                        // Inicia timer
-                        let now = Date()
-                        sharedDefaults.set(now, forKey: "blocked_start_date")
-                        sharedDefaults.synchronize()
-                        
-                        // Salva também no standardDefaults para garantir acesso
-                        UserDefaults.standard.set(now, forKey: "blocked_start_date")
-                        UserDefaults.standard.synchronize()
-                        
-                        // Registra início de bloqueio por app
-                        AppBlockingTracker.shared.startBlocking(selection: saved, startDate: now)
-                        
-                        // Notifica que o bloqueio iniciou (para o timer iniciar)
-                        NotificationCenter.default.post(name: NSNotification.Name("BlockingStarted"), object: nil)
-
-                        // Start Live Activity (no onboarding sempre mostra, pois é o primeiro uso)
-                        startLiveActivity(startDate: now)
-
-                        showBlockedView = true
                     }
-                }) {
-                    Text("Foccar dispositivo")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(Color(hex: "1D1D1F"))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(Color.white.opacity(0.9))
-                        .cornerRadius(28)
                 }
-                .padding(.horizontal, 24)
+                .padding(.bottom, 100)
+                
+                Spacer()
+                
+                VStack(spacing: 8) {
+                    Text("Ao continuar, você concorda com nossos")
+                        .font(.system(size: 13))
+                        .foregroundColor(Color(hex: "8E8E93"))
+                    
+                    HStack(spacing: 4) {
+                        Button(action: {}) {
+                            Text("Termos de Serviço")
+                                .font(.system(size: 13))
+                                .foregroundColor(Color(hex: "1D1D1F"))
+                                .underline()
+                        }
+                        
+                        Text("e")
+                            .font(.system(size: 13))
+                            .foregroundColor(Color(hex: "8E8E93"))
+                        
+                        Button(action: {}) {
+                            Text("Política de Privacidade")
+                                .font(.system(size: 13))
+                                .foregroundColor(Color(hex: "1D1D1F"))
+                                .underline()
+                        }
+                    }
+                }
                 .padding(.bottom, 40)
             }
         }
-        .fullScreenCover(isPresented: $showBlockedView) {
-            PrincipalView()
+    }
+    
+    private func sendOtp() {
+        let emailTrimmed = email.trimmingCharacters(in: .whitespaces)
+        guard isValidEmailFormat(emailTrimmed) else { return }
+        
+        Task {
+            let success = await authViewModel.sendOtp(email: emailTrimmed)
+            
+            await MainActor.run {
+                if success {
+                    savedEmail = emailTrimmed
+                    authViewModel.errorMessage = nil
+                    withAnimation {
+                        showCodeView = true
+                    }
+                }
+            }
         }
     }
-
-    private func startLiveActivity(startDate: Date) {
-        let attributes = FoccaWidgetLiveAttributes()
-        let contentState = FoccaWidgetLiveAttributes.ContentState(
-            startDate: startDate,
-            isActive: true
-        )
-
-        do {
-            let activity = try Activity.request(
-                attributes: attributes,
-                content: .init(state: contentState, staleDate: nil),
-                pushType: nil
-            )
-            currentActivity = activity
-            sharedDefaults.set(activity.id, forKey: "live_activity_id")
-            print("✅ Live Activity iniciada com sucesso! ID: \(activity.id)")
-        } catch {
-            print("❌ Erro ao iniciar Live Activity: \(error.localizedDescription)")
-        }
+    
+    private func isValidEmailFormat(_ email: String) -> Bool {
+        let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+        let emailPredicate = NSPredicate(format: "SELF MATCHES %@", emailRegex)
+        return emailPredicate.evaluate(with: email)
     }
-}
-
-#Preview {
-    OnboardingStep4()
 }

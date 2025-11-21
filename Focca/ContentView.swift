@@ -8,24 +8,39 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var hasCompletedOnboarding: Bool = UserDefaults.standard.bool(forKey: "has_completed_onboarding")
+    @ObservedObject private var authViewModel = AuthViewModel.shared
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @AppStorage("onboarding_completed_email") private var onboardingCompletedEmail: String = ""
     
     var body: some View {
         Group {
-            if hasCompletedOnboarding {
-                // Se o onboarding já foi completado, mostra a view principal
-                PrincipalView()
-            } else {
+            if authViewModel.isLoading && !authViewModel.isAuthenticated {
+                ZStack {
+                    Color(hex: "ECE8E6")
+                        .ignoresSafeArea()
+                    ProgressView()
+                }
+            } else if !authViewModel.isAuthenticated {
                 NavigationView {
-                    OnboardingStep0()
+                    OnboardingStep4()
                         .navigationBarHidden(true)
                 }
+            } else if !hasCompletedOnboardingForCurrentUser {
+                NavigationView {
+                    OnboardingStep1()
+                        .navigationBarHidden(true)
+                }
+            } else {
+                PrincipalView()
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("OnboardingCompleted"))) { _ in
-            // Atualiza o estado quando o onboarding é completado
-            hasCompletedOnboarding = true
+    }
+    
+    private var hasCompletedOnboardingForCurrentUser: Bool {
+        guard let email = authViewModel.currentEmail else {
+            return false
         }
+        return hasCompletedOnboarding && onboardingCompletedEmail == email
     }
 }
 

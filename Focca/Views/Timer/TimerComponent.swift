@@ -46,7 +46,14 @@ class TimerManager: ObservableObject {
         
         guard let startDate = startDate else { return }
         
-        TimerStorage.shared.splitOvernightTime(from: startDate, to: Date())
+        let endDate = Date()
+        let duration = endDate.timeIntervalSince(startDate)
+        
+        TimerStorage.shared.splitOvernightTime(from: startDate, to: endDate)
+        
+        let calendar = Calendar.current
+        let startDay = calendar.startOfDay(for: startDate)
+        SessionSyncManager.shared.syncSession(date: startDay, duration: duration)
         
         self.startDate = nil
         sharedDefaults.removeObject(forKey: "blocked_start_date")
