@@ -4,6 +4,7 @@ import ManagedSettings
 import ActivityKit
 
 struct OnboardingStep6: View {
+    @ObservedObject private var authViewModel = AuthViewModel.shared
     @State private var showBlockedView = false
     @State private var currentActivity: Activity<FoccaWidgetLiveAttributes>?
 
@@ -64,6 +65,7 @@ struct OnboardingStep6: View {
                         NotificationCenter.default.post(name: NSNotification.Name("BlockingStarted"), object: nil)
 
                         startLiveActivity(startDate: now)
+                        markOnboardingCompleted()
 
                         showBlockedView = true
                     }
@@ -103,6 +105,14 @@ struct OnboardingStep6: View {
             print("✅ Live Activity iniciada com sucesso! ID: \(activity.id)")
         } catch {
             print("❌ Erro ao iniciar Live Activity: \(error.localizedDescription)")
+        }
+    }
+
+    private func markOnboardingCompleted() {
+        let defaults = UserDefaults.standard
+        defaults.set(true, forKey: "hasCompletedOnboarding")
+        if let email = authViewModel.currentEmail {
+            defaults.set(email, forKey: "onboarding_completed_email")
         }
     }
 }
