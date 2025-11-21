@@ -3,7 +3,7 @@ import SwiftUI
 struct OnboardingStep5: View {
     @ObservedObject private var authViewModel = AuthViewModel.shared
     @State private var code = ""
-    @State private var showStep6 = false
+    @State private var showFinalStep = false
     @FocusState private var isCodeFieldFocused: Bool
     @State private var timeRemaining = 59
     @State private var timer: Timer?
@@ -122,7 +122,7 @@ struct OnboardingStep5: View {
                 Spacer()
             }
         }
-        .fullScreenCover(isPresented: $showStep6) {
+        .fullScreenCover(isPresented: $showFinalStep) {
             OnboardingStep6()
         }
         .overlay(
@@ -211,7 +211,7 @@ struct OnboardingStep5: View {
         Task {
             let success = await authViewModel.verifyOtp(email: email, code: code)
             if success {
-                showStep6 = true
+                showFinalStep = true
             }
         }
     }

@@ -78,9 +78,6 @@ struct OnboardingStep2: View {
             .onAppear {
                 loadSavedSelection()
                 checkAuthorizationStatus()
-                Task {
-                    await requestAuthorizationIfNeeded()
-                }
             }
             .alert("Permissão de Tempo de Uso necessária", isPresented: $showAuthorizationAlert) {
                 Button("Abrir Ajustes") {

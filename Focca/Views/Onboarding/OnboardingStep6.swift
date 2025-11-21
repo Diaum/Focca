@@ -18,7 +18,7 @@ struct OnboardingStep6: View {
                 Spacer()
                 
                 Text("Você está pronto para\nrecuperar seu tempo?")
-                    .font(.system(size: 32, weight: .semibold))
+                    .font(.system(size: 28, weight: .semibold))
                     .foregroundColor(Color(hex: "1D1D1F"))
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
@@ -36,7 +36,7 @@ struct OnboardingStep6: View {
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(Color(hex: "1D1D1F"))
                     
-                    Text("Você tem 5 emergências de desfoco, caso esteja sem seu dispositivo")
+                    Text("Esconda todos os apps que roumbam sua atencão")
                         .font(.system(size: 15))
                         .foregroundColor(Color(hex: "7A7A7A"))
                         .multilineTextAlignment(.center)
@@ -80,7 +80,7 @@ struct OnboardingStep6: View {
                         showBlockedView = true
                     }
                 }) {
-                    Text("Focar seu dispositivo")
+                    Text("Permitir bloqueio")
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundColor(Color(hex: "1D1D1F"))
                         .frame(maxWidth: .infinity)
@@ -117,4 +117,8 @@ struct OnboardingStep6: View {
             print("❌ Erro ao iniciar Live Activity: \(error.localizedDescription)")
         }
     }
+}
+
+#Preview {
+    OnboardingStep6()
 }
