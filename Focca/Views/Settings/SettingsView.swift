@@ -78,6 +78,16 @@ struct SettingsView: View {
                     SettingsSection(
                         title: nil,
                         items: [
+                            SettingsItem(title: "Amigos", hasArrow: true, action: .friends)
+                        ],
+                        showNotificationsView: $showNotificationsView,
+                        selectedTab: $selectedTab,
+                        isBlocked: isBlocked
+                    )
+                    
+                    SettingsSection(
+                        title: nil,
+                        items: [
                             SettingsItem(title: "Desbloqueio de Emergência", subtitle: "4 restantes", hasArrow: true)
                         ],
                         showNotificationsView: $showNotificationsView,
@@ -192,6 +202,9 @@ struct SettingsRow: View {
                     StatsAchievementManager.shared.markAchievementsAsViewed()
                 case .goals:
                     showGoals = true
+                case .friends:
+                    // TODO: Implementar tela de amigos
+                    break
                 case .goalsToggle:
                     break
                 case .none:
@@ -296,6 +309,7 @@ enum SettingsAction {
     case goals
     case goalsToggle
     case advancedStats
+    case friends
 }
 
 struct SettingsItem {

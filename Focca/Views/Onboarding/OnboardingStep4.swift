@@ -35,12 +35,13 @@ struct OnboardingStep4: View {
                 
                 VStack(spacing: 32) {
                     VStack(spacing: 12) {
-                        Text("Entre para acessar\nsuas configurações")
-                            .font(.system(size: 28, weight: .semibold))
+                        Text(showEmailInput ? "Insira seu email e\nreceba um código de acesso" : "Entre para acessar\nsuas configurações")
+                            .font(.system(size: 24, weight: .semibold))
                             .foregroundColor(Color(hex: "1D1D1F"))
                             .multilineTextAlignment(.center)
                             .lineSpacing(4)
                     }
+                    .animation(.easeInOut(duration: 0.3), value: showEmailInput)
                     
                     VStack(spacing: 16) {
                         if !showEmailInput {
@@ -88,6 +89,7 @@ struct OnboardingStep4: View {
                                 .frame(height: 56)
                                 .background(Color.white)
                                 .cornerRadius(12)
+                                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
                                 .onChange(of: email) { _ in
                                     isValidEmail = isValidEmailFormat(email)
                                 }

@@ -33,7 +33,7 @@ struct OnboardingStep1: View {
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(Color(hex: "1D1D1F"))
                     
-                    Text("Esconda todos os apps que roumbam sua atencão")
+                    Text("Esconda todos os apps que roumbam sua atencão e volte a viver")
                         .font(.system(size: 15))
                         .foregroundColor(Color(hex: "7A7A7A"))
                         .multilineTextAlignment(.center)
