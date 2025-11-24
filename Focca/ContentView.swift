@@ -14,17 +14,12 @@ struct ContentView: View {
     
     var body: some View {
         Group {
-            if authViewModel.isLoading && !authViewModel.isAuthenticated {
-                ZStack {
-                    Color(hex: "ECE8E6")
-                        .ignoresSafeArea()
-                    ProgressView()
-                }
-            } else if !authViewModel.isAuthenticated {
+            if !authViewModel.isAuthenticated {
                 NavigationView {
                     OnboardingStep4()
                         .navigationBarHidden(true)
                 }
+                .id("auth_flow")
             } else if !hasCompletedOnboardingForCurrentUser {
                 NavigationView {
                     OnboardingStep1()
