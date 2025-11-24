@@ -529,8 +529,9 @@ struct EditModeView: View {
         // Atualiza o contador de apps se este modo estiver ativo
         let activeModeName = UserDefaults.standard.string(forKey: "active_mode_name")
         if activeModeName == finalModeName {
-            UserDefaults.standard.set(selection.applicationTokens.count, forKey: "active_mode_app_count")
-            print("✅ [EditModeView] Atualizado contador de apps para modo ativo: \(selection.applicationTokens.count) apps")
+            let totalCount = selection.applicationTokens.count + selection.categoryTokens.count + selection.webDomainTokens.count
+            UserDefaults.standard.set(totalCount, forKey: "active_mode_app_count")
+            print("✅ [EditModeView] Atualizado contador para modo ativo: \(totalCount) items (\(selection.applicationTokens.count) apps, \(selection.categoryTokens.count) categorias, \(selection.webDomainTokens.count) sites)")
         }
 
         return true

@@ -277,7 +277,8 @@ struct CreateModeView: View {
             UserDefaults.standard.set(Date(), forKey: "mode_\(modeName)_last_used")
             
             UserDefaults.standard.set(modeName, forKey: "active_mode_name")
-            UserDefaults.standard.set(selection.applicationTokens.count, forKey: "active_mode_app_count")
+            let totalCount = selection.applicationTokens.count + selection.categoryTokens.count + selection.webDomainTokens.count
+            UserDefaults.standard.set(totalCount, forKey: "active_mode_app_count")
             
             // Salva o schedule se ativado
             if isScheduled && selectedWeekdays.count >= 1 {

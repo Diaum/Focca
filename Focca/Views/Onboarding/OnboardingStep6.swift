@@ -39,10 +39,25 @@ struct OnboardingStep6: View {
                 Button(action: {
                     if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
                        let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data),
-                       saved.applicationTokens.count > 0 {
+                       (saved.applicationTokens.count > 0 || saved.categoryTokens.count > 0 || saved.webDomainTokens.count > 0) {
                         let store = ManagedSettingsStore()
-                        let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
-                        store.application.blockedApplications = apps
+
+                        // Bloqueia apps individuais
+                        if !saved.applicationTokens.isEmpty {
+                            let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
+                            store.application.blockedApplications = apps
+                        }
+
+                        // Bloqueia categorias de apps
+                        if !saved.categoryTokens.isEmpty {
+                            store.shield.applicationCategories = .specific(saved.categoryTokens)
+                        }
+
+                        // Bloqueia domínios web
+                        if !saved.webDomainTokens.isEmpty {
+                            let domains = Set(saved.webDomainTokens.compactMap { WebDomain(token: $0) })
+                            store.webContent.blockedByFilter = .specific(domains)
+                        }
 
                         if UserDefaults.standard.bool(forKey: "mode_default_exists") == false {
                             UserDefaults.standard.set(true, forKey: "mode_default_exists")
@@ -51,7 +66,8 @@ struct OnboardingStep6: View {
                             }
                         }
                         UserDefaults.standard.set("padrão", forKey: "active_mode_name")
-                        UserDefaults.standard.set(saved.applicationTokens.count, forKey: "active_mode_app_count")
+                        let totalCount = saved.applicationTokens.count + saved.categoryTokens.count + saved.webDomainTokens.count
+                        UserDefaults.standard.set(totalCount, forKey: "active_mode_app_count")
 
                         let now = Date()
                         sharedDefaults.set(now, forKey: "blocked_start_date")

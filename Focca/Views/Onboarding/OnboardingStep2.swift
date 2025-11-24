@@ -23,51 +23,51 @@ struct OnboardingStep2: View {
                     
                     HStack(spacing: 12) {
                         VStack(alignment: .leading, spacing: 4) {
-                            if selection.applicationTokens.count > 0 {
-                                Text("\(selection.applicationTokens.count)/50 apps selecionados")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.secondary)
-                                if selection.applicationTokens.count > 50 {
-                                    Text("⚠️ Máximo de 50 apps permitidos")
-                                        .font(.system(size: 11))
-                                        .foregroundColor(.orange)
+                            let totalItems = selection.applicationTokens.count + selection.categoryTokens.count + selection.webDomainTokens.count
+
+                            if totalItems > 0 {
+                                if selection.categoryTokens.count > 0 {
+                                    Text("\(selection.categoryTokens.count) categoria(s) selecionada(s)")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.secondary)
                                 }
-                            } else if selection.categoryTokens.count > 0 {
-                                Text("0/50 apps selecionados")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.secondary)
-                                Text("⚠️ Remova a categoria e escolha os apps individualmente")
-                                    .font(.system(size: 11))
-                                    .foregroundColor(.orange)
+                                if selection.applicationTokens.count > 0 {
+                                    Text("\(selection.applicationTokens.count) app(s) selecionado(s)")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.secondary)
+                                }
+                                if selection.webDomainTokens.count > 0 {
+                                    Text("\(selection.webDomainTokens.count) site(s) selecionado(s)")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.secondary)
+                                }
                             } else {
-                                Text("0/50 apps selecionados")
+                                Text("Nenhuma seleção")
                                     .font(.system(size: 14))
                                     .foregroundColor(.secondary)
                             }
                         }
-                        
+
                         Spacer()
-                        
+
                         Button(action: {
-                            if selection.applicationTokens.count <= 50 {
-                                // Verifica se a permissão de Screen Time foi concedida
-                                if isAuthorized {
-                                    saveSelection()
-                                    didComplete()
-                                } else {
-                                    showAuthorizationAlert = true
-                                }
+                            // Verifica se a permissão de Screen Time foi concedida
+                            if isAuthorized {
+                                saveSelection()
+                                didComplete()
+                            } else {
+                                showAuthorizationAlert = true
                             }
                         }) {
                             Text("Continuar")
                                 .fontWeight(.semibold)
-                                .foregroundColor((selection.applicationTokens.count > 50 || !isAuthorized) ? Color(hex: "9E9EA3") : .white)
+                                .foregroundColor(!isAuthorized ? Color(hex: "9E9EA3") : .white)
                                 .padding(.horizontal, 24)
                                 .frame(height: 40)
-                                .background((selection.applicationTokens.count > 50 || !isAuthorized) ? Color(hex: "DAD7D6") : Color.black)
+                                .background(!isAuthorized ? Color(hex: "DAD7D6") : Color.black)
                                 .cornerRadius(20)
                         }
-                        .disabled(selection.applicationTokens.count > 50 || !isAuthorized)
+                        .disabled(!isAuthorized)
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 10)
