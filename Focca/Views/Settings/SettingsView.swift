@@ -104,7 +104,20 @@ struct SettingsView: View {
                         selectedTab: $selectedTab,
                         isBlocked: isBlocked
                     )
-                    
+
+                    // Debug section
+                    #if DEBUG
+                    SettingsSection(
+                        title: "Debug",
+                        items: [
+                            SettingsItem(title: "Testar Notificação (5s)", hasArrow: true, action: .testNotification)
+                        ],
+                        showNotificationsView: $showNotificationsView,
+                        selectedTab: $selectedTab,
+                        isBlocked: isBlocked
+                    )
+                    #endif
+
                 }
                 .padding(.horizontal, 16)
                 
@@ -207,6 +220,8 @@ struct SettingsRow: View {
                     break
                 case .goalsToggle:
                     break
+                case .testNotification:
+                    NotificationManager.shared.sendTestNotification()
                 case .none:
                     break
                 }
@@ -310,6 +325,7 @@ enum SettingsAction {
     case goalsToggle
     case advancedStats
     case friends
+    case testNotification
 }
 
 struct SettingsItem {
