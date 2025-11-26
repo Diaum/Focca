@@ -150,40 +150,5 @@ class NotificationManager {
         }
     }
 
-    // MARK: - Debug/Testing
-
-    /// Envia uma notificação de teste em 5 segundos para debug
-    /// Use este método para testar rapidamente as notificações durante desenvolvimento
-    func sendTestNotification() {
-        Task {
-            let status = await checkAuthorizationStatus()
-            await MainActor.run {
-                guard status == .authorized else {
-                    print("❌ Notificações não autorizadas. Solicite permissão primeiro.")
-                    return
-                }
-
-                let content = UNMutableNotificationContent()
-                content.title = "🧪 Teste de Notificação"
-                content.body = "Esta é uma notificação de teste do Focca. O ícone do app deve aparecer automaticamente."
-                content.sound = .default
-                content.badge = 1
-                content.categoryIdentifier = "SCHEDULE_REMINDER"
-
-                let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
-                let identifier = "test_notification_\(Date().timeIntervalSince1970)"
-                let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
-
-                UNUserNotificationCenter.current().add(request) { error in
-                    if let error = error {
-                        print("❌ Erro ao agendar notificação de teste: \(error.localizedDescription)")
-                    } else {
-                        print("✅ Notificação de teste agendada para 5 segundos")
-                        print("💡 Minimize o app ou bloqueie o dispositivo para ver a notificação")
-                    }
-                }
-            }
-        }
-    }
 }
 
