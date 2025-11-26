@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  Focca
-//
-//  Created by Fiasco on 27/10/25.
-//
-
 import SwiftUI
 
 struct ContentView: View {
@@ -25,19 +18,22 @@ struct ContentView: View {
                     OnboardingStep4()
                         .navigationBarHidden(true)
                 }
-            } else {
-                // Sempre mostra o onboarding quando autenticado
+            } else if !hasCompletedOnboardingForCurrentUser {
                 NavigationView {
                     OnboardingStep1()
                         .navigationBarHidden(true)
                 }
+            } else {
+                PrincipalView()
             }
         }
-        .onAppear {
-            // Limpa o estado de onboarding para forçar sempre mostrar
-            UserDefaults.standard.set(false, forKey: "hasCompletedOnboarding")
-            UserDefaults.standard.removeObject(forKey: "onboarding_completed_email")
+    }
+    
+    private var hasCompletedOnboardingForCurrentUser: Bool {
+        guard let email = authViewModel.currentEmail else {
+            return false
         }
+        return hasCompletedOnboarding && onboardingCompletedEmail == email
     }
 }
 
