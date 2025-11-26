@@ -88,7 +88,7 @@ struct OnboardingStep5: View {
                                     .foregroundColor(Color(hex: "1D1D1F"))
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 50)
-                                    .background(Color(hex: "E5E5E5"))
+                                    .background(Color.black.opacity(0.1))
                                     .cornerRadius(12)
                             }
                             .disabled(authViewModel.isLoading || resendCount >= 2)
@@ -106,7 +106,7 @@ struct OnboardingStep5: View {
                                         .cornerRadius(12)
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 12)
-                                                .stroke(Color(hex: "E5E5E5"), lineWidth: 1)
+                                                .stroke(Color.black.opacity(0.1), lineWidth: 1)
                                         )
                                 }
                             }
@@ -226,7 +226,7 @@ struct CodeDigitBox: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 12)
-                .fill(text.isEmpty ? Color(hex: "E5E5E5") : Color.white)
+                .fill(text.isEmpty ? Color.black.opacity(0.1) : Color.white)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
                         .stroke(isFocused ? Color(hex: "1D1D1F") : Color.clear, lineWidth: 2)

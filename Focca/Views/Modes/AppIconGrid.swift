@@ -29,7 +29,7 @@ struct AppIconGrid: View {
                     } else {
                         Image(systemName: "chevron.right")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(Color(hex: "C6C6C8"))
+                            .foregroundColor(Color.black.opacity(0.3))
                     }
                 }
                 .padding(.horizontal, 20)
@@ -49,18 +49,24 @@ struct AppIconGrid: View {
                         
                         // Mostra apps primeiro (até 16)
                         ForEach(Array(appTokens.prefix(maxApps)), id: \.hashValue) { token in
-                            Label(token)
-                                .labelStyle(.iconOnly)
-                                .font(.system(size: 42))
-                                .scaleEffect(1.6)
+                            ZStack {
+                                Color.clear
+                                Label(token)
+                                    .labelStyle(.iconOnly)
+                                    .font(.system(size: 42))
+                                    .scaleEffect(1.6)
+                            }
                         }
                         
                         // Mostra categorias depois (preenchendo os slots restantes até 16 total)
                         ForEach(Array(categoryTokens.prefix(maxCategories)), id: \.hashValue) { token in
-                            Label(token)
-                                .labelStyle(.iconOnly)
-                                .font(.system(size: 42))
-                                .scaleEffect(1.6)
+                            ZStack {
+                                Color.clear
+                                Label(token)
+                                    .labelStyle(.iconOnly)
+                                    .font(.system(size: 42))
+                                    .scaleEffect(1.6)
+                            }
                         }
                         
                         // Preenche espaços vazios se houver menos de 16 itens
@@ -74,7 +80,7 @@ struct AppIconGrid: View {
                         ForEach(0..<16, id: \.self) { _ in
                             Image(systemName: "app.fill")
                                 .font(.system(size: 42))
-                                .foregroundColor(Color(hex: "C6C6C8"))
+                                .foregroundColor(Color.black.opacity(0.1))
                         }
                     }
                 }

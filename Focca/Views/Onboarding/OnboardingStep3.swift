@@ -92,7 +92,7 @@ struct OnboardingStep3: View {
                             }
                             .frame(maxWidth: .infinity)
                             .frame(height: 50)
-                            .background((appInfos.isEmpty || appInfos.count > 50 || isRequestingNotification) ? Color(hex: "DAD7D6") : Color.black)
+                            .background((appInfos.isEmpty || appInfos.count > 50 || isRequestingNotification) ? Color.black.opacity(0.15) : Color.black)
                             .cornerRadius(12)
                             .contentShape(Rectangle())
                         }
@@ -181,12 +181,9 @@ struct OnboardingStep3: View {
         
         // Adiciona categorias
         for token in selection.categoryTokens {
-            let category = ActivityCategory(token: token)
-            let name = category.localizedDisplayName ?? "Categoria"
-            
             items.append(.category(CategoryInfo(
                 id: token.hashValue.description,
-                name: name,
+                name: "", // Nome será obtido via Label no CategoryRow
                 token: token
             )))
         }
@@ -281,20 +278,17 @@ struct CategoryRow: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(Color(hex: "E5E5E5"))
-                    .frame(width: 64, height: 64)
-                    .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
-                
-                Label(categoryInfo.token)
-                    .labelStyle(.iconOnly)
-                    .font(.system(size: 32))
-                    .foregroundColor(Color(hex: "1C1C1E"))
-            }
+            Label(categoryInfo.token)
+                .labelStyle(.iconOnly)
+                .frame(width: 96, height: 96)
+                .scaleEffect(2.8)
+                .frame(width: 64, height: 64)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(categoryInfo.name)
+                Label(categoryInfo.token)
+                    .labelStyle(.titleOnly)
                     .font(.system(size: 19, weight: .semibold))
                     .foregroundColor(Color(hex: "1D1D1F"))
                     .lineLimit(1)

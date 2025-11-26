@@ -64,7 +64,7 @@ struct OnboardingStep2: View {
                                 .foregroundColor(!isAuthorized ? Color(hex: "9E9EA3") : .white)
                                 .padding(.horizontal, 24)
                                 .frame(height: 40)
-                                .background(!isAuthorized ? Color(hex: "DAD7D6") : Color.black)
+                                .background(!isAuthorized ? Color.black.opacity(0.15) : Color.black)
                                 .cornerRadius(20)
                         }
                         .disabled(!isAuthorized)

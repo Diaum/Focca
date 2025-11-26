@@ -25,22 +25,19 @@ struct ContentView: View {
                     OnboardingStep4()
                         .navigationBarHidden(true)
                 }
-            } else if !hasCompletedOnboardingForCurrentUser {
+            } else {
+                // Sempre mostra o onboarding quando autenticado
                 NavigationView {
                     OnboardingStep1()
                         .navigationBarHidden(true)
                 }
-            } else {
-                PrincipalView()
             }
         }
-    }
-    
-    private var hasCompletedOnboardingForCurrentUser: Bool {
-        guard let email = authViewModel.currentEmail else {
-            return false
+        .onAppear {
+            // Limpa o estado de onboarding para forçar sempre mostrar
+            UserDefaults.standard.set(false, forKey: "hasCompletedOnboarding")
+            UserDefaults.standard.removeObject(forKey: "onboarding_completed_email")
         }
-        return hasCompletedOnboarding && onboardingCompletedEmail == email
     }
 }
 

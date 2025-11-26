@@ -245,7 +245,7 @@ struct CreateModeView: View {
                         .foregroundColor(canSave ? Color(hex: "1C1C1E") : Color(hex: "9E9EA3"))
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
-                        .background(canSave ? Color(hex: "DAD7D6") : Color(hex: "D0D0D0"))
+                        .background(canSave ? Color.black.opacity(0.15) : Color.black.opacity(0.1))
                         .cornerRadius(14)
                 }
                 .disabled(!canSave)

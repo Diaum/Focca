@@ -302,7 +302,7 @@ struct EditModeView: View {
                             .foregroundColor(canSave ? .white : Color(hex: "9E9EA3"))
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
-                            .background(canSave ? Color(hex: "2C2C2E") : Color(hex: "EDEBEA"))
+                            .background(canSave ? Color(hex: "2C2C2E") : Color.black.opacity(0.1))
                             .cornerRadius(14)
                     }
                     .disabled(!canSave)
@@ -314,7 +314,7 @@ struct EditModeView: View {
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(canDelete ? .white : Color(hex: "9E9EA3"))
                             .frame(width: 56, height: 56)
-                            .background(canDelete ? Color.red : Color(hex: "EDEBEA"))
+                            .background(canDelete ? Color.red : Color.black.opacity(0.1))
                             .cornerRadius(14)
                     }
                     .disabled(!canDelete)
