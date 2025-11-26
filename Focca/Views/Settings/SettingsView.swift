@@ -104,7 +104,7 @@ struct SettingsView: View {
                         selectedTab: $selectedTab,
                         isBlocked: isBlocked
                     )
-                    
+
                 }
                 .padding(.horizontal, 16)
                 
