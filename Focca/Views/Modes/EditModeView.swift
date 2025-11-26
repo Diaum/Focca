@@ -30,8 +30,9 @@ struct EditModeView: View {
             return false
         }
         
-        // Validação básica da seleção de apps
-        guard selection.applicationTokens.count > 0 else {
+        // Validação básica da seleção (apps, categorias ou sites)
+        let totalItems = selection.applicationTokens.count + selection.categoryTokens.count + selection.webDomainTokens.count
+        guard totalItems > 0 else {
             return false
         }
         

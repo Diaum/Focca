@@ -16,7 +16,8 @@ struct CreateModeView: View {
     // Feature 1: Valida se schedule está ativo, deve ter pelo menos 1 dia selecionado
     // Feature 4: Valida se não há conflito com schedules existentes
     private var canSave: Bool {
-        let basicValidation = modeName.count >= 4 && modeName.count <= 18 && selection.applicationTokens.count > 0
+        let totalItems = selection.applicationTokens.count + selection.categoryTokens.count + selection.webDomainTokens.count
+        let basicValidation = modeName.count >= 4 && modeName.count <= 18 && totalItems > 0
         let scheduleValidation = !isScheduled || (selectedWeekdays.count >= 1 && scheduleDurationIsValid)
         let noConflict = !hasScheduleConflict()
         return basicValidation && scheduleValidation && noConflict

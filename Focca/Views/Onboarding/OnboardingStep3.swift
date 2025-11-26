@@ -6,7 +6,7 @@ import DeviceActivity
 @available(iOS 17.0, *)
 struct OnboardingStep3: View {
     @StateObject var model = SelectionModel()
-    @State private var appInfos: [AppInfo] = []
+    @State private var appInfos: [SelectionItem] = []
     @State private var isLoading = true
     @State private var showLoginView = false
     @State private var showStep2 = false
@@ -50,9 +50,14 @@ struct OnboardingStep3: View {
                     } else {
                         ScrollView {
                             VStack(spacing: 0) {
-                                ForEach(appInfos) { app in
-                                    AppRow(appInfo: app)
-                                    if app.id != appInfos.last?.id {
+                                ForEach(appInfos) { item in
+                                    switch item {
+                                    case .app(let appInfo):
+                                        AppRow(appInfo: appInfo)
+                                    case .category(let categoryInfo):
+                                        CategoryRow(categoryInfo: categoryInfo)
+                                    }
+                                    if item.id != appInfos.last?.id {
                                         Divider().padding(.leading, 62)
                                     }
                                 }
@@ -66,9 +71,10 @@ struct OnboardingStep3: View {
 
                     VStack(spacing: 16) {
                         Button(action: {
-                            if appInfos.count > 50 {
+                            let totalItems = model.selection.applicationTokens.count + model.selection.categoryTokens.count + model.selection.webDomainTokens.count
+                            if totalItems > 50 {
                                 showAlert = true
-                            } else if model.selection.applicationTokens.count > 0 && model.selection.applicationTokens.count <= 50 {
+                            } else if totalItems > 0 && totalItems <= 50 {
                                 Task {
                                     await requestNotificationPermission()
                                 }
@@ -117,13 +123,13 @@ struct OnboardingStep3: View {
                     Task { await refreshSelectionAndApps() }
                 })
             }
-            .alert("Muitos apps selecionados", isPresented: $showAlert) {
+            .alert("Muitos itens selecionados", isPresented: $showAlert) {
                 Button("Editar apps", action: {
                     showStep2 = true
                 })
                 Button("OK", role: .cancel) { }
             } message: {
-                Text("Você só pode bloquear até 50 apps. Remova alguns para continuar.")
+                Text("Você só pode bloquear até 50 itens (apps, categorias ou sites). Remova alguns para continuar.")
             }
             .task {
                 if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
@@ -155,24 +161,37 @@ struct OnboardingStep3: View {
     }
 
     @available(iOS 17.0, *)
-    func fetchAppInfo(from selection: FamilyActivitySelection) async -> [AppInfo] {
-        var infos: [AppInfo] = []
+    func fetchAppInfo(from selection: FamilyActivitySelection) async -> [SelectionItem] {
+        var items: [SelectionItem] = []
 
+        // Adiciona apps
         for token in selection.applicationTokens {
             let app = Application(token: token)
             let name = app.localizedDisplayName ?? "Unknown App"
             let icon = UIImage(systemName: "app.fill")!
 
-            infos.append(AppInfo(
+            items.append(.app(AppInfo(
                 id: token.hashValue.description,
                 name: name,
                 icon: icon,
                 color: .clear,
                 token: token
-            ))
+            )))
+        }
+        
+        // Adiciona categorias
+        for token in selection.categoryTokens {
+            let category = ActivityCategory(token: token)
+            let name = category.localizedDisplayName ?? "Categoria"
+            
+            items.append(.category(CategoryInfo(
+                id: token.hashValue.description,
+                name: name,
+                token: token
+            )))
         }
 
-        return infos
+        return items
     }
     
     @MainActor
@@ -200,12 +219,32 @@ struct OnboardingStep3: View {
     }
 }
 
-struct AppInfo: Identifiable {
+enum SelectionItem: Identifiable {
+    case app(AppInfo)
+    case category(CategoryInfo)
+    
+    var id: String {
+        switch self {
+        case .app(let appInfo):
+            return appInfo.id
+        case .category(let categoryInfo):
+            return categoryInfo.id
+        }
+    }
+}
+
+struct AppInfo {
     let id: String
     let name: String
     let icon: UIImage
     let color: Color
     let token: ApplicationToken
+}
+
+struct CategoryInfo {
+    let id: String
+    let name: String
+    let token: ActivityCategoryToken
 }
 
 struct AppRow: View {
@@ -224,6 +263,38 @@ struct AppRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Label(appInfo.token)
                     .labelStyle(.titleOnly)
+                    .font(.system(size: 19, weight: .semibold))
+                    .foregroundColor(Color(hex: "1D1D1F"))
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .frame(maxWidth: 240, alignment: .leading)
+            }
+
+            Spacer()
+        }
+        .padding(.vertical, 14)
+    }
+}
+
+struct CategoryRow: View {
+    let categoryInfo: CategoryInfo
+
+    var body: some View {
+        HStack(spacing: 16) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color(hex: "E5E5E5"))
+                    .frame(width: 64, height: 64)
+                    .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+                
+                Label(categoryInfo.token)
+                    .labelStyle(.iconOnly)
+                    .font(.system(size: 32))
+                    .foregroundColor(Color(hex: "1C1C1E"))
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(categoryInfo.name)
                     .font(.system(size: 19, weight: .semibold))
                     .foregroundColor(Color(hex: "1D1D1F"))
                     .lineLimit(1)
