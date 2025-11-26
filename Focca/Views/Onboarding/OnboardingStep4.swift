@@ -125,7 +125,7 @@ struct OnboardingStep4: View {
                                     }
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 56)
-                                    .background(isValidEmail && !authViewModel.isLoading ? Color(hex: "1D1D1F") : Color(hex: "DAD7D6"))
+                                    .background(isValidEmail && !authViewModel.isLoading ? Color(hex: "1D1D1F") : Color.black.opacity(0.15))
                                     .cornerRadius(12)
                                 }
                                 .contentShape(Rectangle())

@@ -30,8 +30,9 @@ struct EditModeView: View {
             return false
         }
         
-        // Validação básica da seleção de apps
-        guard selection.applicationTokens.count > 0 else {
+        // Validação básica da seleção (apps, categorias ou sites)
+        let totalItems = selection.applicationTokens.count + selection.categoryTokens.count + selection.webDomainTokens.count
+        guard totalItems > 0 else {
             return false
         }
         
@@ -301,7 +302,7 @@ struct EditModeView: View {
                             .foregroundColor(canSave ? .white : Color(hex: "9E9EA3"))
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
-                            .background(canSave ? Color(hex: "2C2C2E") : Color(hex: "EDEBEA"))
+                            .background(canSave ? Color(hex: "2C2C2E") : Color.black.opacity(0.1))
                             .cornerRadius(14)
                     }
                     .disabled(!canSave)
@@ -313,7 +314,7 @@ struct EditModeView: View {
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(canDelete ? .white : Color(hex: "9E9EA3"))
                             .frame(width: 56, height: 56)
-                            .background(canDelete ? Color.red : Color(hex: "EDEBEA"))
+                            .background(canDelete ? Color.red : Color.black.opacity(0.1))
                             .cornerRadius(14)
                     }
                     .disabled(!canDelete)
@@ -529,8 +530,9 @@ struct EditModeView: View {
         // Atualiza o contador de apps se este modo estiver ativo
         let activeModeName = UserDefaults.standard.string(forKey: "active_mode_name")
         if activeModeName == finalModeName {
-            UserDefaults.standard.set(selection.applicationTokens.count, forKey: "active_mode_app_count")
-            print("✅ [EditModeView] Atualizado contador de apps para modo ativo: \(selection.applicationTokens.count) apps")
+            let totalCount = selection.applicationTokens.count + selection.categoryTokens.count + selection.webDomainTokens.count
+            UserDefaults.standard.set(totalCount, forKey: "active_mode_app_count")
+            print("✅ [EditModeView] Atualizado contador para modo ativo: \(totalCount) items (\(selection.applicationTokens.count) apps, \(selection.categoryTokens.count) categorias, \(selection.webDomainTokens.count) sites)")
         }
 
         return true

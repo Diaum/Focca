@@ -201,8 +201,23 @@ struct UnlockedView: View {
         if let data = UserDefaults.standard.data(forKey: "mode_\(activeMode)_selection"),
            let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
             let store = ManagedSettingsStore()
-            let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
-            store.application.blockedApplications = apps
+
+            // Bloqueia apps individuais
+            if !saved.applicationTokens.isEmpty {
+                let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
+                store.application.blockedApplications = apps
+            }
+
+            // Bloqueia categorias de apps
+            if !saved.categoryTokens.isEmpty {
+                store.shield.applicationCategories = .specific(saved.categoryTokens)
+            }
+
+            // Bloqueia domínios web
+            if !saved.webDomainTokens.isEmpty {
+                let domains = Set(saved.webDomainTokens.compactMap { WebDomain(token: $0) })
+                store.webContent.blockedByFilter = .specific(domains)
+            }
             
             let now = Date()
             sharedDefaults.set(now, forKey: "blocked_start_date")
@@ -253,7 +268,8 @@ struct UnlockedView: View {
 
                 if let data = UserDefaults.standard.data(forKey: "mode_\(modeName)_selection"),
                    let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
-                    UserDefaults.standard.set(saved.applicationTokens.count, forKey: "active_mode_app_count")
+                    let totalCount = saved.applicationTokens.count + saved.categoryTokens.count + saved.webDomainTokens.count
+                    UserDefaults.standard.set(totalCount, forKey: "active_mode_app_count")
                 }
 
                 return modeName

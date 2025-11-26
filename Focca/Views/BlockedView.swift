@@ -86,9 +86,11 @@ struct BlockedView: View {
                         // Finaliza TODAS as sessões ativas do dia atual para garantir que não continue contando
                         AppBlockingTracker.shared.endAllActiveSessions(for: Date(), endDate: Date())
                         
-                        // Desbloqueia os apps
+                        // Desbloqueia apps, categorias e sites
                         let store = ManagedSettingsStore()
                         store.application.blockedApplications = nil
+                        store.shield.applicationCategories = nil
+                        store.webContent.blockedByFilter = nil
 
                         if let startDate = sharedDefaults.object(forKey: "blocked_start_date") as? Date {
                             TimerStorage.shared.splitOvernightTime(from: startDate, to: Date())

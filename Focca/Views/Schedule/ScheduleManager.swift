@@ -363,13 +363,29 @@ class ScheduleManager: ObservableObject {
             return
         }
         
-        print("   ✅ Modo '\(schedule.modeName)' encontrado com \(saved.applicationTokens.count) apps")
-        
+        print("   ✅ Modo '\(schedule.modeName)' encontrado com \(saved.applicationTokens.count) apps, \(saved.categoryTokens.count) categorias, \(saved.webDomainTokens.count) sites")
+
         let store = ManagedSettingsStore()
-        let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
-        store.application.blockedApplications = apps
-        
-        print("   ✅ Apps bloqueados: \(apps.count)")
+
+        // Bloqueia apps individuais
+        if !saved.applicationTokens.isEmpty {
+            let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
+            store.application.blockedApplications = apps
+            print("   ✅ Apps bloqueados: \(apps.count)")
+        }
+
+        // Bloqueia categorias de apps
+        if !saved.categoryTokens.isEmpty {
+            store.shield.applicationCategories = .specific(saved.categoryTokens)
+            print("   ✅ Categorias bloqueadas: \(saved.categoryTokens.count)")
+        }
+
+        // Bloqueia domínios web
+        if !saved.webDomainTokens.isEmpty {
+            let domains = Set(saved.webDomainTokens.compactMap { WebDomain(token: $0) })
+            store.webContent.blockedByFilter = .specific(domains)
+            print("   ✅ Sites bloqueados: \(domains.count)")
+        }
         
         // Marca início do bloqueio por schedule
         let now = Date()
@@ -387,7 +403,8 @@ class ScheduleManager: ObservableObject {
         
         userDefaults.set(true, forKey: "blocked_by_schedule")
         userDefaults.set(schedule.modeName, forKey: "active_mode_name")
-        userDefaults.set(saved.applicationTokens.count, forKey: "active_mode_app_count")
+        let totalCount = saved.applicationTokens.count + saved.categoryTokens.count + saved.webDomainTokens.count
+        userDefaults.set(totalCount, forKey: "active_mode_app_count")
         
         // Registra início de bloqueio por app usando a data existente se houver
         // Isso previne criar novas sessões quando o app reinicia
@@ -434,8 +451,10 @@ class ScheduleManager: ObservableObject {
         
         let store = ManagedSettingsStore()
         store.application.blockedApplications = nil
-        
-        print("   ✅ Apps desbloqueados")
+        store.shield.applicationCategories = nil
+        store.webContent.blockedByFilter = nil
+
+        print("   ✅ Apps, categorias e sites desbloqueados")
         
         // Finaliza bloqueio por app
         if let selection = blockedSelection {

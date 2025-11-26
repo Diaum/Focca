@@ -16,7 +16,8 @@ struct CreateModeView: View {
     // Feature 1: Valida se schedule está ativo, deve ter pelo menos 1 dia selecionado
     // Feature 4: Valida se não há conflito com schedules existentes
     private var canSave: Bool {
-        let basicValidation = modeName.count >= 4 && modeName.count <= 18 && selection.applicationTokens.count > 0
+        let totalItems = selection.applicationTokens.count + selection.categoryTokens.count + selection.webDomainTokens.count
+        let basicValidation = modeName.count >= 4 && modeName.count <= 18 && totalItems > 0
         let scheduleValidation = !isScheduled || (selectedWeekdays.count >= 1 && scheduleDurationIsValid)
         let noConflict = !hasScheduleConflict()
         return basicValidation && scheduleValidation && noConflict
@@ -244,7 +245,7 @@ struct CreateModeView: View {
                         .foregroundColor(canSave ? Color(hex: "1C1C1E") : Color(hex: "9E9EA3"))
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
-                        .background(canSave ? Color(hex: "DAD7D6") : Color(hex: "D0D0D0"))
+                        .background(canSave ? Color.black.opacity(0.15) : Color.black.opacity(0.1))
                         .cornerRadius(14)
                 }
                 .disabled(!canSave)
@@ -277,7 +278,8 @@ struct CreateModeView: View {
             UserDefaults.standard.set(Date(), forKey: "mode_\(modeName)_last_used")
             
             UserDefaults.standard.set(modeName, forKey: "active_mode_name")
-            UserDefaults.standard.set(selection.applicationTokens.count, forKey: "active_mode_app_count")
+            let totalCount = selection.applicationTokens.count + selection.categoryTokens.count + selection.webDomainTokens.count
+            UserDefaults.standard.set(totalCount, forKey: "active_mode_app_count")
             
             // Salva o schedule se ativado
             if isScheduled && selectedWeekdays.count >= 1 {
