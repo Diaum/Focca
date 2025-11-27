@@ -2,8 +2,9 @@
 #
 # gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
 
-#supabaseconfig
+# Supabase Config (não commitar credenciais)
 SupabaseConfig.swift
+**/SupabaseConfig.swift
 
 ## User settings
 xcuserdata/
