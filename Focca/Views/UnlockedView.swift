@@ -15,6 +15,7 @@ struct UnlockedView: View {
     @State private var activeModeCount = 0
     @State private var todayTime: String = "0h 0m"
     @State private var currentActivity: Activity<FoccaWidgetLiveAttributes>?
+    @State private var showGIF = false
 
     private let sharedDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
     
@@ -66,12 +67,19 @@ struct UnlockedView: View {
 
 
                 
-                Image("focca-rectangle-gray")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 300, height: 197)
-                    .shadow(color: Color.black.opacity(0.12), radius: 12, x: 0, y: 5)
-                    .padding(.bottom, 60)
+                if showGIF {
+                    AnimatedGIFView(name: "focca-rectangle-gray-gif")
+                        .frame(width: 300, height: 197)
+                        .shadow(color: Color.black.opacity(0.12), radius: 12, x: 0, y: 5)
+                        .padding(.bottom, 60)
+                } else {
+                    Image("focca-rectangle-gray")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 300, height: 197)
+                        .shadow(color: Color.black.opacity(0.12), radius: 12, x: 0, y: 5)
+                        .padding(.bottom, 60)
+                }
                 
                 VStack(spacing: 8) {
                     Button(action: { showModeSheet = true }) {
@@ -183,6 +191,7 @@ struct UnlockedView: View {
         }
         .onChange(of: isBlocked) { blocked in
             if !blocked {
+                showGIF = false
                 updateTodayTime()
             }
         }
@@ -196,50 +205,56 @@ struct UnlockedView: View {
     }
     
     private func activateCurrentMode() {
-        let activeMode = getValidActiveMode()
+        // Mostra o GIF primeiro
+        showGIF = true
         
-        if let data = UserDefaults.standard.data(forKey: "mode_\(activeMode)_selection"),
-           let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
-            let store = ManagedSettingsStore()
+        // Aguarda um tempo para mostrar o GIF antes de ativar o bloqueio
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            let activeMode = getValidActiveMode()
+            
+            if let data = UserDefaults.standard.data(forKey: "mode_\(activeMode)_selection"),
+               let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+                let store = ManagedSettingsStore()
 
-            // Bloqueia apps individuais
-            if !saved.applicationTokens.isEmpty {
-                let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
-                store.application.blockedApplications = apps
-            }
+                // Bloqueia apps individuais
+                if !saved.applicationTokens.isEmpty {
+                    let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
+                    store.application.blockedApplications = apps
+                }
 
-            // Bloqueia categorias de apps
-            if !saved.categoryTokens.isEmpty {
-                store.shield.applicationCategories = .specific(saved.categoryTokens)
-            }
+                // Bloqueia categorias de apps
+                if !saved.categoryTokens.isEmpty {
+                    store.shield.applicationCategories = .specific(saved.categoryTokens)
+                }
 
-            // Bloqueia domínios web
-            if !saved.webDomainTokens.isEmpty {
-                let domains = Set(saved.webDomainTokens.compactMap { WebDomain(token: $0) })
-                store.webContent.blockedByFilter = .specific(domains)
-            }
-            
-            let now = Date()
-            sharedDefaults.set(now, forKey: "blocked_start_date")
-            sharedDefaults.synchronize()
-            UserDefaults.standard.set(now, forKey: "blocked_start_date")
-            UserDefaults.standard.synchronize()
-            
-            AppBlockingTracker.shared.startBlocking(selection: saved, startDate: now)
-            
-            let modeName = UserDefaults.standard.string(forKey: "active_mode_name") ?? ""
-            let showLiveActivity = UserDefaults.standard.object(forKey: "mode_\(modeName)_show_live_activity") as? Bool ?? true
-            if showLiveActivity {
-                startLiveActivity(startDate: now)
-            }
-            
-            WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                // Bloqueia domínios web
+                if !saved.webDomainTokens.isEmpty {
+                    let domains = Set(saved.webDomainTokens.compactMap { WebDomain(token: $0) })
+                    store.webContent.blockedByFilter = .specific(domains)
+                }
+                
+                let now = Date()
+                sharedDefaults.set(now, forKey: "blocked_start_date")
+                sharedDefaults.synchronize()
+                UserDefaults.standard.set(now, forKey: "blocked_start_date")
+                UserDefaults.standard.synchronize()
+                
+                AppBlockingTracker.shared.startBlocking(selection: saved, startDate: now)
+                
+                let modeName = UserDefaults.standard.string(forKey: "active_mode_name") ?? ""
+                let showLiveActivity = UserDefaults.standard.object(forKey: "mode_\(modeName)_show_live_activity") as? Bool ?? true
+                if showLiveActivity {
+                    startLiveActivity(startDate: now)
+                }
+                
                 WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
+                }
+                
+                NotificationCenter.default.post(name: NSNotification.Name("BlockingStarted"), object: nil)
+                isBlocked = true
             }
-            
-            NotificationCenter.default.post(name: NSNotification.Name("BlockingStarted"), object: nil)
-            isBlocked = true
         }
     }
 
