@@ -6,7 +6,7 @@ struct WhiteBlockButton: View {
     var body: some View {
         Button(action: action) {
             Text("Ativar o Focca")
-                .font(.system(size: 17, weight: .semibold))
+                .font(.system(size: 15, weight: .regular))
                 .foregroundColor(Color(hex: "1A1A1A"))
                 .frame(maxWidth: .infinity)
                 .frame(height: 56)

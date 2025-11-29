@@ -8,30 +8,27 @@ struct WhiteRoundedBottomPlain: View {
     }
     
     var body: some View {
-        RoundedRectangle(cornerRadius: 150)
-            .fill(
-                LinearGradient(
-                    colors: isBlocked
-                        ? [
-                            Color(hex: "181818").opacity(0.8),
-                            Color(hex: "")
-                        ]
-                        : [
-                            Color(hex: "EDE7E6").opacity(0.95),
-                            Color(hex: "EDE7E6")
-                        ],
-                    startPoint: .bottom,
-                    endPoint: .top
-                )
-            )
+        RoundedCorner(radius: 50, corners: [.bottomLeft, .bottomRight])
+            .fill(Color(hex: "EDE7E6"))
             .frame(height: 90)
-            .padding(.horizontal, 10)
-            .padding(.bottom, 0)
-            .clipShape(
-                RoundedCorner(radius: 120, corners: [.topLeft, .topRight])
+            .frame(maxWidth: .infinity)
+            .overlay(
+                RoundedCorner(radius: 50, corners: [.bottomLeft, .bottomRight])
+                    .stroke(
+                        LinearGradient(
+                            colors: [
+                                Color(hex: "EDE7E6"),
+                                Color(hex: "EDE7E6"),
+                                Color(hex: "B8B8B8").opacity(0.6),
+                                Color(hex: "B8B8B8").opacity(0.8)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 2
+                    )
+                    .blur(radius: 3)
             )
-            .shadow(color: Color.black.opacity(0.08), radius: 20, x: 0, y: 8)
-            .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: -4)
             .allowsHitTesting(false)
             .accessibilityHidden(true)
     }
