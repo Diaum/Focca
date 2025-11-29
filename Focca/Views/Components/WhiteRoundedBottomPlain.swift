@@ -8,26 +8,26 @@ struct WhiteRoundedBottomPlain: View {
     }
     
     var body: some View {
-        RoundedCorner(radius: 50, corners: [.bottomLeft, .bottomRight])
+        RoundedCorner(radius: 80, corners: [.bottomLeft, .bottomRight])
             .fill(Color(hex: "EDE7E6"))
             .frame(height: 90)
             .frame(maxWidth: .infinity)
             .overlay(
-                RoundedCorner(radius: 50, corners: [.bottomLeft, .bottomRight])
+                RoundedCorner(radius: 80, corners: [.bottomLeft, .bottomRight])
                     .stroke(
                         LinearGradient(
                             colors: [
                                 Color(hex: "EDE7E6"),
                                 Color(hex: "EDE7E6"),
-                                Color(hex: "B8B8B8").opacity(0.6),
-                                Color(hex: "B8B8B8").opacity(0.8)
+                                Color(hex: "8A8A8A"),
+                                Color(hex: "8A8A8A")
                             ],
                             startPoint: .top,
                             endPoint: .bottom
                         ),
-                        lineWidth: 2
+                        lineWidth: 1
                     )
-                    .blur(radius: 3)
+                    .blur(radius: 2)
             )
             .allowsHitTesting(false)
             .accessibilityHidden(true)
