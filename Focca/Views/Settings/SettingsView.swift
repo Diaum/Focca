@@ -44,26 +44,8 @@ struct SettingsView: View {
                     SettingsSection(
                         title: nil,
                         items: [
-                            SettingsItem(title: "Conquistas", hasArrow: true, action: .awards)
-                        ],
-                        showNotificationsView: $showNotificationsView,
-                        selectedTab: $selectedTab,
-                        isBlocked: isBlocked
-                    )
-                    
-                    SettingsSection(
-                        title: nil,
-                        items: [
-                            SettingsItem(title: "Metas", hasArrow: true, action: .goals)
-                        ],
-                        showNotificationsView: $showNotificationsView,
-                        selectedTab: $selectedTab,
-                        isBlocked: isBlocked
-                    )
-                    
-                    SettingsSection(
-                        title: nil,
-                        items: [
+                            SettingsItem(title: "Conquistas", hasArrow: true, action: .awards),
+                            SettingsItem(title: "Metas", hasArrow: true, action: .goals),
                             SettingsItem(title: "Estatísticas Avançadas", hasArrow: true, action: .advancedStats)
                         ],
                         showNotificationsView: $showNotificationsView,
@@ -152,7 +134,7 @@ struct SettingsSection: View {
             }
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white)
+                    .fill(isBlocked ? Color(hex: "1C1C1C") : Color(hex: "e4e0e0"))
                     .shadow(color: isBlocked ? Color.black.opacity(0.3) : Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
             )
         }

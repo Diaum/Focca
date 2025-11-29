@@ -51,7 +51,7 @@ struct ProfileHeaderView: View {
                     .foregroundColor(Color(hex: "8A8A8E"))
                 
                 Text(email)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.system(size: 18, weight: .regular))
                     .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                     .lineLimit(2)
             }
