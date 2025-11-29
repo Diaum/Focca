@@ -132,13 +132,14 @@ struct ActivityView: View {
                     }
                 }
             }
-            .padding(.bottom, 60)
+            .padding(.bottom, 80)
 
             VStack(spacing: 0) {
                 Spacer()
                 WhiteRoundedBottomPlain(isBlocked: isBlocked)
+                    .offset(y: -0)
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, -48)
+                    .padding(.bottom, -38)
             }
             .zIndex(1)
             
