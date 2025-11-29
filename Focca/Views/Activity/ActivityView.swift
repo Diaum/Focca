@@ -98,7 +98,7 @@ struct ActivityView: View {
                     }
                 }
                 .padding(.top, 0)
-                .padding(.bottom, 60)
+                .padding(.bottom, 40)
                 
                 if dailyCards.isEmpty {
                     Text("As atividades aparecem após o seu primeiro dia usando o Focca.")
@@ -261,7 +261,7 @@ struct ActivityView: View {
     
     @ViewBuilder
     private var cardGrid: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 16) {
             if let expandedDate = expandedCardDate,
                let expandedCard = dailyCards.first(where: { $0.date == expandedDate }),
                expandedCard.time > 0 {
@@ -288,7 +288,7 @@ struct ActivityView: View {
                 GridItem(.flexible(), spacing: 10),
                 GridItem(.flexible(), spacing: 10),
                 GridItem(.flexible(), spacing: 10)
-            ], spacing: 10) {
+            ], spacing: 16) {
                         ForEach(compactCards, id: \.date) { card in
                     if card.time > 0 {
                         DailyCard(
