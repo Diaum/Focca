@@ -8,6 +8,13 @@ struct SettingsView: View {
     @ObservedObject private var awardManager = AwardManager.shared
     @ObservedObject private var statsAchievementManager = StatsAchievementManager.shared
     
+    private var appVersion: String {
+        let year = Calendar.current.component(.year, from: Date())
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.3"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "3"
+        return "\(year).\(version).\(build)"
+    }
+    
     init(selectedTab: Binding<Int>, isBlocked: Bool = false) {
         self._selectedTab = selectedTab
         self.isBlocked = isBlocked
@@ -20,16 +27,21 @@ struct SettingsView: View {
                 : Color(hex: "d9d4d3"))
             .ignoresSafeArea()
             
-            VStack(spacing: 0) {
-                ProfileHeaderView(
-                    email: authViewModel.currentEmail ?? "usuário@focca.app",
-                    isBlocked: isBlocked
-                )
-                    .padding(.horizontal, 16)
-                    .padding(.top, 40)
-                    .padding(.bottom, 36)
-                
+            ScrollView(showsIndicators: false) {
                 VStack(spacing: 14) {
+                    ProfileHeaderView(
+                        email: authViewModel.currentEmail ?? "usuário@focca.app",
+                        isBlocked: isBlocked
+                    )
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(isBlocked ? Color(hex: "1C1C1C") : Color(hex: "e4e0e0"))
+                            .shadow(color: isBlocked ? Color.black.opacity(0.3) : Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
+                    )
+                    .padding(.top, 40)
+                    .padding(.bottom, 14)
                     SettingsSection(
                         title: nil,
                         items: [
@@ -82,12 +94,36 @@ struct SettingsView: View {
                         selectedTab: $selectedTab,
                         isBlocked: isBlocked
                     )
-
+                    
+                    VStack(spacing: 12) {
+                        Button(action: {
+                            Task {
+                                await authViewModel.signOut()
+                            }
+                        }) {
+                            Text("Sair")
+                                .font(.system(size: 17, weight: .medium))
+                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 50)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(isBlocked ? Color(hex: "1C1C1C") : Color(hex: "d1cece"))
+                                        .shadow(color: isBlocked ? Color.black.opacity(0.3) : Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
+                                )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        
+                        Text("version \(appVersion)")
+                            .font(.system(size: 13, weight: .regular))
+                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8A8A8E"))
+                    }
+                    .padding(.top, 8)
+                    .padding(.bottom, 40)
                 }
                 .padding(.horizontal, 16)
-                
-                Spacer(minLength: 0)
             }
+            .zIndex(2)
             
             VStack(spacing: 0) {
                 Spacer()
@@ -95,6 +131,7 @@ struct SettingsView: View {
                 TabBar(selectedTab: $selectedTab)
                     .padding(.bottom, -50)
             }
+            .zIndex(1)
         }
         .preferredColorScheme(isBlocked ? .dark : .light)
         .sheet(isPresented: $showNotificationsView) {

@@ -24,7 +24,7 @@ struct ProfileHeaderView: View {
                             .padding(12)
                     }
                 }
-                .frame(width: 72, height: 72)
+                .frame(width: 56, height: 56)
                 .background(isBlocked ? Color(hex: "2B2B2E") : Color.white.opacity(0.9))
                 .clipShape(Circle())
                 .overlay(
@@ -34,13 +34,13 @@ struct ProfileHeaderView: View {
                 .overlay(alignment: .bottomTrailing) {
                     Circle()
                         .fill(Color.black.opacity(0.65))
-                        .frame(width: 24, height: 24)
+                        .frame(width: 20, height: 20)
                         .overlay(
                             Image(systemName: "camera.fill")
-                                .font(.system(size: 12, weight: .semibold))
+                                .font(.system(size: 10, weight: .semibold))
                                 .foregroundColor(.white)
                         )
-                        .offset(x: 4, y: 4)
+                        .offset(x: 2, y: 2)
                 }
             }
             .buttonStyle(.plain)
@@ -51,7 +51,7 @@ struct ProfileHeaderView: View {
                     .foregroundColor(Color(hex: "8A8A8E"))
                 
                 Text(email)
-                    .font(.system(size: 18, weight: .regular))
+                    .font(.system(size: 16, weight: .regular))
                     .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                     .lineLimit(2)
             }

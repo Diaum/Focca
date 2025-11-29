@@ -133,6 +133,8 @@ class AuthViewModel: ObservableObject {
     private func clearAuthState() {
         userDefaults.removeObject(forKey: authKey)
         userDefaults.removeObject(forKey: emailKey)
+        userDefaults.set(false, forKey: "hasCompletedOnboarding")
+        userDefaults.set("", forKey: "onboarding_completed_email")
     }
 }
 
