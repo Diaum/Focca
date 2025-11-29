@@ -117,13 +117,13 @@ struct UnlockedView: View {
                         .font(.system(size: 14))
                         .foregroundColor(Color(hex: "4A4A4A"))
                 }
-                .padding(.bottom, 10)
+                .padding(.bottom, 70)
             }
-            .padding(.bottom, 100)
+            .padding(.bottom, 20)
         }
         .overlay(
             VStack(spacing: 0) {
-                Spacer()
+                Spacer(minLength: 0)
                 ZStack(alignment: .top) {
                     WhiteRoundedBottomPlain()
                     WhiteBlockButton(action: activateCurrentMode)
@@ -132,8 +132,9 @@ struct UnlockedView: View {
                 }
                 .padding(.bottom, 0)
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, -12)
+                    .padding(.bottom, -42)
             }
+            .padding(.bottom, 40)
             .ignoresSafeArea(edges: .bottom)
         )
         .preferredColorScheme(.light)
