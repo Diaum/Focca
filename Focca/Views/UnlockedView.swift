@@ -3,6 +3,7 @@ import FamilyControls
 import ManagedSettings
 import ActivityKit
 import WidgetKit
+import CoreNFC
 
 struct UnlockedView: View {
     @Binding var isBlocked: Bool
@@ -16,6 +17,9 @@ struct UnlockedView: View {
     @State private var todayTime: String = "0h 0m"
     @State private var currentActivity: Activity<FoccaWidgetLiveAttributes>?
     @State private var showGIF = false
+    @StateObject private var nfcReader = NFCReaderManager()
+    @State private var showNFCError = false
+    @State private var nfcErrorMessage = ""
 
     private let sharedDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
     
@@ -192,8 +196,16 @@ struct UnlockedView: View {
         .onChange(of: isBlocked) { blocked in
             if !blocked {
                 showGIF = false
+                nfcReader.stopReading()
                 updateTodayTime()
             }
+        }
+        .alert("Erro NFC", isPresented: $showNFCError) {
+            Button("OK", role: .cancel) {
+                nfcErrorMessage = ""
+            }
+        } message: {
+            Text(nfcErrorMessage)
         }
     }
     
@@ -205,56 +217,70 @@ struct UnlockedView: View {
     }
     
     private func activateCurrentMode() {
-        // Mostra o GIF primeiro
-        showGIF = true
-        
-        // Aguarda um tempo para mostrar o GIF antes de ativar o bloqueio
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            let activeMode = getValidActiveMode()
-            
-            if let data = UserDefaults.standard.data(forKey: "mode_\(activeMode)_selection"),
-               let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
-                let store = ManagedSettingsStore()
-
-                // Bloqueia apps individuais
-                if !saved.applicationTokens.isEmpty {
-                    let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
-                    store.application.blockedApplications = apps
-                }
-
-                // Bloqueia categorias de apps
-                if !saved.categoryTokens.isEmpty {
-                    store.shield.applicationCategories = .specific(saved.categoryTokens)
-                }
-
-                // Bloqueia domínios web
-                if !saved.webDomainTokens.isEmpty {
-                    let domains = Set(saved.webDomainTokens.compactMap { WebDomain(token: $0) })
-                    store.webContent.blockedByFilter = .specific(domains)
-                }
+        // Inicia a leitura NFC primeiro
+        nfcReader.startReading(
+            onSuccess: {
+                // NFC lido com sucesso, mostra o GIF e ativa o bloqueio
+                self.showGIF = true
                 
-                let now = Date()
-                sharedDefaults.set(now, forKey: "blocked_start_date")
-                sharedDefaults.synchronize()
-                UserDefaults.standard.set(now, forKey: "blocked_start_date")
-                UserDefaults.standard.synchronize()
-                
-                AppBlockingTracker.shared.startBlocking(selection: saved, startDate: now)
-                
-                let modeName = UserDefaults.standard.string(forKey: "active_mode_name") ?? ""
-                let showLiveActivity = UserDefaults.standard.object(forKey: "mode_\(modeName)_show_live_activity") as? Bool ?? true
-                if showLiveActivity {
-                    startLiveActivity(startDate: now)
+                // Aguarda um tempo para mostrar o GIF antes de ativar o bloqueio
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    self.proceedWithBlocking()
                 }
-                
-                WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
-                }
-                
-                NotificationCenter.default.post(name: NSNotification.Name("BlockingStarted"), object: nil)
-                isBlocked = true
+            },
+            onError: { errorMessage in
+                // Erro ao ler NFC
+                self.nfcErrorMessage = errorMessage
+                self.showNFCError = true
             }
+        )
+    }
+    
+    private func proceedWithBlocking() {
+        let activeMode = getValidActiveMode()
+        
+        if let data = UserDefaults.standard.data(forKey: "mode_\(activeMode)_selection"),
+           let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+            let store = ManagedSettingsStore()
+
+            // Bloqueia apps individuais
+            if !saved.applicationTokens.isEmpty {
+                let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
+                store.application.blockedApplications = apps
+            }
+
+            // Bloqueia categorias de apps
+            if !saved.categoryTokens.isEmpty {
+                store.shield.applicationCategories = .specific(saved.categoryTokens)
+            }
+
+            // Bloqueia domínios web
+            if !saved.webDomainTokens.isEmpty {
+                let domains = Set(saved.webDomainTokens.compactMap { WebDomain(token: $0) })
+                store.webContent.blockedByFilter = .specific(domains)
+            }
+            
+            let now = Date()
+            sharedDefaults.set(now, forKey: "blocked_start_date")
+            sharedDefaults.synchronize()
+            UserDefaults.standard.set(now, forKey: "blocked_start_date")
+            UserDefaults.standard.synchronize()
+            
+            AppBlockingTracker.shared.startBlocking(selection: saved, startDate: now)
+            
+            let modeName = UserDefaults.standard.string(forKey: "active_mode_name") ?? ""
+            let showLiveActivity = UserDefaults.standard.object(forKey: "mode_\(modeName)_show_live_activity") as? Bool ?? true
+            if showLiveActivity {
+                startLiveActivity(startDate: now)
+            }
+            
+            WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
+            }
+            
+            NotificationCenter.default.post(name: NSNotification.Name("BlockingStarted"), object: nil)
+            isBlocked = true
         }
     }
 
