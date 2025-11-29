@@ -75,7 +75,7 @@ struct EditModeView: View {
     
     var body: some View {
         ZStack {
-            Color(hex: "EDE7E6")
+            Color(hex: "d9d4d3")
             .ignoresSafeArea()
             
             VStack(spacing: 16) {

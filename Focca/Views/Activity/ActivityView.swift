@@ -24,8 +24,8 @@ struct ActivityView: View {
     var body: some View {
         ZStack {
             (isBlocked
-                ? Color(hex: "0A0A0A")
-                : Color(hex: "EDE7E6"))
+                ? Color(hex: "242424")
+                : Color(hex: "d9d4d3"))
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -133,11 +133,44 @@ struct ActivityView: View {
                 }
             }
             .padding(.bottom, 80)
+            .overlay(
+                VStack {
+                    Spacer()
+                    LinearGradient(
+                        colors: [
+                            Color(hex: "d9d4d3").opacity(1.0),
+                            Color(hex: "d9d4d3").opacity(0.7),
+                            Color(hex: "d9d4d3").opacity(0.0)
+                        ],
+                        startPoint: .bottom,
+                        endPoint: .top
+                    )
+                    .frame(height: 100)
+                    .frame(maxWidth: .infinity)
+                    .allowsHitTesting(false)
+                }
+                .padding(.bottom, 90)
+            )
 
             VStack(spacing: 0) {
                 Spacer()
-                WhiteRoundedBottomPlain(isBlocked: isBlocked)
-                    .offset(y: -0)
+                ZStack(alignment: .top) {
+                    WhiteRoundedBottomPlain(isBlocked: isBlocked)
+                        .offset(y: -0)
+                    
+                    LinearGradient(
+                        colors: [
+                            (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(1.0),
+                            (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(0.6),
+                            (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(0.0)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 60)
+                    .frame(maxWidth: .infinity)
+                    .allowsHitTesting(false)
+                }
                 TabBar(selectedTab: $selectedTab)
                     .padding(.bottom, -38)
             }

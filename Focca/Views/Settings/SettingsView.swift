@@ -16,8 +16,8 @@ struct SettingsView: View {
     var body: some View {
         ZStack {
             (isBlocked
-                ? Color(hex: "0A0A0A")
-                : Color(hex: "EDE7E6"))
+                ? Color(hex: "242424")
+                : Color(hex: "d9d4d3"))
             .ignoresSafeArea()
             
             VStack(spacing: 0) {

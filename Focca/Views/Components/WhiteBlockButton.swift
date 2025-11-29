@@ -14,7 +14,7 @@ struct WhiteBlockButton: View {
                     ZStack {
                         // Base com fundo fosco - mesma cor do fundo principal
                         Capsule()
-                            .fill(Color(hex: "EDE7E6"))
+                            .fill(Color(hex: "d9d4d3"))
                         
                         // Borda interna: branco na metade superior, preto na metade inferior
                         Capsule()
@@ -61,7 +61,7 @@ struct WhiteBlockButton: View {
 
 #Preview {
     ZStack {
-        Color(hex: "EDE7E6")
+        Color(hex: "d9d4d3")
             .ignoresSafeArea()
         
         VStack {
