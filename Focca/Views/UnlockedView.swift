@@ -41,63 +41,73 @@ struct UnlockedView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color(hex: "ECE8E6"), Color(hex: "F7F7F8")],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            // Fundo principal: #EDE7E6
+            Color(hex: "EDE7E6")
+                .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                Spacer(minLength: 145)
-                Spacer()
+                // Timer com estilo minimalista
                 HStack(spacing: 6) {
                     Text(formattedHours)
                         .font(.system(size: 18, weight: .semibold, design: .rounded))
-                        .foregroundColor(Color(hex: "1C1C1E"))
+                        .foregroundColor(Color(hex: "1A1A1A"))
                     
                     Text(formattedMinutes)
                         .font(.system(size: 18, weight: .light, design: .rounded))
-                        .foregroundColor(Color(hex: "1C1C1E"))
+                        .foregroundColor(Color(hex: "1A1A1A"))
                 }
-                .padding(.horizontal, 26)
-                .padding(.vertical, 16)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
                 .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.white.opacity(0.85))
-                        .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color(hex: "F3F0EF"))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color(hex: "D8D3D1"), lineWidth: 0.5)
+                        )
+                        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
                 )
-                .padding(.bottom, 52)
+                .padding(.top, -150)
 
 
                 
                 if showGIF {
                     AnimatedGIFView(name: "focca-rectangle-gray-gif")
                         .frame(width: 300, height: 197)
-                        .shadow(color: Color.black.opacity(0.12), radius: 12, x: 0, y: 5)
-                        .padding(.bottom, 60)
+                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24)
+                                .stroke(Color(hex: "D8D3D1"), lineWidth: 0.5)
+                        )
+                        .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
+                        .padding(.bottom, 25)
                 } else {
                     Image("focca-rectangle-gray")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 300, height: 197)
-                        .shadow(color: Color.black.opacity(0.12), radius: 12, x: 0, y: 5)
-                        .padding(.bottom, 60)
+                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24)
+                                .stroke(Color(hex: "D8D3D1"), lineWidth: 0.5)
+                        )
+                        .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
+                        .padding(.bottom, 25)
                 }
                 
-                VStack(spacing: 8) {
+                VStack(spacing: 12) {
                     Button(action: { showModeSheet = true }) {
                         HStack(spacing: 6) {
                             Text("Modo:")
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundColor(Color(hex: "1C1C1E"))
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(Color(hex: "1A1A1A"))
                             Text(activeModeName)
-                                .font(.system(size: 17, weight: .regular))
-                                .foregroundColor(Color(hex: "1C1C1E"))
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(Color(hex: "1A1A1A"))
                             
                             Image(systemName: "chevron.down")
                                 .font(.system(size: 13, weight: .medium))
-                                .foregroundColor(Color(hex: "1C1C1E"))
+                                .foregroundColor(Color(hex: "1A1A1A"))
                                 .offset(y: 1)
                         }
                     }
@@ -105,11 +115,11 @@ struct UnlockedView: View {
                     
                     Text("Bloqueando \(activeModeCount) apps")
                         .font(.system(size: 14))
-                        .foregroundColor(Color(hex: "8E8E93"))
+                        .foregroundColor(Color(hex: "4A4A4A"))
                 }
-                .padding(.bottom, 60)
+                .padding(.bottom, 10)
             }
-            .padding(.bottom, 200)
+            .padding(.bottom, 100)
         }
         .overlay(
             VStack(spacing: 0) {
@@ -118,7 +128,7 @@ struct UnlockedView: View {
                     WhiteRoundedBottomPlain()
                     WhiteBlockButton(action: activateCurrentMode)
                         .padding(.horizontal, 36)
-                        .offset(y: -20)
+                        .offset(y: -28)
                 }
                 .padding(.bottom, 0)
                 TabBar(selectedTab: $selectedTab)

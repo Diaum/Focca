@@ -17,8 +17,8 @@ struct WhiteRoundedBottomPlain: View {
                             Color(hex: "")
                         ]
                         : [
-                            Color(hex: "F9F4F0").opacity(0.8),
-                            Color(hex: "")
+                            Color(hex: "EDE7E6").opacity(0.95),
+                            Color(hex: "EDE7E6")
                         ],
                     startPoint: .bottom,
                     endPoint: .top
@@ -39,12 +39,8 @@ struct WhiteRoundedBottomPlain: View {
 
 #Preview {
     ZStack {
-        LinearGradient(
-            colors: [Color(hex: "F7F7F8"), Color(hex: "ECECEC")],
-            startPoint: .top,
-            endPoint: .bottom
-        )
-        .ignoresSafeArea()
+        Color(hex: "EDE7E6")
+            .ignoresSafeArea()
         VStack {
             Spacer()
             WhiteRoundedBottomPlain()
