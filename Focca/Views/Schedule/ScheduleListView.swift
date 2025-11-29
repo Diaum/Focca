@@ -7,11 +7,7 @@ struct ScheduleListView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color(hex: "F7F7F8"), Color(hex: "ECECEC")],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+            Color(hex: "EDE7E6")
             .ignoresSafeArea()
             
             VStack(spacing: 0) {

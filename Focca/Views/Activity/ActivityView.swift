@@ -23,13 +23,9 @@ struct ActivityView: View {
         
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: isBlocked
-                    ? [Color(hex: "0A0A0A"), Color(hex: "0A0A0A")]
-                    : [Color(hex: "ECE8E6"), Color(hex: "F7F7F8")],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+            (isBlocked
+                ? Color(hex: "0A0A0A")
+                : Color(hex: "EDE7E6"))
             .ignoresSafeArea()
             
             VStack(spacing: 0) {

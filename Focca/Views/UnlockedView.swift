@@ -82,7 +82,7 @@ struct UnlockedView: View {
                         .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
                         .padding(.bottom, 25)
                 } else {
-                    Image("focca-rectangle-gray")
+                    Image("focca-rectangle-white")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 300, height: 197)
