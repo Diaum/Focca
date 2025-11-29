@@ -21,13 +21,13 @@ struct SettingsView: View {
     }
     
     var body: some View {
-        ZStack {
-            (isBlocked
-                ? Color(hex: "242424")
-                : Color(hex: "d9d4d3"))
-            .ignoresSafeArea()
-            
-            ScrollView(showsIndicators: false) {
+        Group {
+            ZStack {
+                (isBlocked
+                 ? Color(hex: "242424")
+                 : Color(hex: "d9d4d3"))
+                .ignoresSafeArea()
+                
                 VStack(spacing: 14) {
                     ProfileHeaderView(
                         email: authViewModel.currentEmail ?? "usuário@focca.app",
@@ -40,7 +40,7 @@ struct SettingsView: View {
                             .fill(isBlocked ? Color(hex: "1C1C1C") : Color(hex: "e4e0e0"))
                             .shadow(color: isBlocked ? Color.black.opacity(0.3) : Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
                     )
-                    .padding(.top, 40)
+                    .padding(.top, 20)
                     .padding(.bottom, 14)
                     SettingsSection(
                         title: nil,
@@ -85,23 +85,13 @@ struct SettingsView: View {
                         isBlocked: isBlocked
                     )
                     
-                    SettingsSection(
-                        title: nil,
-                        items: [
-                            SettingsItem(title: "Metas", hasToggle: true, isToggledOn: GoalsManager.shared.areGoalsEnabled, action: .goalsToggle)
-                        ],
-                        showNotificationsView: $showNotificationsView,
-                        selectedTab: $selectedTab,
-                        isBlocked: isBlocked
-                    )
-                    
                     VStack(spacing: 12) {
                         Button(action: {
                             Task {
                                 await authViewModel.signOut()
                             }
                         }) {
-                            Text("Sair")
+                            Text("Deslogar")
                                 .font(.system(size: 17, weight: .medium))
                                 .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                                 .frame(maxWidth: .infinity)
@@ -116,226 +106,195 @@ struct SettingsView: View {
                         
                         Text("version \(appVersion)")
                             .font(.system(size: 13, weight: .regular))
-                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8A8A8E"))
+                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "A0A0A0"))
                     }
                     .padding(.top, 8)
-                    .padding(.bottom, 40)
                 }
                 .padding(.horizontal, 16)
+                .padding(.top, -50)
+                .padding(.bottom, 40)
+                .zIndex(2)
+                
+                VStack(spacing: 0) {
+                    Spacer()
+                    WhiteRoundedBottomPlain(isBlocked: isBlocked)
+                    TabBar(selectedTab: $selectedTab)
+                        .padding(.bottom, -50)
+                }
+                .zIndex(1)
             }
-            .zIndex(2)
-            
-            VStack(spacing: 0) {
-                Spacer()
-                WhiteRoundedBottomPlain(isBlocked: isBlocked)
-                TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, -50)
-            }
-            .zIndex(1)
         }
         .preferredColorScheme(isBlocked ? .dark : .light)
         .sheet(isPresented: $showNotificationsView) {
             NotificationsView()
         }
     }
-}
-
-struct SettingsSection: View {
-    let title: String?
-    let items: [SettingsItem]
-    @Binding var showNotificationsView: Bool
-    @Binding var selectedTab: Int
-    let isBlocked: Bool
     
-    var body: some View {
-        VStack(spacing: 10) {
-            if let title = title {
-                HStack {
-                    Text(title)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
-                    Spacer()
+    struct SettingsSection: View {
+        let title: String?
+        let items: [SettingsItem]
+        @Binding var showNotificationsView: Bool
+        @Binding var selectedTab: Int
+        let isBlocked: Bool
+        
+        var body: some View {
+            VStack(spacing: 10) {
+                if let title = title {
+                    HStack {
+                        Text(title)
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                        Spacer()
+                    }
+                    .padding(.horizontal, 4)
                 }
-                .padding(.horizontal, 4)
-            }
-            
-            VStack(spacing: 0) {
-                ForEach(Array(items.enumerated()), id: \.offset) { index, item in
-                    SettingsRow(item: item, showNotificationsView: $showNotificationsView, selectedTab: $selectedTab, isBlocked: isBlocked)
-                    if index < items.count - 1 {
-                        Divider()
-                            .background(isBlocked ? Color(hex: "38383A") : Color(hex: "C6C6C8"))
-                            .padding(.leading, 16)
+                
+                VStack(spacing: 0) {
+                    ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+                        SettingsRow(item: item, showNotificationsView: $showNotificationsView, selectedTab: $selectedTab, isBlocked: isBlocked)
+                        if index < items.count - 1 {
+                            Divider()
+                                .background(isBlocked ? Color(hex: "38383A") : Color(hex: "C6C6C8"))
+                                .padding(.leading, 16)
+                        }
                     }
                 }
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(isBlocked ? Color(hex: "1C1C1C") : Color(hex: "e4e0e0"))
+                        .shadow(color: isBlocked ? Color.black.opacity(0.3) : Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
+                )
             }
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(isBlocked ? Color(hex: "1C1C1C") : Color(hex: "e4e0e0"))
-                    .shadow(color: isBlocked ? Color.black.opacity(0.3) : Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
-            )
         }
     }
-}
-
-struct SettingsRow: View {
-    let item: SettingsItem
-    @Binding var showNotificationsView: Bool
-    @Binding var selectedTab: Int
-    let isBlocked: Bool
-    @ObservedObject private var awardManager = AwardManager.shared
-    @ObservedObject private var statsAchievementManager = StatsAchievementManager.shared
-    @State private var showAdvancedStats = false
-    @State private var showGoals = false
-    @State private var goalsEnabled = GoalsManager.shared.areGoalsEnabled
-    @State private var isExpanded = false
     
-    var body: some View {
-        VStack(spacing: 0) {
-            Button(action: {
-                // Don't trigger action if it's a toggle (toggle handles its own action)
-                if item.hasToggle && item.action == .goalsToggle {
-                    return
-                }
-                
-                // Handle expandable items
-                if item.title == "Sobre o Focca" {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                        isExpanded.toggle()
+    struct SettingsRow: View {
+        let item: SettingsItem
+        @Binding var showNotificationsView: Bool
+        @Binding var selectedTab: Int
+        let isBlocked: Bool
+        @ObservedObject private var awardManager = AwardManager.shared
+        @ObservedObject private var statsAchievementManager = StatsAchievementManager.shared
+        @State private var showAdvancedStats = false
+        @State private var showGoals = false
+        @State private var isExpanded = false
+        
+        var body: some View {
+            VStack(spacing: 0) {
+                Button(action: {
+                    // Handle expandable items
+                    if item.title == "Sobre o Focca" {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            isExpanded.toggle()
+                        }
+                        return
                     }
-                    return
-                }
-                
-                switch item.action {
-                case .notifications:
-                    showNotificationsView = true
-                case .awards:
-                    selectedTab = 2
-                    AwardManager.shared.markAwardsAsViewed()
-                case .advancedStats:
-                    showAdvancedStats = true
-                    StatsAchievementManager.shared.markAchievementsAsViewed()
-                case .goals:
-                    showGoals = true
-                case .friends:
-                    // TODO: Implementar tela de amigos
-                    break
-                case .goalsToggle:
-                    break
-                case .none:
-                    break
-                }
-            }) {
-                HStack(spacing: 12) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        HStack(spacing: 8) {
-                            Text(item.title)
-                                .font(.system(size: 17, weight: .regular))
-                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
-                            
-                            if item.action == .awards && awardManager.hasNewAwards {
-                                Circle()
-                                    .fill(Color.red)
-                                    .frame(width: 8, height: 8)
+                    
+                    switch item.action {
+                    case .notifications:
+                        showNotificationsView = true
+                    case .awards:
+                        selectedTab = 2
+                        AwardManager.shared.markAwardsAsViewed()
+                    case .advancedStats:
+                        showAdvancedStats = true
+                        StatsAchievementManager.shared.markAchievementsAsViewed()
+                    case .goals:
+                        showGoals = true
+                    case .friends:
+                        // TODO: Implementar tela de amigos
+                        break
+                    case .none:
+                        break
+                    }
+                }) {
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 8) {
+                                Text(item.title)
+                                    .font(.system(size: 17, weight: .regular))
+                                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                                
+                                if item.action == .awards && awardManager.hasNewAwards {
+                                    Circle()
+                                        .fill(Color.red)
+                                        .frame(width: 8, height: 8)
+                                }
+                                
+                                if item.action == .advancedStats && statsAchievementManager.hasNewAchievements {
+                                    Circle()
+                                        .fill(Color.red)
+                                        .frame(width: 8, height: 8)
+                                }
                             }
                             
-                            if item.action == .advancedStats && statsAchievementManager.hasNewAchievements {
-                                Circle()
-                                    .fill(Color.red)
-                                    .frame(width: 8, height: 8)
+                            if let subtitle = item.subtitle {
+                                Text(subtitle)
+                                    .font(.system(size: 14, weight: .regular))
+                                    .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
                             }
                         }
                         
-                        if let subtitle = item.subtitle {
-                            Text(subtitle)
-                                .font(.system(size: 14, weight: .regular))
-                                .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                        Spacer()
+                        
+                        if item.hasArrow {
+                            Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8"))
+                                .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isExpanded)
                         }
                     }
-                    
-                    Spacer()
-                    
-                    if item.hasToggle {
-                        Toggle("", isOn: Binding(
-                            get: { 
-                                if item.action == .goalsToggle {
-                                    return goalsEnabled
-                                }
-                                return item.isToggledOn
-                            },
-                            set: { newValue in
-                                if item.action == .goalsToggle {
-                                    goalsEnabled = newValue
-                                    GoalsManager.shared.areGoalsEnabled = newValue
-                                }
-                            }
-                        ))
-                        .tint(Color.blue)
-                        .labelsHidden()
-                    } else if item.hasArrow {
-                        Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "C6C6C8"))
-                            .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isExpanded)
-                    }
+                    .padding(.horizontal, 16)
+                    .frame(height: item.subtitle != nil ? 56 : 44)
+                    .frame(maxWidth: .infinity)
+                    .contentShape(Rectangle())
                 }
-                .padding(.horizontal, 16)
-                .frame(height: item.subtitle != nil ? 56 : 44)
-                .frame(maxWidth: .infinity)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(PlainButtonStyle())
-            
-            // Expanded content
-            if isExpanded {
-                VStack(alignment: .leading, spacing: 2) {
-                    if item.title == "Sobre o Focca" {
-                        Text("Focca é um app de foco projetado para ajudá-lo a ficar longe de apps que distraem e construir melhores hábitos digitais.")
-                            .font(.system(size: 14, weight: .regular))
-                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
-                            .fixedSize(horizontal: false, vertical: true)
+                .buttonStyle(PlainButtonStyle())
+                
+                // Expanded content
+                if isExpanded {
+                    VStack(alignment: .leading, spacing: 2) {
+                        if item.title == "Sobre o Focca" {
+                            Text("Focca é um app de foco projetado para ajudá-lo a ficar longe de apps que distraem e construir melhores hábitos digitais.")
+                                .font(.system(size: 14, weight: .regular))
+                                .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 16)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
-                .padding(.bottom, 16)
-                .transition(.opacity.combined(with: .move(edge: .top)))
             }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("GoalsEnabledChanged"))) { _ in
-            goalsEnabled = GoalsManager.shared.areGoalsEnabled
-        }
-        .onAppear {
-            goalsEnabled = GoalsManager.shared.areGoalsEnabled
-        }
-        .fullScreenCover(isPresented: $showAdvancedStats) {
-            AdvancedStatsView(selectedTab: $selectedTab, isBlocked: isBlocked)
-        }
-        .fullScreenCover(isPresented: $showGoals) {
-            GoalsView(selectedTab: $selectedTab, isBlocked: isBlocked)
+            .fullScreenCover(isPresented: $showAdvancedStats) {
+                AdvancedStatsView(selectedTab: $selectedTab, isBlocked: isBlocked)
+            }
+            .fullScreenCover(isPresented: $showGoals) {
+                GoalsView(selectedTab: $selectedTab, isBlocked: isBlocked)
+            }
         }
     }
-}
-
-enum SettingsAction {
-    case none
-    case notifications
-    case awards
-    case goals
-    case goalsToggle
-    case advancedStats
-    case friends
-}
-
-struct SettingsItem {
-    let title: String
-    var subtitle: String? = nil
-    var hasArrow: Bool = false
-    var hasToggle: Bool = false
-    var isToggledOn: Bool = false
-    var action: SettingsAction = .none
-}
-
-#Preview {
-    SettingsView(selectedTab: .constant(3))
+    
+    enum SettingsAction {
+        case none
+        case notifications
+        case awards
+        case goals
+        case advancedStats
+        case friends
+    }
+    
+    struct SettingsItem {
+        let title: String
+        var subtitle: String? = nil
+        var hasArrow: Bool = false
+        var hasToggle: Bool = false
+        var isToggledOn: Bool = false
+        var action: SettingsAction = .none
+    }
+    
+    #Preview {
+        SettingsView(selectedTab: .constant(3))
+    }
 }

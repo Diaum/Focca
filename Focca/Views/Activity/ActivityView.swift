@@ -61,10 +61,8 @@ struct ActivityView: View {
                         }
                     }
                     .padding(.trailing, 16)
-                    .padding(.top, 8)
+                    .padding(.top, -10)
                 }
-                
-                Spacer(minLength: 20)
                 
                 HStack(spacing: 80) {
                     VStack(spacing: 4) {
@@ -97,8 +95,8 @@ struct ActivityView: View {
                         }
                     }
                 }
-                .padding(.top, 0)
-                .padding(.bottom, 40)
+                .padding(.top, -20)
+                .padding(.bottom, 20)
                 
                 if dailyCards.isEmpty {
                     Text("As atividades aparecem após o seu primeiro dia usando o Focca.")
@@ -115,6 +113,7 @@ struct ActivityView: View {
                                 .padding(.top, 0)
                                 .padding(.bottom, 120)
                         }
+                        .frame(height: 500)
                         .onChange(of: expandedCardDate) { newValue in
                             if let expandedDate = newValue {
                                 if let card = dailyCards.first(where: { $0.date == expandedDate }),
@@ -132,15 +131,17 @@ struct ActivityView: View {
                     }
                 }
             }
-            .padding(.bottom, 80)
+            .padding(.bottom, 20)
+            .zIndex(2)
+            //Sombreamento do corner
             .overlay(
                 VStack {
                     Spacer()
                     LinearGradient(
                         colors: [
-                            Color(hex: "d9d4d3").opacity(1.0),
-                            Color(hex: "d9d4d3").opacity(0.7),
-                            Color(hex: "d9d4d3").opacity(0.0)
+                            (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(1.0),
+                            (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(0.7),
+                            (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(0.0)
                         ],
                         startPoint: .bottom,
                         endPoint: .top
@@ -149,7 +150,7 @@ struct ActivityView: View {
                     .frame(maxWidth: .infinity)
                     .allowsHitTesting(false)
                 }
-                .padding(.bottom, 90)
+                .padding(.bottom, 20)
             )
 
             VStack(spacing: 0) {
@@ -174,7 +175,7 @@ struct ActivityView: View {
                 TabBar(selectedTab: $selectedTab)
                     .padding(.bottom, -38)
             }
-            .zIndex(1)
+            .zIndex(0)
             
         }
         .sheet(isPresented: $showModeSheet) {
