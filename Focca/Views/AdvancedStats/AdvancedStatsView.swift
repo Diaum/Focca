@@ -29,7 +29,7 @@ struct AdvancedStatsView: View {
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                             .frame(width: 44, height: 44)
-                            .background(isBlocked ? Color(hex: "1C1C1C") : Color.white)
+                            .background(isBlocked ? Color(hex: "1C1C1C") : Color(hex: "e4e0e0"))
                             .clipShape(Circle())
                             .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                     }
@@ -102,7 +102,7 @@ struct AdvancedStatsView: View {
                     .padding(16)
                     .background(
                         RoundedRectangle(cornerRadius: 14)
-                            .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white)
+                            .fill(isBlocked ? Color(hex: "1C1C1C") : Color(hex: "e4e0e0"))
                             .shadow(color: Color.black.opacity(isBlocked ? 0.3 : 0.04), radius: 3, x: 0, y: 1)
                     )
                     .padding(.horizontal, 16)
