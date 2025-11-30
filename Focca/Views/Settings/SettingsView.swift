@@ -111,7 +111,7 @@ struct SettingsView: View {
                     .padding(.top, 40)
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, -20)
+                .padding(.top, -3   0)
                 .padding(.bottom, 40)
                 .zIndex(2)
                 
