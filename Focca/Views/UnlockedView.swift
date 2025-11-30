@@ -71,15 +71,8 @@ struct UnlockedView: View {
 
                 
                 if showGIF {
-                    AnimatedGIFView(name: "focca-rectangle-gray-gif")
-                        .frame(width: 300, height: 197)
-                        .clipShape(RoundedRectangle(cornerRadius: 24))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 24)
-                                .stroke(Color(hex: "D8D3D1"), lineWidth: 0.5)
-                        )
-                        .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
-                        .padding(.bottom, 25)
+                    AnimatedGIFView(name: "focca-rectangle-white-to-black", duration: 1.5)
+                        .frame(width: 300, height: 272)
                 } else {
                     Image("focca-rectangle-white")
                     .resizable()
@@ -227,7 +220,17 @@ struct UnlockedView: View {
     }
     
     private func activateCurrentMode() {
-        // Inicia a leitura NFC primeiro
+        // NFC temporariamente desabilitado - bloqueio direto
+        // Mostra o GIF e ativa o bloqueio
+        self.showGIF = true
+        
+        // Aguarda um tempo para mostrar o GIF antes de ativar o bloqueio
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            self.proceedWithBlocking()
+        }
+        
+        // Código NFC comentado temporariamente:
+        /*
         nfcReader.startReading(
             onSuccess: {
                 // NFC lido com sucesso, mostra o GIF e ativa o bloqueio
@@ -244,6 +247,7 @@ struct UnlockedView: View {
                 self.showNFCError = true
             }
         )
+        */
     }
     
     private func proceedWithBlocking() {

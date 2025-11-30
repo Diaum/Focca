@@ -4,6 +4,12 @@ import ImageIO
 
 struct AnimatedGIFView: UIViewRepresentable {
     let name: String
+    let duration: TimeInterval?
+    
+    init(name: String, duration: TimeInterval? = nil) {
+        self.name = name
+        self.duration = duration
+    }
     
     func makeUIView(context: Context) -> UIView {
         let containerView = UIView()
@@ -45,7 +51,7 @@ struct AnimatedGIFView: UIViewRepresentable {
             
             if !images.isEmpty {
                 imageView.animationImages = images
-                imageView.animationDuration = totalDuration
+                imageView.animationDuration = duration ?? totalDuration
                 imageView.image = images.first
                 imageView.startAnimating()
             }
