@@ -136,7 +136,7 @@ struct AdvancedStatsView: View {
                 Spacer()
                 WhiteRoundedBottomPlain(isBlocked: isBlocked)
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, -48)
+                    .padding(.bottom, -38)
             }
             .zIndex(1)
         }

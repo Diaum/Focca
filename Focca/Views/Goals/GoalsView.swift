@@ -53,7 +53,7 @@ struct GoalsView: View {
                             .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                     }
                     .padding(.leading, 16)
-                    .padding(.top, 0)
+                    .padding(.top, -20)
                     
                     Spacer()
                 }
@@ -63,8 +63,8 @@ struct GoalsView: View {
                         .font(.system(size: 24, weight: .medium))
                         .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 }
-                .padding(.top, 4)
-                .padding(.bottom, 16)
+                .padding(.top, -10)
+                .padding(.bottom, 12)
                 
                 if GoalsManager.shared.areGoalsEnabled {
                     VStack(spacing: 20) {
@@ -226,14 +226,14 @@ struct GoalsView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .top)
-            .padding(.top, 0)
+            .padding(.top, -40)
             .zIndex(2)
             
             VStack(spacing: 0) {
                 Spacer()
                 WhiteRoundedBottomPlain(isBlocked: isBlocked)
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, -48)
+                    .padding(.bottom, -38)
             }
             .zIndex(0)
         }
