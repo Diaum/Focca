@@ -42,7 +42,7 @@ struct UnlockedView: View {
     var body: some View {
         ZStack {
             Color(hex: "d9d4d3")
-                .ignoresSafeArea()
+            .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Timer com estilo minimalista
@@ -82,9 +82,9 @@ struct UnlockedView: View {
                         .padding(.bottom, 25)
                 } else {
                     Image("focca-rectangle-white")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 300, height: 197)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 300, height: 197)
                         .clipShape(RoundedRectangle(cornerRadius: 24))
                         .overlay(
                             RoundedRectangle(cornerRadius: 24)
@@ -131,7 +131,7 @@ struct UnlockedView: View {
                 }
                 .padding(.bottom, 0)
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, -38)
+                    .padding(.bottom, -43)
             }
             .padding(.bottom, 40)
             .ignoresSafeArea(edges: .bottom)

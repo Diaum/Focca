@@ -120,7 +120,7 @@ struct BlockedView: View {
                 }
                 .padding(.bottom, 0)
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, -38)
+                    .padding(.bottom, -3)
             }
             .ignoresSafeArea(edges: .bottom)
         )
