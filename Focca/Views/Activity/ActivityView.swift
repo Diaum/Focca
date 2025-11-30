@@ -61,7 +61,7 @@ struct ActivityView: View {
                         }
                     }
                     .padding(.trailing, 16)
-                    .padding(.top, -10)
+                    .padding(.top, -75)
                 }
                 
                 HStack(spacing: 80) {
