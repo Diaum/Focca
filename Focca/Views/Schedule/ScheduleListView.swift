@@ -63,7 +63,7 @@ struct ScheduleListView: View {
                 Spacer()
                 WhiteRoundedBottomPlain()
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, 0)
+                    .padding(.bottom, -38)
             }
         }
         .preferredColorScheme(.light)

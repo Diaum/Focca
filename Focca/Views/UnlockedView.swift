@@ -131,7 +131,7 @@ struct UnlockedView: View {
                 }
                 .padding(.bottom, 0)
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, -42)
+                    .padding(.bottom, -38)
             }
             .padding(.bottom, 40)
             .ignoresSafeArea(edges: .bottom)
