@@ -9,6 +9,7 @@ struct WhiteRoundedBottomPlain: View {
     
     var body: some View {
         let bgColor = isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")
+        let shadowColor = isBlocked ? Color(hex: "000000") : Color(hex: "8A8A8A")
         
         return ZStack {
             RoundedCorner(radius: .infinity, corners: [.bottomLeft, .bottomRight])
@@ -22,8 +23,8 @@ struct WhiteRoundedBottomPlain: View {
                                 colors: [
                                     bgColor,
                                     bgColor,
-                                    Color(hex: "8A8A8A"),
-                                    Color(hex: "8A8A8A")
+                                    shadowColor,
+                                    shadowColor
                                 ],
                                 startPoint: .top,
                                 endPoint: .bottom

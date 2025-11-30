@@ -156,7 +156,7 @@ struct ActivityView: View {
             VStack(spacing: 0) {
                 Spacer()
                 ZStack(alignment: .top) {
-                    WhiteRoundedBottomPlain(isBlocked: isBlocked)
+                WhiteRoundedBottomPlain(isBlocked: isBlocked)
                         .offset(y: -0)
                     
                     LinearGradient(

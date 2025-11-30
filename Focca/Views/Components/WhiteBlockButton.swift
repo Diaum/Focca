@@ -28,9 +28,9 @@ struct WhiteBlockButton: View {
                                     ],
                                     startPoint: .top,
                                     endPoint: .bottom
-                                ),
-                                lineWidth: 1
-                            )
+                                        ),
+                                        lineWidth: 1
+                                    )
                     }
                     // Sombra externa difusa e suave
                     .shadow(
@@ -52,7 +52,7 @@ struct WhiteBlockButton: View {
                         radius: 12,
                         x: 0,
                         y: 6
-                    )
+                            )
                 )
                 .padding(.horizontal, 36)
         }
@@ -62,7 +62,7 @@ struct WhiteBlockButton: View {
 #Preview {
     ZStack {
         Color(hex: "d9d4d3")
-            .ignoresSafeArea()
+        .ignoresSafeArea()
         
         VStack {
             Spacer()

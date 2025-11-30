@@ -72,7 +72,7 @@ struct OnboardingStep1: View {
                 .disabled(isRequestingPermission)
                 .padding(.horizontal, 24)
                 .padding(.bottom, 100)
-                
+            
                 WhiteRoundedBottomPlain()
             }
         }
