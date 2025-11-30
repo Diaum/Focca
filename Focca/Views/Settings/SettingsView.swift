@@ -40,7 +40,7 @@ struct SettingsView: View {
                             .fill(isBlocked ? Color(hex: "1C1C1C") : Color(hex: "e4e0e0"))
                             .shadow(color: isBlocked ? Color.black.opacity(0.3) : Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
                     )
-                    .padding(.top, 20)
+                    .padding(.top, 0)
                     .padding(.bottom, 14)
                     SettingsSection(
                         title: nil,
@@ -108,18 +108,19 @@ struct SettingsView: View {
                             .font(.system(size: 13, weight: .regular))
                             .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "A0A0A0"))
                     }
-                    .padding(.top, 8)
+                    .padding(.top, 40)
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, -50)
+                .padding(.top, -20)
                 .padding(.bottom, 40)
                 .zIndex(2)
                 
                 VStack(spacing: 0) {
                     Spacer()
                     WhiteRoundedBottomPlain(isBlocked: isBlocked)
+                        .offset(y: -5)
                     TabBar(selectedTab: $selectedTab)
-                        .padding(.bottom, -50)
+                        .padding(.bottom, -40)
                 }
                 .zIndex(1)
             }
@@ -295,6 +296,10 @@ struct SettingsView: View {
     }
     
     #Preview {
-        SettingsView(selectedTab: .constant(3))
+        ZStack {
+            Color(hex: "d9d4d3")
+                .ignoresSafeArea()
+            SettingsView(selectedTab: .constant(3), isBlocked: false)
+        }
     }
 }
