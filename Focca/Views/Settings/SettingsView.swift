@@ -120,7 +120,7 @@ struct SettingsView: View {
                     WhiteRoundedBottomPlain(isBlocked: isBlocked)
                         .offset(y: -5)
                     TabBar(selectedTab: $selectedTab)
-                        .padding(.bottom, -40)
+                        .padding(.bottom, -39)
                 }
                 .zIndex(1)
             }
