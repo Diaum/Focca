@@ -41,8 +41,8 @@ struct ActivityView: View {
                                 .frame(width: 40, height: 40)
                                 .background(
                                     Circle()
-                                        .fill(isBlocked ? Color(hex: "1E1E1F") : Color.white)
-                                        .shadow(color: Color.black.opacity(isBlocked ? 0.4 : 0.04), radius: 6, x: 0, y: 3)
+                                        .fill(isBlocked ? Color(hex: "1C1C1C") : Color(hex: "e4e0e0"))
+                                        .shadow(color: Color.black.opacity(isBlocked ? 0.3 : 0.04), radius: 3, x: 0, y: 1)
                                 )
                         }
                         
@@ -55,8 +55,8 @@ struct ActivityView: View {
                                 .frame(width: 40, height: 40)
                                 .background(
                                     Circle()
-                                        .fill(isBlocked ? Color(hex: "1E1E1F") : Color.white)
-                                        .shadow(color: Color.black.opacity(isBlocked ? 0.4 : 0.04), radius: 6, x: 0, y: 3)
+                                        .fill(isBlocked ? Color(hex: "1C1C1C") : Color(hex: "e4e0e0"))
+                                        .shadow(color: Color.black.opacity(isBlocked ? 0.3 : 0.04), radius: 3, x: 0, y: 1)
                                 )
                         }
                     }
