@@ -59,7 +59,7 @@ struct MonthlyGoalCard: View {
                         .font(.system(size: 18))
                         .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                     
-                    Text(monthName + " Metas")
+                    Text("Metas de " + monthName)
                         .font(.system(size: 20, weight: .semibold))
                         .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                     

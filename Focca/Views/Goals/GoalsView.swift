@@ -226,7 +226,7 @@ struct GoalsView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .top)
-            .padding(.top, 16)
+            .padding(.top, 0)
             .zIndex(2)
             
             VStack(spacing: 0) {
