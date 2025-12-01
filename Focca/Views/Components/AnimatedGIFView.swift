@@ -6,11 +6,13 @@ struct AnimatedGIFView: UIViewRepresentable {
     let name: String
     let duration: TimeInterval?
     let reversed: Bool
+    let isAnimating: Bool
     
-    init(name: String, duration: TimeInterval? = nil, reversed: Bool = false) {
+    init(name: String, duration: TimeInterval? = nil, reversed: Bool = false, isAnimating: Bool = true) {
         self.name = name
         self.duration = duration
         self.reversed = reversed
+        self.isAnimating = isAnimating
     }
     
     func makeUIView(context: Context) -> UIView {
@@ -56,7 +58,9 @@ struct AnimatedGIFView: UIViewRepresentable {
                 imageView.animationImages = finalImages
                 imageView.animationDuration = duration ?? totalDuration
                 imageView.image = reversed ? images.last : images.first
-                imageView.startAnimating()
+                if isAnimating {
+                    imageView.startAnimating()
+                }
             }
         }
         
@@ -64,11 +68,14 @@ struct AnimatedGIFView: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: UIView, context: Context) {
-        // Mantém a animação rodando
+        // Controla a animação baseado no estado isAnimating
         if let imageView = uiView.subviews.first as? UIImageView,
-           imageView.animationImages != nil,
-           !imageView.isAnimating {
-            imageView.startAnimating()
+           imageView.animationImages != nil {
+            if isAnimating && !imageView.isAnimating {
+                imageView.startAnimating()
+            } else if !isAnimating && imageView.isAnimating {
+                imageView.stopAnimating()
+            }
         }
     }
 }

@@ -68,20 +68,19 @@ struct UnlockedView: View {
                         .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
                 )
                 .padding(.top, -80)
-                .padding(.bottom, 50)
+                .padding(.bottom, 20)
 
-
-                Image("focca-rectangle-white")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 300, height: 197)
-                    .clipShape(RoundedRectangle(cornerRadius: 24))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 24)
-                            .stroke(Color(hex: "D8D3D1"), lineWidth: 0.5)
-                    )
-                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
-                    .padding(.bottom, 65)
+                ZStack {
+                    // Background vermelho claro
+                    RoundedRectangle(cornerRadius: 24)
+                        .fill(Color(hex: "FFE5E5"))
+                        .frame(width: 300, height: 197)
+                    
+                    AnimatedGIFView(name: "focca-rectangle-white-to-black", duration: 1.5, isAnimating: showGIF)
+                        .frame(width: 300, height: 197)
+                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                }
+                .padding(.bottom, 65)
                 
                 VStack(spacing: 12) {
                     Button(action: { showModeSheet = true }) {
@@ -237,8 +236,13 @@ struct UnlockedView: View {
     }
     
     private func activateCurrentMode() {
-        // NFC temporariamente desabilitado - bloqueio direto, sem animação de GIF
-        proceedWithBlocking()
+        // Mostra o GIF na ativação do bloqueio
+        showGIF = true
+        
+        // Aguarda a animação (1.5s) antes de iniciar o bloqueio
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            proceedWithBlocking()
+        }
     }
     
     private func proceedWithBlocking() {
