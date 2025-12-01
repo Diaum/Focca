@@ -13,7 +13,8 @@ struct UnlockedView: View {
     @State private var modeToEdit: String?
     @State private var showCreateMode = false
     @State private var activeModeName = "-"
-    @State private var activeModeCount = 0
+    @State private var activeModeAppCount = 0
+    @State private var activeModeCategoryCount = 0
     @State private var todayTime: String = "0h 0m"
     @State private var currentActivity: Activity<FoccaWidgetLiveAttributes>?
     @State private var showGIF = false
@@ -100,7 +101,7 @@ struct UnlockedView: View {
                     }
                     .buttonStyle(.plain)
                     
-                    Text("Bloqueando \(activeModeCount) apps")
+                    Text(activeModeDescription)
                         .font(.system(size: 14))
                         .foregroundColor(Color(hex: "4A4A4A"))
                 }
@@ -126,9 +127,7 @@ struct UnlockedView: View {
         )
         .preferredColorScheme(.light)
         .sheet(isPresented: $showModeSheet, onDismiss: {
-            let validMode = getValidActiveMode()
-            activeModeName = validMode
-            activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+            updateActiveModeDisplayInfo()
         }) {
             ModeSelectionSheet()
                 .presentationDetents([.large])
@@ -139,9 +138,7 @@ struct UnlockedView: View {
             get: { modeToEdit },
             set: { newValue in
                 if newValue == nil {
-                    let validMode = getValidActiveMode()
-                    activeModeName = validMode
-                    activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+                    updateActiveModeDisplayInfo()
                 }
                 modeToEdit = newValue
             }
@@ -153,15 +150,11 @@ struct UnlockedView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ModeDataUpdated"))) { _ in
             // Atualiza o contador quando um modo é editado
-            let validMode = getValidActiveMode()
-            activeModeName = validMode
-            activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+            updateActiveModeDisplayInfo()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ModeSaved"))) { _ in
             // Atualiza quando um modo é criado
-            let validMode = getValidActiveMode()
-            activeModeName = validMode
-            activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+            updateActiveModeDisplayInfo()
         }
         .sheet(isPresented: $showCreateMode) {
             CreateModeView()
@@ -181,9 +174,7 @@ struct UnlockedView: View {
             TimerStorage.shared.initializeFirstLaunch()
             updateTodayTime()
 
-            let validMode = getValidActiveMode()
-            activeModeName = validMode
-            activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+            updateActiveModeDisplayInfo()
 
             Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
                 DispatchQueue.main.async {
@@ -212,6 +203,37 @@ struct UnlockedView: View {
         let hours = Int(totalTime) / 3600
         let minutes = (Int(totalTime) % 3600) / 60
         todayTime = String(format: "%dh %dm", hours, minutes)
+    }
+    
+    private var activeModeDescription: String {
+        let apps = activeModeAppCount
+        let categories = activeModeCategoryCount
+        
+        if apps > 0 && categories > 0 {
+            let appWord = apps == 1 ? "app" : "apps"
+            let categoryWord = categories == 1 ? "categoria" : "categorias"
+            return "Bloqueando \(apps) \(appWord), \(categories) \(categoryWord)"
+        } else if categories > 0 {
+            let categoryWord = categories == 1 ? "categoria" : "categorias"
+            return "Bloqueando \(categories) \(categoryWord)"
+        } else {
+            let appWord = apps == 1 ? "app" : "apps"
+            return "Bloqueando \(apps) \(appWord)"
+        }
+    }
+    
+    private func updateActiveModeDisplayInfo() {
+        let validMode = getValidActiveMode()
+        activeModeName = validMode
+        
+        if let data = UserDefaults.standard.data(forKey: "mode_\(validMode)_selection"),
+           let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+            activeModeAppCount = saved.applicationTokens.count
+            activeModeCategoryCount = saved.categoryTokens.count
+        } else {
+            activeModeAppCount = 0
+            activeModeCategoryCount = 0
+        }
     }
     
     private func activateCurrentMode() {

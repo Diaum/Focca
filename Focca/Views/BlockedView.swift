@@ -8,7 +8,8 @@ struct BlockedView: View {
     @Binding var isBlocked: Bool
     @Binding var selectedTab: Int
     @State private var activeModeName: String = "-"
-    @State private var activeModeCount: Int = 0
+    @State private var activeModeAppCount: Int = 0
+    @State private var activeModeCategoryCount: Int = 0
 
     private let sharedDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
     
@@ -40,7 +41,7 @@ struct BlockedView: View {
                             .foregroundColor(.white)
                     }
                     
-                    Text("Bloqueando \(activeModeCount) apps")
+                    Text(activeModeDescription)
                         .font(.system(size: 13))
                         .foregroundColor(Color(hex: "8A8A8E"))
                 }
@@ -136,8 +137,34 @@ struct BlockedView: View {
     }
     
     private func updateModeInfo() {
-        activeModeName = UserDefaults.standard.string(forKey: "active_mode_name") ?? "-"
-        activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+        let modeName = UserDefaults.standard.string(forKey: "active_mode_name") ?? "-"
+        activeModeName = modeName.isEmpty ? "-" : modeName
+        
+        if let data = UserDefaults.standard.data(forKey: "mode_\(modeName)_selection"),
+           let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+            activeModeAppCount = saved.applicationTokens.count
+            activeModeCategoryCount = saved.categoryTokens.count
+        } else {
+            activeModeAppCount = 0
+            activeModeCategoryCount = 0
+        }
+    }
+    
+    private var activeModeDescription: String {
+        let apps = activeModeAppCount
+        let categories = activeModeCategoryCount
+        
+        if apps > 0 && categories > 0 {
+            let appWord = apps == 1 ? "app" : "apps"
+            let categoryWord = categories == 1 ? "categoria" : "categorias"
+            return "Bloqueando \(apps) \(appWord), \(categories) \(categoryWord)"
+        } else if categories > 0 {
+            let categoryWord = categories == 1 ? "categoria" : "categorias"
+            return "Bloqueando \(categories) \(categoryWord)"
+        } else {
+            let appWord = apps == 1 ? "app" : "apps"
+            return "Bloqueando \(apps) \(appWord)"
+        }
     }
 
     private func stopLiveActivity() {
