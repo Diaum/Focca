@@ -5,10 +5,12 @@ import ImageIO
 struct AnimatedGIFView: UIViewRepresentable {
     let name: String
     let duration: TimeInterval?
+    let reversed: Bool
     
-    init(name: String, duration: TimeInterval? = nil) {
+    init(name: String, duration: TimeInterval? = nil, reversed: Bool = false) {
         self.name = name
         self.duration = duration
+        self.reversed = reversed
     }
     
     func makeUIView(context: Context) -> UIView {
@@ -50,9 +52,10 @@ struct AnimatedGIFView: UIViewRepresentable {
             }
             
             if !images.isEmpty {
-                imageView.animationImages = images
+                let finalImages = reversed ? images.reversed() : images
+                imageView.animationImages = finalImages
                 imageView.animationDuration = duration ?? totalDuration
-                imageView.image = images.first
+                imageView.image = reversed ? images.last : images.first
                 imageView.startAnimating()
             }
         }

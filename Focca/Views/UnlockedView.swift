@@ -66,26 +66,21 @@ struct UnlockedView: View {
                         )
                         .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
                 )
-                .padding(.top, -150)
+                .padding(.top, -80)
+                .padding(.bottom, 50)
 
 
-                
-                if showGIF {
-                    AnimatedGIFView(name: "focca-rectangle-white-to-black", duration: 1.5)
-                        .frame(width: 300, height: 272)
-                } else {
-                    Image("focca-rectangle-white")
+                Image("focca-rectangle-white")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 300, height: 197)
-                        .clipShape(RoundedRectangle(cornerRadius: 24))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 24)
-                                .stroke(Color(hex: "D8D3D1"), lineWidth: 0.5)
-                        )
-                        .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
-                        .padding(.bottom, 25)
-                }
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24)
+                            .stroke(Color(hex: "D8D3D1"), lineWidth: 0.5)
+                    )
+                    .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
+                    .padding(.bottom, 65)
                 
                 VStack(spacing: 12) {
                     Button(action: { showModeSheet = true }) {
@@ -220,34 +215,8 @@ struct UnlockedView: View {
     }
     
     private func activateCurrentMode() {
-        // NFC temporariamente desabilitado - bloqueio direto
-        // Mostra o GIF e ativa o bloqueio
-        self.showGIF = true
-        
-        // Aguarda um tempo para mostrar o GIF antes de ativar o bloqueio
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            self.proceedWithBlocking()
-        }
-        
-        // Código NFC comentado temporariamente:
-        /*
-        nfcReader.startReading(
-            onSuccess: {
-                // NFC lido com sucesso, mostra o GIF e ativa o bloqueio
-                self.showGIF = true
-                
-                // Aguarda um tempo para mostrar o GIF antes de ativar o bloqueio
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    self.proceedWithBlocking()
-                }
-            },
-            onError: { errorMessage in
-                // Erro ao ler NFC
-                self.nfcErrorMessage = errorMessage
-                self.showNFCError = true
-            }
-        )
-        */
+        // NFC temporariamente desabilitado - bloqueio direto, sem animação de GIF
+        proceedWithBlocking()
     }
     
     private func proceedWithBlocking() {

@@ -22,13 +22,13 @@ struct BlockedView: View {
                 
                 
                 TimerComponent(isActive: isBlocked)
-                    .padding(.bottom, 60)
+                    .padding(.bottom, 10)
                 
                 Image("focca-rectangle-black")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 300, height: 197)
-                    .padding(.bottom, 40)
+                .padding(.bottom, 60)
                 
                 VStack(spacing: 6) {
                     HStack(spacing: 4) {
@@ -56,6 +56,7 @@ struct BlockedView: View {
                 ZStack(alignment: .top) {
                     WhiteRoundedBottomPlain(isBlocked: true)
                     DarkBlockButtonNew(action: {
+                        // Desbloqueio direto, sem animação de GIF
                         // Feature 5: Desativa o schedule do dia se usuário desbloquear antes do fim
                         // Nota: disableScheduleForToday() e manualUnblock() já chamam endBlocking() internamente,
                         // então não precisamos chamar novamente aqui para evitar dupla contagem
@@ -73,7 +74,7 @@ struct BlockedView: View {
                                let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
                                 blockedSelection = saved
                             } else if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
-                                       let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+                                      let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
                                 blockedSelection = saved
                             }
                             
@@ -91,7 +92,7 @@ struct BlockedView: View {
                         store.application.blockedApplications = nil
                         store.shield.applicationCategories = nil
                         store.webContent.blockedByFilter = nil
-
+                        
                         if let startDate = sharedDefaults.object(forKey: "blocked_start_date") as? Date {
                             TimerStorage.shared.splitOvernightTime(from: startDate, to: Date())
                         }
