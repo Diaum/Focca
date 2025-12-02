@@ -30,7 +30,7 @@ struct OnboardingStep1: View {
                 
                 VStack(spacing: 10) {
                     Text("Pegue seu Focca")
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.system(size: 18, weight: .regular))
                         .foregroundColor(Color(hex: "1D1D1F"))
                     
                     Text("Esconda todos os apps que roumbam sua atencão e volte a viver")
@@ -42,6 +42,10 @@ struct OnboardingStep1: View {
                 }
                 .padding(.bottom, 80)
                 
+                Spacer()
+            }
+            
+            VStack(spacing: 0) {
                 Spacer()
                 
                 Button(action: {
@@ -61,18 +65,13 @@ struct OnboardingStep1: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 56)
-                    .background(Color.white.opacity(0.9))
+                    .background(Color(hex: "e4e0e0"))
                     .cornerRadius(28)
                     .contentShape(Rectangle())
                 }
                 .disabled(isRequestingPermission)
                 .padding(.horizontal, 24)
-                .padding(.bottom, 40)
-            }
-            
-            VStack {
-                Spacer()
-                WhiteRoundedBottomPlain()
+                .padding(.bottom, 100)
             }
         }
         .fullScreenCover(isPresented: $showStep2) {

@@ -7,11 +7,7 @@ struct ScheduleListView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color(hex: "F7F7F8"), Color(hex: "ECECEC")],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+            Color(hex: "d9d4d3")
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -67,7 +63,7 @@ struct ScheduleListView: View {
                 Spacer()
                 WhiteRoundedBottomPlain()
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, 0)
+                    .padding(.bottom, -38)
             }
         }
         .preferredColorScheme(.light)

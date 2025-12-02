@@ -23,13 +23,9 @@ struct ActivityView: View {
         
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: isBlocked
-                    ? [Color(hex: "0A0A0A"), Color(hex: "0A0A0A")]
-                    : [Color(hex: "ECE8E6"), Color(hex: "F7F7F8")],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+            (isBlocked
+                ? Color(hex: "242424")
+                : Color(hex: "d9d4d3"))
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -45,8 +41,8 @@ struct ActivityView: View {
                                 .frame(width: 40, height: 40)
                                 .background(
                                     Circle()
-                                        .fill(isBlocked ? Color(hex: "1E1E1F") : Color.white)
-                                        .shadow(color: Color.black.opacity(isBlocked ? 0.4 : 0.04), radius: 6, x: 0, y: 3)
+                                        .fill(isBlocked ? Color(hex: "1C1C1C") : Color(hex: "e4e0e0"))
+                                        .shadow(color: Color.black.opacity(isBlocked ? 0.3 : 0.04), radius: 3, x: 0, y: 1)
                                 )
                         }
                         
@@ -59,16 +55,14 @@ struct ActivityView: View {
                                 .frame(width: 40, height: 40)
                                 .background(
                                     Circle()
-                                        .fill(isBlocked ? Color(hex: "1E1E1F") : Color.white)
-                                        .shadow(color: Color.black.opacity(isBlocked ? 0.4 : 0.04), radius: 6, x: 0, y: 3)
+                                        .fill(isBlocked ? Color(hex: "1C1C1C") : Color(hex: "e4e0e0"))
+                                        .shadow(color: Color.black.opacity(isBlocked ? 0.3 : 0.04), radius: 3, x: 0, y: 1)
                                 )
                         }
                     }
                     .padding(.trailing, 16)
-                    .padding(.top, 8)
+                    .padding(.top, -75)
                 }
-                
-                Spacer(minLength: 20)
                 
                 HStack(spacing: 80) {
                     VStack(spacing: 4) {
@@ -101,8 +95,8 @@ struct ActivityView: View {
                         }
                     }
                 }
-                .padding(.top, 0)
-                .padding(.bottom, 60)
+                .padding(.top, -20)
+                .padding(.bottom, 20)
                 
                 if dailyCards.isEmpty {
                     Text("As atividades aparecem após o seu primeiro dia usando o Focca.")
@@ -119,6 +113,7 @@ struct ActivityView: View {
                                 .padding(.top, 0)
                                 .padding(.bottom, 120)
                         }
+                        .frame(height: 500)
                         .onChange(of: expandedCardDate) { newValue in
                             if let expandedDate = newValue {
                                 if let card = dailyCards.first(where: { $0.date == expandedDate }),
@@ -136,15 +131,51 @@ struct ActivityView: View {
                     }
                 }
             }
-            .padding(.bottom, 60)
+            .padding(.bottom, 20)
+            .zIndex(2)
+            //Sombreamento do corner
+            .overlay(
+                VStack {
+                    Spacer()
+                    LinearGradient(
+                        colors: [
+                            (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(1.0),
+                            (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(0.7),
+                            (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(0.0)
+                        ],
+                        startPoint: .bottom,
+                        endPoint: .top
+                    )
+                    .frame(height: 100)
+                    .frame(maxWidth: .infinity)
+                    .allowsHitTesting(false)
+                }
+                .padding(.bottom, 20)
+            )
 
             VStack(spacing: 0) {
                 Spacer()
+                ZStack(alignment: .top) {
                 WhiteRoundedBottomPlain(isBlocked: isBlocked)
+                        .offset(y: -0)
+                    
+                    LinearGradient(
+                        colors: [
+                            (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(1.0),
+                            (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(0.6),
+                            (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(0.0)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 60)
+                    .frame(maxWidth: .infinity)
+                    .allowsHitTesting(false)
+                }
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, -48)
+                    .padding(.bottom, -38)
             }
-            .zIndex(1)
+            .zIndex(0)
             
         }
         .sheet(isPresented: $showModeSheet) {
@@ -265,7 +296,7 @@ struct ActivityView: View {
     
     @ViewBuilder
     private var cardGrid: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 16) {
             if let expandedDate = expandedCardDate,
                let expandedCard = dailyCards.first(where: { $0.date == expandedDate }),
                expandedCard.time > 0 {
@@ -292,7 +323,7 @@ struct ActivityView: View {
                 GridItem(.flexible(), spacing: 10),
                 GridItem(.flexible(), spacing: 10),
                 GridItem(.flexible(), spacing: 10)
-            ], spacing: 10) {
+            ], spacing: 16) {
                         ForEach(compactCards, id: \.date) { card in
                     if card.time > 0 {
                         DailyCard(

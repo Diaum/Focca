@@ -13,11 +13,7 @@ struct ModeSelectionSheet: View {
     
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color(hex: "F7F7F8"), Color(hex: "ECECEC")],
-                startPoint: .top,
-                endPoint: .bottom
-            ).ignoresSafeArea()
+            Color(hex: "d9d4d3").ignoresSafeArea()
             
             VStack(spacing: 0) {
                 HStack {
@@ -30,9 +26,8 @@ struct ModeSelectionSheet: View {
                             .frame(width: 40, height: 40)
                             .background(
                                 Circle()
-                                    .fill(Color.white)
-                                    .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 2)
-                                    .shadow(color: Color.black.opacity(0.04), radius: 2, x: 0, y: 1)
+                                    .fill(Color(hex: "e4e0e0"))
+                                    .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 1)
                             )
                     }
                     Spacer()
@@ -77,11 +72,14 @@ struct ModeSelectionSheet: View {
                     }) {
                         Text("Criar novo modo")
                             .font(.system(size: 17, weight: .semibold))
-                            .foregroundColor(.white)
+                            .foregroundColor(Color(hex: "1C1C1E"))
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
-                            .background(Color(hex: "2C2C2E"))
-                            .cornerRadius(20)
+                            .background(
+                                Capsule()
+                                    .fill(Color(hex: "d1cece"))
+                                    .shadow(color: Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
+                            )
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 24)
@@ -203,34 +201,34 @@ struct ModeRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 0) {
-            Button(action: onSelect) {
-                HStack(spacing: 8) {
-                    Text(title)
-                        .foregroundColor(Color(hex: "1C1C1E"))
-                    if hasSchedule {
-                        Image(systemName: "clock.fill")
-                            .font(.system(size: 12, weight: .regular))
-                            .foregroundColor(Color(hex: "C6C6C8"))
+                HStack(spacing: 0) {
+                    Button(action: onSelect) {
+                        HStack(spacing: 8) {
+                            Text(title)
+                                .foregroundColor(Color(hex: "1C1C1E"))
+                            if hasSchedule {
+                                Image(systemName: "clock.fill")
+                                    .font(.system(size: 12, weight: .regular))
+                                    .foregroundColor(Color(hex: "C6C6C8"))
+                            }
+                            Spacer()
+                        }
+                        .padding(.leading, 16)
+                        .frame(height: 84)
                     }
-                    Spacer()
-                }
-                .padding(.leading, 16)
-                .frame(height: 84)
-            }
 
-            Button(action: onEdit) {
-                Text("Editar")
-                    .font(.system(size: 15, weight: .regular))
-                    .foregroundColor(Color(hex: "1C1C1E"))
-                    .padding(.horizontal, 16)
-                    .frame(height: 74)
-            }
-        }
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(isSelected ? Color.white : Color(hex: "EDEBEA"))
-        )
+                    Button(action: onEdit) {
+                        Text("Editar")
+                            .font(.system(size: 15, weight: .regular))
+                            .foregroundColor(Color(hex: "1C1C1E"))
+                            .padding(.horizontal, 16)
+                            .frame(height: 74)
+                    }
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: 18)
+                        .fill(isSelected ? Color(hex: "e4e0e0") : Color(hex: "d0cbcb"))
+                )
     }
 }
 

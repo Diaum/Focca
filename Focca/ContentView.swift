@@ -7,17 +7,17 @@ struct ContentView: View {
     
     var body: some View {
         Group {
-            if !authViewModel.isAuthenticated {
+            if !hasCompletedOnboardingForCurrentUser {
+                NavigationView {
+                    OnboardingStep1()
+                        .navigationBarHidden(true)
+                }
+            } else if !authViewModel.isAuthenticated {
                 NavigationView {
                     OnboardingStep4()
                         .navigationBarHidden(true)
                 }
                 .id("auth_flow")
-            } else if !hasCompletedOnboardingForCurrentUser {
-                NavigationView {
-                    OnboardingStep1()
-                        .navigationBarHidden(true)
-                }
             } else {
                 PrincipalView()
             }

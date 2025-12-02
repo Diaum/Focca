@@ -145,7 +145,7 @@ struct DailyCardExpander: View {
         if isBlocked {
             return Color(hex: "1C1C1C")
         } else {
-            return Color.white
+            return Color(hex: "e4e0e0")
         }
     }
     

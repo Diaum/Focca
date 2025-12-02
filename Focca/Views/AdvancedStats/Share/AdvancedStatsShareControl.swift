@@ -24,20 +24,21 @@ struct AdvancedStatsShareControl: View {
                     ProgressView()
                 } else {
                     Image(systemName: "square.and.arrow.up")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.system(size: 15, weight: .medium))
                 }
                 Text(isGeneratingShareImage ? "Preparando..." : "Compartilhar minhas estatísticas")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.system(size: 17, weight: .medium))
             }
             .foregroundColor(configuration.isBlocked ? .white : Color(hex: "1C1C1E"))
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
+            .frame(height: 50)
             .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(configuration.isBlocked ? Color(hex: "1C1C1C") : Color.white)
-                    .shadow(color: Color.black.opacity(configuration.isBlocked ? 0.3 : 0.08), radius: 8, x: 0, y: 4)
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(configuration.isBlocked ? Color(hex: "1C1C1C") : Color(hex: "d1cece"))
+                    .shadow(color: Color.black.opacity(configuration.isBlocked ? 0.3 : 0.04), radius: 3, x: 0, y: 1)
             )
         }
+        .buttonStyle(PlainButtonStyle())
         .disabled(isGeneratingShareImage)
         .sheet(isPresented: $isShareSheetPresented, onDismiss: cleanupShareFile) {
             ShareSheet(activityItems: shareItems)
@@ -160,8 +161,8 @@ private struct ShareMetricsGrid: View {
     
     private var columns: [GridItem] {
         [
-            GridItem(.flexible(), spacing: 32, alignment: .leading),
-            GridItem(.flexible(), spacing: 32, alignment: .leading)
+            GridItem(.flexible(), spacing: 56, alignment: .leading),
+            GridItem(.flexible(), spacing: 56, alignment: .leading)
         ]
     }
     

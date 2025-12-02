@@ -75,11 +75,7 @@ struct EditModeView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color(hex: "F7F7F8"), Color(hex: "ECECEC")],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+            Color(hex: "d9d4d3")
             .ignoresSafeArea()
             
             VStack(spacing: 16) {
@@ -93,9 +89,8 @@ struct EditModeView: View {
                             .frame(width: 40, height: 40)
                             .background(
                                 Circle()
-                                    .fill(Color.white)
-                                    .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 2)
-                                    .shadow(color: Color.black.opacity(0.04), radius: 2, x: 0, y: 1)
+                                    .fill(Color(hex: "e4e0e0"))
+                                    .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 1)
                             )
                     }
                     Spacer()
@@ -129,7 +124,7 @@ struct EditModeView: View {
                         .frame(height: 56)
                         .background(
                             RoundedRectangle(cornerRadius: 14)
-                                .fill(Color.white)
+                                .fill(Color(hex: "e4e0e0"))
                         )
                         
                         if !editedModeName.isEmpty && editedModeName.count < 4 {
@@ -154,6 +149,11 @@ struct EditModeView: View {
                     AppIconGrid(selection: selection) {
                         showAppPicker = true
                     }
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color(hex: "e4e0e0"))
+                    )
                     
                     // Seção de Schedule (dias/horários) — opcional
                     VStack(spacing: 12) {
@@ -264,7 +264,7 @@ struct EditModeView: View {
                     .padding(.vertical, 12)
                     .background(
                         RoundedRectangle(cornerRadius: 14)
-                            .fill(Color.white)
+                            .fill(Color(hex: "e4e0e0"))
                     )
                     
                     // Toggle para display na tela bloqueada
@@ -282,7 +282,7 @@ struct EditModeView: View {
                     .padding(.vertical, 12)
                     .background(
                         RoundedRectangle(cornerRadius: 14)
-                            .fill(Color.white)
+                            .fill(Color(hex: "e4e0e0"))
                     )
                 }
                 .padding(.horizontal, 20)
@@ -299,11 +299,14 @@ struct EditModeView: View {
                     }) {
                         Text("Salvar")
                             .font(.system(size: 17, weight: .semibold))
-                            .foregroundColor(canSave ? .white : Color(hex: "9E9EA3"))
+                            .foregroundColor(canSave ? Color(hex: "1C1C1E") : Color(hex: "9E9EA3"))
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
-                            .background(canSave ? Color(hex: "2C2C2E") : Color.black.opacity(0.1))
-                            .cornerRadius(14)
+                            .background(
+                                Capsule()
+                                    .fill(canSave ? Color(hex: "d1cece") : Color.black.opacity(0.08))
+                                    .shadow(color: Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
+                            )
                     }
                     .disabled(!canSave)
                     
@@ -312,10 +315,13 @@ struct EditModeView: View {
                     }) {
                         Image(systemName: "trash")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(canDelete ? .white : Color(hex: "9E9EA3"))
+                            .foregroundColor(canDelete ? Color(hex: "1C1C1E") : Color(hex: "9E9EA3"))
                             .frame(width: 56, height: 56)
-                            .background(canDelete ? Color.red : Color.black.opacity(0.1))
-                            .cornerRadius(14)
+                            .background(
+                                Capsule()
+                                    .fill(canDelete ? Color(hex: "c4c0c0") : Color.black.opacity(0.08))
+                                    .shadow(color: Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
+                            )
                     }
                     .disabled(!canDelete)
                     .alert("Excluir modo", isPresented: $showDeleteConfirmation) {

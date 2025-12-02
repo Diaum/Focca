@@ -165,7 +165,7 @@ struct WeeklyGoalCard: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(isBlocked ? Color(hex: "1C1C1C") : Color.white)
+                .fill(isBlocked ? Color(hex: "1C1C1C") : Color(hex: "e4e0e0"))
                 .shadow(color: Color.black.opacity(isBlocked ? 0.3 : 0.04), radius: 3, x: 0, y: 1)
         )
         .onAppear {

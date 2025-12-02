@@ -6,59 +6,53 @@ struct WhiteBlockButton: View {
     var body: some View {
         Button(action: action) {
             Text("Ativar o Focca")
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundColor(Color(hex: "1C1C1E"))
+                .font(.system(size: 15, weight: .regular))
+                .foregroundColor(Color(hex: "1A1A1A"))
                 .frame(maxWidth: .infinity)
-                .frame(height: 52)
+                .frame(height: 56)
                 .background(
                     ZStack {
-                        // Base suave
-                        RoundedRectangle(cornerRadius: 24)
-                            .fill(
+                        // Base com fundo fosco - mesma cor do fundo principal
+                        Capsule()
+                            .fill(Color(hex: "d9d4d3"))
+                        
+                        // Borda interna: branco na metade superior, preto na metade inferior
+                        Capsule()
+                            .strokeBorder(
                                 LinearGradient(
                                     colors: [
-                                        Color(hex: "FBF6F2"),
-                                        Color(hex: "EEE8E3")
+                                        Color.white.opacity(0.6),
+                                        Color.white.opacity(0.6),
+                                        Color.black.opacity(0.2),
+                                        Color.black.opacity(0.2)
                                     ],
                                     startPoint: .top,
                                     endPoint: .bottom
-                                )
-                            )
-                            // Simulação de sombra interna sutil
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 24)
-                                    .stroke(
-                                        LinearGradient(
-                                            colors: [
-                                                Color.white.opacity(0.9),
-                                                Color.black.opacity(0.04)
-                                            ],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        ),
-                                        lineWidth: 0.8
-                                    )
-                            )
-                            // Sombra externa bem suave e difusa
-                            .shadow(color: Color.white.opacity(0.8), radius: 2, x: -2, y: -2)
-                            .shadow(color: Color.black.opacity(0.08), radius: 6, x: 2, y: 3)
-                            // Efeito de leve profundidade (simula sombra interna)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 24)
-                                    .stroke(
-                                        LinearGradient(
-                                            colors: [
-                                                Color.black.opacity(0.04),
-                                                Color.white.opacity(0.3)
-                                            ],
-                                            startPoint: .bottomTrailing,
-                                            endPoint: .topLeading
                                         ),
                                         lineWidth: 1
                                     )
-                                    .blur(radius: 1)
-                            )
                     }
+                    // Sombra externa difusa e suave
+                    .shadow(
+                        color: Color.white.opacity(0.6),
+                        radius: 4,
+                        x: -2,
+                        y: -2
+                    )
+                    // Sombra inferior com profundidade
+                    .shadow(
+                        color: Color.black.opacity(0.08),
+                        radius: 8,
+                        x: 0,
+                        y: 3
+                    )
+                    // Sombra adicional para efeito de flutuação
+                    .shadow(
+                        color: Color.black.opacity(0.04),
+                        radius: 12,
+                        x: 0,
+                        y: 6
+                            )
                 )
                 .padding(.horizontal, 36)
         }
@@ -67,11 +61,7 @@ struct WhiteBlockButton: View {
 
 #Preview {
     ZStack {
-        LinearGradient(
-            colors: [Color(hex: "F7F7F8"), Color(hex: "ECECEC")],
-            startPoint: .top,
-            endPoint: .bottom
-        )
+        Color(hex: "d9d4d3")
         .ignoresSafeArea()
         
         VStack {

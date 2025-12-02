@@ -8,43 +8,53 @@ struct WhiteRoundedBottomPlain: View {
     }
     
     var body: some View {
-        RoundedRectangle(cornerRadius: 150)
-            .fill(
-                LinearGradient(
-                    colors: isBlocked
-                        ? [
-                            Color(hex: "181818").opacity(0.8),
-                            Color(hex: "")
-                        ]
-                        : [
-                            Color(hex: "F9F4F0").opacity(0.8),
-                            Color(hex: "")
-                        ],
-                    startPoint: .bottom,
-                    endPoint: .top
+        let bgColor = isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")
+        let shadowColor = isBlocked ? Color(hex: "000000") : Color(hex: "8A8A8A")
+        
+        return ZStack {
+            RoundedCorner(radius: .infinity, corners: [.bottomLeft, .bottomRight])
+                .fill(bgColor)
+                .frame(height: 90)
+                .frame(maxWidth: .infinity)
+                .overlay(
+                    RoundedCorner(radius: .infinity, corners: [.bottomLeft, .bottomRight])
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    bgColor,
+                                    bgColor,
+                                    shadowColor,
+                                    shadowColor
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            ),
+                            lineWidth: 1
+                        )
+                        .blur(radius: 2)
                 )
+            
+            LinearGradient(
+                colors: [
+                    bgColor.opacity(1.0),
+                    bgColor.opacity(0.8),
+                    bgColor.opacity(0.0)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
             )
-            .frame(height: 90)
-            .padding(.horizontal, 10)
-            .padding(.bottom, 0)
-            .clipShape(
-                RoundedCorner(radius: 120, corners: [.topLeft, .topRight])
-            )
-            .shadow(color: Color.black.opacity(0.08), radius: 20, x: 0, y: 8)
-            .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: -4)
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
+            .frame(height: 40)
+            .frame(maxWidth: .infinity, alignment: .top)
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 
 #Preview {
     ZStack {
-        LinearGradient(
-            colors: [Color(hex: "F7F7F8"), Color(hex: "ECECEC")],
-            startPoint: .top,
-            endPoint: .bottom
-        )
-        .ignoresSafeArea()
+        Color(hex: "d9d4d3")
+            .ignoresSafeArea()
         VStack {
             Spacer()
             WhiteRoundedBottomPlain()

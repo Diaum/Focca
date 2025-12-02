@@ -12,7 +12,7 @@ struct AwardsView: View {
     }
     
     let awards: [(id: String, icon: String, title: String, subtitle: String, tint: String)] = [
-        ("30_min_focus", "clock.fill", "30 minutos focado", "Fique focado por 30 minutos em uma única sessão", "1C1C1E"),
+        ("30_min_focus", "timer", "30 minutos focado", "Fique focado por 30 minutos em uma única sessão", "1C1C1E"),
         ("1_hour_focus", "star.fill", "1 hora focada", "Fique focado por 1 hora em uma única sessão", "FFD700"),
         ("create_goal", "target", "Definidor de Metas", "Crie sua primeira meta", "00A8FF"),
         ("7_day_streak", "flame", "Sequência de 7 dias", "Use o Focca sete dias seguidos com pelo menos 1 hora por dia", "FF6B6B"),
@@ -26,6 +26,16 @@ struct AwardsView: View {
         ("complete_weekly_goal", "calendar.badge.checkmark", "Mestre de Meta Semanal", "Complete uma meta semanal", "007AFF"),
         ("complete_monthly_goal", "calendar.badge.clock.fill", "Mestre de Meta Mensal", "Complete uma meta mensal", "5856D6"),
     ]
+    
+    var availableFilters: [AwardFilter] {
+        let completedCount = awards.filter { awardManager.isAwardUnlocked($0.id) }.count
+        
+        if completedCount == 0 {
+            return [.all]
+        } else {
+            return [.incomplete, .completed, .all]
+        }
+    }
     
     var filteredAwards: [(id: String, icon: String, title: String, subtitle: String, tint: String)] {
         let filtered: [(id: String, icon: String, title: String, subtitle: String, tint: String)]
@@ -53,13 +63,9 @@ struct AwardsView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: isBlocked 
-                    ? [Color(hex: "0A0A0A"), Color(hex: "0A0A0A")]
-                    : [Color(hex: "F7F7F8"), Color(hex: "ECECEC")],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+            (isBlocked
+                ? Color(hex: "242424")
+                : Color(hex: "d9d4d3"))
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -71,7 +77,7 @@ struct AwardsView: View {
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                             .frame(width: 44, height: 44)
-                            .background(isBlocked ? Color(hex: "1C1C1C") : Color.white)
+                            .background(isBlocked ? Color(hex: "1C1C1C") : Color(hex: "e4e0e0"))
                             .clipShape(Circle())
                             .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                     }
@@ -91,8 +97,9 @@ struct AwardsView: View {
                 .padding(.top, 0)
                 .padding(.bottom, 12)
                 
-                AwardFilterView(selectedFilter: $selectedFilter, isBlocked: isBlocked)
+                AwardFilterView(selectedFilter: $selectedFilter, isBlocked: isBlocked, availableFilters: availableFilters)
                     .padding(.bottom, 22)
+                    .zIndex(3)
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 12) {
@@ -110,21 +117,67 @@ struct AwardsView: View {
                     .padding(.horizontal, 16)
                     .padding(.bottom, 250)
                 }
+                .overlay(
+                    alignment: .bottom
+                ) {
+                    VStack {
+                        Spacer()
+                        LinearGradient(
+                            colors: [
+                                (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(1.0),
+                                (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(0.7),
+                                (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(0.0)
+                            ],
+                            startPoint: .bottom,
+                            endPoint: .top
+                        )
+                        .frame(height: 100)
+                        .frame(maxWidth: .infinity)
+                        .allowsHitTesting(false)
+                    }
+                    .padding(.bottom, 0)
+                    .allowsHitTesting(false)
+                }
             }
             .padding(.bottom, 105)
+            .zIndex(2)
 
             VStack(spacing: 0) {
                 Spacer()
-                WhiteRoundedBottomPlain(isBlocked: isBlocked)
+                ZStack(alignment: .top) {
+                    WhiteRoundedBottomPlain(isBlocked: isBlocked)
+                    
+                    LinearGradient(
+                        colors: [
+                            (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(1.0),
+                            (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(0.6),
+                            (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(0.0)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 60)
+                    .frame(maxWidth: .infinity)
+                    .allowsHitTesting(false)
+                }
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, -48)
+                    .padding(.bottom, -38)
             }
-            .zIndex(1)
+            .zIndex(0)
         }
         .preferredColorScheme(isBlocked ? .dark : .light)
         .onAppear {
             AwardManager.shared.checkAllAwards()
             AwardManager.shared.markAwardsAsViewed()
+            
+            if !availableFilters.contains(selectedFilter) {
+                selectedFilter = .all
+            }
+        }
+        .onChange(of: availableFilters) { _ in
+            if !availableFilters.contains(selectedFilter) {
+                selectedFilter = .all
+            }
         }
     }
 }

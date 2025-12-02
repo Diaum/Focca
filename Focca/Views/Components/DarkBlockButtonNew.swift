@@ -63,7 +63,7 @@ struct DarkBlockButtonNew: View {
 
 #Preview {
     ZStack {
-        Color(hex: "0A0A0A")
+        Color(hex: "242424")
             .ignoresSafeArea()
         
         VStack {

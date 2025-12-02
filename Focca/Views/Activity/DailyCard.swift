@@ -66,7 +66,7 @@ struct DailyCard: View {
                 // Cinza para menos de 1 minuto
                 return Color(hex: "E5E5E5")
             } else {
-                return Color.white
+                return Color(hex: "e4e0e0")
             }
         }
     }

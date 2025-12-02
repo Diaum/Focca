@@ -33,13 +33,9 @@ struct GoalsView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: isBlocked 
-                    ? [Color(hex: "0A0A0A"), Color(hex: "0A0A0A")]
-                    : [Color(hex: "F7F7F8"), Color(hex: "ECECEC")],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+            (isBlocked
+                ? Color(hex: "242424")
+                : Color(hex: "d9d4d3"))
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -52,12 +48,12 @@ struct GoalsView: View {
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                             .frame(width: 44, height: 44)
-                            .background(isBlocked ? Color(hex: "1C1C1C") : Color.white)
+                            .background(isBlocked ? Color(hex: "1C1C1C") : Color(hex: "e4e0e0"))
                             .clipShape(Circle())
                             .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                     }
                     .padding(.leading, 16)
-                    .padding(.top, 8)
+                    .padding(.top, -20)
                     
                     Spacer()
                 }
@@ -67,8 +63,8 @@ struct GoalsView: View {
                         .font(.system(size: 24, weight: .medium))
                         .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
                 }
-                .padding(.top, 12)
-                .padding(.bottom, 24)
+                .padding(.top, -10)
+                .padding(.bottom, 12)
                 
                 if GoalsManager.shared.areGoalsEnabled {
                     VStack(spacing: 20) {
@@ -230,15 +226,16 @@ struct GoalsView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .top)
-            .padding(.top, 16)
+            .padding(.top, -40)
+            .zIndex(2)
             
             VStack(spacing: 0) {
                 Spacer()
                 WhiteRoundedBottomPlain(isBlocked: isBlocked)
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, -48)
+                    .padding(.bottom, -38)
             }
-            .zIndex(1)
+            .zIndex(0)
         }
         .preferredColorScheme(isBlocked ? .dark : .light)
         .onAppear {

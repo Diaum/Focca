@@ -3,6 +3,7 @@ import FamilyControls
 import ManagedSettings
 import ActivityKit
 import WidgetKit
+import CoreNFC
 
 struct UnlockedView: View {
     @Binding var isBlocked: Bool
@@ -12,9 +13,14 @@ struct UnlockedView: View {
     @State private var modeToEdit: String?
     @State private var showCreateMode = false
     @State private var activeModeName = "-"
-    @State private var activeModeCount = 0
+    @State private var activeModeAppCount = 0
+    @State private var activeModeCategoryCount = 0
     @State private var todayTime: String = "0h 0m"
     @State private var currentActivity: Activity<FoccaWidgetLiveAttributes>?
+    @State private var showGIF = false
+    @StateObject private var nfcReader = NFCReaderManager()
+    @State private var showNFCError = false
+    @State private var nfcErrorMessage = ""
 
     private let sharedDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
     
@@ -36,89 +42,83 @@ struct UnlockedView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color(hex: "ECE8E6"), Color(hex: "F7F7F8")],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+            Color(hex: "d9d4d3")
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                Spacer(minLength: 145)
-                Spacer()
                 HStack(spacing: 6) {
                     Text(formattedHours)
                         .font(.system(size: 18, weight: .semibold, design: .rounded))
-                        .foregroundColor(Color(hex: "1C1C1E"))
+                        .foregroundColor(Color(hex: "1A1A1A"))
                     
                     Text(formattedMinutes)
                         .font(.system(size: 18, weight: .light, design: .rounded))
-                        .foregroundColor(Color(hex: "1C1C1E"))
+                        .foregroundColor(Color(hex: "1A1A1A"))
                 }
-                .padding(.horizontal, 26)
-                .padding(.vertical, 16)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
                 .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.white.opacity(0.85))
-                        .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color(hex: "F3F0EF"))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color(hex: "D8D3D1"), lineWidth: 0.5)
+                        )
+                        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
                 )
-                .padding(.bottom, 52)
+                .padding(.top, -80)
+                .padding(.bottom, 20)
 
-
-                
-                Image("focca-rectangle-gray")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
+                AnimatedGIFView(name: "focca-rectangle-white-to-black", duration: 1.5, isAnimating: showGIF)
                     .frame(width: 300, height: 197)
-                    .shadow(color: Color.black.opacity(0.12), radius: 12, x: 0, y: 5)
-                    .padding(.bottom, 60)
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .padding(.bottom, 65)
                 
-                VStack(spacing: 8) {
+                VStack(spacing: 12) {
                     Button(action: { showModeSheet = true }) {
                         HStack(spacing: 6) {
                             Text("Modo:")
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundColor(Color(hex: "1C1C1E"))
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(Color(hex: "1A1A1A"))
                             Text(activeModeName)
-                                .font(.system(size: 17, weight: .regular))
-                                .foregroundColor(Color(hex: "1C1C1E"))
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(Color(hex: "1A1A1A"))
                             
                             Image(systemName: "chevron.down")
                                 .font(.system(size: 13, weight: .medium))
-                                .foregroundColor(Color(hex: "1C1C1E"))
+                                .foregroundColor(Color(hex: "1A1A1A"))
                                 .offset(y: 1)
                         }
                     }
                     .buttonStyle(.plain)
                     
-                    Text("Bloqueando \(activeModeCount) apps")
+                    Text(activeModeDescription)
                         .font(.system(size: 14))
-                        .foregroundColor(Color(hex: "8E8E93"))
+                        .foregroundColor(Color(hex: "4A4A4A"))
                 }
-                .padding(.bottom, 60)
+                .padding(.bottom, 70)
             }
-            .padding(.bottom, 200)
+            .padding(.bottom, 20)
         }
         .overlay(
             VStack(spacing: 0) {
-                Spacer()
+                Spacer(minLength: 0)
                 ZStack(alignment: .top) {
                     WhiteRoundedBottomPlain()
                     WhiteBlockButton(action: activateCurrentMode)
                         .padding(.horizontal, 36)
-                        .offset(y: -20)
+                        .offset(y: -28)
                 }
                 .padding(.bottom, 0)
                 TabBar(selectedTab: $selectedTab)
-                    .padding(.bottom, -12)
+                    .padding(.bottom, -43)
             }
+            .padding(.bottom, 40)
             .ignoresSafeArea(edges: .bottom)
         )
         .preferredColorScheme(.light)
         .sheet(isPresented: $showModeSheet, onDismiss: {
-            let validMode = getValidActiveMode()
-            activeModeName = validMode
-            activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+            updateActiveModeDisplayInfo()
         }) {
             ModeSelectionSheet()
                 .presentationDetents([.large])
@@ -129,9 +129,7 @@ struct UnlockedView: View {
             get: { modeToEdit },
             set: { newValue in
                 if newValue == nil {
-                    let validMode = getValidActiveMode()
-                    activeModeName = validMode
-                    activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+                    updateActiveModeDisplayInfo()
                 }
                 modeToEdit = newValue
             }
@@ -142,16 +140,10 @@ struct UnlockedView: View {
                 .presentationCornerRadius(30)
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ModeDataUpdated"))) { _ in
-            // Atualiza o contador quando um modo é editado
-            let validMode = getValidActiveMode()
-            activeModeName = validMode
-            activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+            updateActiveModeDisplayInfo()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ModeSaved"))) { _ in
-            // Atualiza quando um modo é criado
-            let validMode = getValidActiveMode()
-            activeModeName = validMode
-            activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+            updateActiveModeDisplayInfo()
         }
         .sheet(isPresented: $showCreateMode) {
             CreateModeView()
@@ -171,9 +163,7 @@ struct UnlockedView: View {
             TimerStorage.shared.initializeFirstLaunch()
             updateTodayTime()
 
-            let validMode = getValidActiveMode()
-            activeModeName = validMode
-            activeModeCount = UserDefaults.standard.integer(forKey: "active_mode_app_count")
+            updateActiveModeDisplayInfo()
 
             Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
                 DispatchQueue.main.async {
@@ -183,8 +173,17 @@ struct UnlockedView: View {
         }
         .onChange(of: isBlocked) { blocked in
             if !blocked {
+                showGIF = false
+                nfcReader.stopReading()
                 updateTodayTime()
             }
+        }
+        .alert("Erro NFC", isPresented: $showNFCError) {
+            Button("OK", role: .cancel) {
+                nfcErrorMessage = ""
+            }
+        } message: {
+            Text(nfcErrorMessage)
         }
     }
     
@@ -195,25 +194,61 @@ struct UnlockedView: View {
         todayTime = String(format: "%dh %dm", hours, minutes)
     }
     
+    private var activeModeDescription: String {
+        let apps = activeModeAppCount
+        let categories = activeModeCategoryCount
+        
+        if apps > 0 && categories > 0 {
+            let appWord = apps == 1 ? "app" : "apps"
+            let categoryWord = categories == 1 ? "categoria" : "categorias"
+            return "Bloqueando \(apps) \(appWord), \(categories) \(categoryWord)"
+        } else if categories > 0 {
+            let categoryWord = categories == 1 ? "categoria" : "categorias"
+            return "Bloqueando \(categories) \(categoryWord)"
+        } else {
+            let appWord = apps == 1 ? "app" : "apps"
+            return "Bloqueando \(apps) \(appWord)"
+        }
+    }
+    
+    private func updateActiveModeDisplayInfo() {
+        let validMode = getValidActiveMode()
+        activeModeName = validMode
+        
+        if let data = UserDefaults.standard.data(forKey: "mode_\(validMode)_selection"),
+           let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+            activeModeAppCount = saved.applicationTokens.count
+            activeModeCategoryCount = saved.categoryTokens.count
+        } else {
+            activeModeAppCount = 0
+            activeModeCategoryCount = 0
+        }
+    }
+    
     private func activateCurrentMode() {
+        showGIF = true
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            proceedWithBlocking()
+        }
+    }
+    
+    private func proceedWithBlocking() {
         let activeMode = getValidActiveMode()
         
         if let data = UserDefaults.standard.data(forKey: "mode_\(activeMode)_selection"),
            let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
             let store = ManagedSettingsStore()
 
-            // Bloqueia apps individuais
             if !saved.applicationTokens.isEmpty {
                 let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
                 store.application.blockedApplications = apps
             }
 
-            // Bloqueia categorias de apps
             if !saved.categoryTokens.isEmpty {
                 store.shield.applicationCategories = .specific(saved.categoryTokens)
             }
 
-            // Bloqueia domínios web
             if !saved.webDomainTokens.isEmpty {
                 let domains = Set(saved.webDomainTokens.compactMap { WebDomain(token: $0) })
                 store.webContent.blockedByFilter = .specific(domains)
