@@ -448,7 +448,7 @@ struct AppPickerSheet: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color(hex: "d9d4d3")
+                Color.white
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
@@ -467,8 +467,8 @@ struct AppPickerSheet: View {
                             .frame(height: 50)
                             .background(
                                 Capsule()
-                                    .fill(Color(hex: "d1cece"))
-                                    .shadow(color: Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
+                                    .fill(Color(hex: "e4e0e0"))
+                                    .shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 1)
                             )
                     }
                     .padding(.horizontal, 20)
