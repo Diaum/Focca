@@ -29,7 +29,7 @@ struct BlockedView: View {
                 AnimatedGIFView(name: "focca-rectangle-white-to-black", duration: 1.5, reversed: true, isAnimating: isAnimatingGIF)
                     .frame(width: 300, height: 197)
                     .clipShape(RoundedRectangle(cornerRadius: 24))
-                    .padding(.bottom, 60)
+                    .padding(.bottom, 70)
                 
                 VStack(spacing: 6) {
                     HStack(spacing: 4) {
