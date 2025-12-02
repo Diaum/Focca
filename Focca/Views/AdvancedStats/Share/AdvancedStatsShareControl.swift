@@ -161,8 +161,8 @@ private struct ShareMetricsGrid: View {
     
     private var columns: [GridItem] {
         [
-            GridItem(.flexible(), spacing: 32, alignment: .leading),
-            GridItem(.flexible(), spacing: 32, alignment: .leading)
+            GridItem(.flexible(), spacing: 56, alignment: .leading),
+            GridItem(.flexible(), spacing: 56, alignment: .leading)
         ]
     }
     
