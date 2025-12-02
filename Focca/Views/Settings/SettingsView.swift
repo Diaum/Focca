@@ -86,7 +86,9 @@ struct SettingsView: View {
                             SettingsSection(
                                 title: nil,
                                 items: [
-                                    SettingsItem(title: "Desbloqueio de Emergência", subtitle: "4 restantes", hasArrow: true)
+                                    SettingsItem(title: "Desbloqueio de Emergência", subtitle: "4 restantes", hasArrow: true),
+                                    SettingsItem(title: "Reportar bug", hasArrow: true),
+                                    SettingsItem(title: "Preciso de ajuda", hasArrow: true)
                                 ],
                                 showNotificationsView: $showNotificationsView,
                                 selectedTab: $selectedTab,
@@ -246,6 +248,12 @@ struct SettingsView: View {
                     case .none:
                         break
                     }
+                    
+                    if item.title == "Reportar bug" {
+                        openSupportEmail(subject: "Reportar bug")
+                    } else if item.title == "Preciso de ajuda" {
+                        openSupportEmail(subject: "Preciso de ajuda")
+                    }
                 }) {
                     HStack(spacing: 12) {
                         VStack(alignment: .leading, spacing: 2) {
@@ -311,6 +319,16 @@ struct SettingsView: View {
             }
             .fullScreenCover(isPresented: $showGoals) {
                 GoalsView(selectedTab: $selectedTab, isBlocked: isBlocked)
+            }
+        }
+        
+        private func openSupportEmail(subject: String) {
+            let base = "mailto:contato@java10x.dev"
+            let encodedSubject = subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? subject
+            let urlString = "\(base)?subject=\(encodedSubject)"
+            
+            if let url = URL(string: urlString) {
+                UIApplication.shared.open(url)
             }
         }
     }
