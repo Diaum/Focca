@@ -93,7 +93,7 @@ struct AppIconGrid: View {
         .buttonStyle(PlainButtonStyle())
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(Color.white)
+                .fill(Color(hex: "e4e0e0"))
         )
     }
 }

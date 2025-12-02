@@ -49,9 +49,9 @@ struct CreateModeView: View {
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(Color(hex: "1C1C1E"))
                             .frame(width: 34, height: 34)
-                            .background(Color.white)
+                            .background(Color(hex: "e4e0e0"))
                             .clipShape(Circle())
-                            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                            .shadow(color: Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
                     }
                     Spacer()
                 }
@@ -73,7 +73,7 @@ struct CreateModeView: View {
                         .frame(height: 56)
                         .background(
                             RoundedRectangle(cornerRadius: 14)
-                                .fill(Color.white)
+                                .fill(Color(hex: "e4e0e0"))
                         )
                         
                         if !modeName.isEmpty && modeName.count < 4 {
@@ -196,7 +196,7 @@ struct CreateModeView: View {
                     .padding(.vertical, 12)
                     .background(
                         RoundedRectangle(cornerRadius: 14)
-                            .fill(Color.white)
+                            .fill(Color(hex: "e4e0e0"))
                     )
                     
                     // Toggle para display na tela bloqueada
@@ -214,7 +214,7 @@ struct CreateModeView: View {
                     .padding(.vertical, 12)
                     .background(
                         RoundedRectangle(cornerRadius: 14)
-                            .fill(Color.white)
+                            .fill(Color(hex: "e4e0e0"))
                     )
                     .onChange(of: isScheduled) { newValue in
                         // Quando o toggle é ativado, define horário de início como 10 minutos à frente
@@ -241,8 +241,11 @@ struct CreateModeView: View {
                         .foregroundColor(canSave ? Color(hex: "1C1C1E") : Color(hex: "9E9EA3"))
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
-                        .background(canSave ? Color.black.opacity(0.15) : Color.black.opacity(0.1))
-                        .cornerRadius(14)
+                        .background(
+                            Capsule()
+                                .fill(canSave ? Color(hex: "d1cece") : Color.black.opacity(0.08))
+                                .shadow(color: Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
+                        )
                 }
                 .disabled(!canSave)
                 .padding(.horizontal, 20)
@@ -445,7 +448,7 @@ struct AppPickerSheet: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color(hex: "F5F3F0")
+                Color(hex: "d9d4d3")
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
@@ -459,11 +462,14 @@ struct AppPickerSheet: View {
                     }) {
                         Text("Concluir")
                             .font(.system(size: 17, weight: .semibold))
-                            .foregroundColor(.white)
+                            .foregroundColor(Color(hex: "1C1C1E"))
                             .frame(maxWidth: .infinity)
                             .frame(height: 50)
-                            .background(Color.black)
-                            .cornerRadius(12)
+                            .background(
+                                Capsule()
+                                    .fill(Color(hex: "d1cece"))
+                                    .shadow(color: Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
+                            )
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 20)
