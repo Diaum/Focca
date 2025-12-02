@@ -19,6 +19,10 @@ struct FoccaApp: App {
         // Inicializa TimerStorage e limpa dados antigos
         TimerStorage.shared.initializeFirstLaunch()
         
+        // Inicializa o monitor de Screen Time (verifica se está ativo)
+        _ = ScreenTimeMonitor.shared
+        print("📱 [FoccaApp] ScreenTimeMonitor inicializado")
+        
         // Acessa o singleton para inicializar o monitoramento
         _ = ScheduleManager.shared
         print("📱 [FoccaApp] App iniciado, ScheduleManager inicializado")
