@@ -9,11 +9,12 @@ enum AwardFilter: String, CaseIterable {
 struct AwardFilterView: View {
     @Binding var selectedFilter: AwardFilter
     let isBlocked: Bool
+    let availableFilters: [AwardFilter]
     
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                ForEach(AwardFilter.allCases, id: \.self) { filter in
+                ForEach(availableFilters, id: \.self) { filter in
                     Button(action: {
                         selectedFilter = filter
                     }) {

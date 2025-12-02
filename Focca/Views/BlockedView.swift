@@ -10,11 +10,12 @@ struct BlockedView: View {
     @State private var activeModeName: String = "-"
     @State private var activeModeAppCount: Int = 0
     @State private var activeModeCategoryCount: Int = 0
+    @State private var isAnimatingGIF: Bool = false
 
     private let sharedDefaults = UserDefaults(suiteName: "group.com.focca.timer") ?? UserDefaults.standard
     
     var body: some View {
-        ZStack {
+        ZStack {    
             Color(hex: "242424")
                 .ignoresSafeArea()
             
@@ -25,11 +26,10 @@ struct BlockedView: View {
                 TimerComponent(isActive: isBlocked)
                     .padding(.bottom, 10)
                 
-                Image("focca-rectangle-black")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
+                AnimatedGIFView(name: "focca-rectangle-white-to-black", duration: 1.5, reversed: true, isAnimating: isAnimatingGIF)
                     .frame(width: 300, height: 197)
-                .padding(.bottom, 60)
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .padding(.bottom, 60)
                 
                 VStack(spacing: 6) {
                     HStack(spacing: 4) {
@@ -57,65 +57,56 @@ struct BlockedView: View {
                 ZStack(alignment: .top) {
                     WhiteRoundedBottomPlain(isBlocked: true)
                     DarkBlockButtonNew(action: {
-                        // Desbloqueio direto, sem animação de GIF
-                        // Feature 5: Desativa o schedule do dia se usuário desbloquear antes do fim
-                        // Nota: disableScheduleForToday() e manualUnblock() já chamam endBlocking() internamente,
-                        // então não precisamos chamar novamente aqui para evitar dupla contagem
-                        if let currentSchedule = ScheduleManager.shared.currentSchedule {
-                            ScheduleManager.shared.disableScheduleForToday(scheduleId: currentSchedule.id)
-                        } else if ScheduleManager.shared.isBlockedBySchedule {
-                            // Se há bloqueio por schedule mas não há schedule atual, desbloqueia manualmente
-                            ScheduleManager.shared.manualUnblock()
-                        } else {
-                            // Caso não seja um schedule, precisa desbloquear manualmente e registrar fim
-                            // Obtém os apps bloqueados antes de desbloquear
-                            var blockedSelection: FamilyActivitySelection?
-                            if let modeName = UserDefaults.standard.string(forKey: "active_mode_name"),
-                               let data = UserDefaults.standard.data(forKey: "mode_\(modeName)_selection"),
-                               let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
-                                blockedSelection = saved
-                            } else if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
-                                      let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
-                                blockedSelection = saved
+                        isAnimatingGIF = true
+                        
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            if let currentSchedule = ScheduleManager.shared.currentSchedule {
+                                ScheduleManager.shared.disableScheduleForToday(scheduleId: currentSchedule.id)
+                            } else if ScheduleManager.shared.isBlockedBySchedule {
+                                ScheduleManager.shared.manualUnblock()
+                            } else {
+                                var blockedSelection: FamilyActivitySelection?
+                                if let modeName = UserDefaults.standard.string(forKey: "active_mode_name"),
+                                   let data = UserDefaults.standard.data(forKey: "mode_\(modeName)_selection"),
+                                   let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+                                    blockedSelection = saved
+                                } else if let data = UserDefaults.standard.data(forKey: "familyActivitySelection"),
+                                          let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
+                                    blockedSelection = saved
+                                }
+                                
+                                if let selection = blockedSelection {
+                                    AppBlockingTracker.shared.endBlocking(selection: selection, endDate: Date())
+                                }
                             }
                             
-                            // Finaliza bloqueio por app apenas se não foi chamado por schedule
-                            if let selection = blockedSelection {
-                                AppBlockingTracker.shared.endBlocking(selection: selection, endDate: Date())
-                            }
-                        }
-                        
-                        // Finaliza TODAS as sessões ativas do dia atual para garantir que não continue contando
-                        AppBlockingTracker.shared.endAllActiveSessions(for: Date(), endDate: Date())
-                        
-                        // Desbloqueia apps, categorias e sites
-                        let store = ManagedSettingsStore()
-                        store.application.blockedApplications = nil
-                        store.shield.applicationCategories = nil
-                        store.webContent.blockedByFilter = nil
-                        
-                        if let startDate = sharedDefaults.object(forKey: "blocked_start_date") as? Date {
-                            TimerStorage.shared.splitOvernightTime(from: startDate, to: Date())
-                        }
-                        sharedDefaults.removeObject(forKey: "blocked_start_date")
-                        sharedDefaults.synchronize()
-                        
-                        // Remove também do standardDefaults
-                        UserDefaults.standard.removeObject(forKey: "blocked_start_date")
-                        UserDefaults.standard.synchronize()
-                        
-                        // Stop Live Activity
-                        stopLiveActivity()
-                        
-                        // Atualiza o widget imediatamente
-                        WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
-                        
-                        // Força uma atualização adicional após um pequeno delay
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
-                        }
+                            AppBlockingTracker.shared.endAllActiveSessions(for: Date(), endDate: Date())
+                            
+                            let store = ManagedSettingsStore()
+                            store.application.blockedApplications = nil
+                            store.shield.applicationCategories = nil
+                            store.webContent.blockedByFilter = nil
 
-                        isBlocked = false
+                            if let startDate = sharedDefaults.object(forKey: "blocked_start_date") as? Date {
+                                TimerStorage.shared.splitOvernightTime(from: startDate, to: Date())
+                            }
+                            sharedDefaults.removeObject(forKey: "blocked_start_date")
+                            sharedDefaults.synchronize()
+                            
+                            UserDefaults.standard.removeObject(forKey: "blocked_start_date")
+                            UserDefaults.standard.synchronize()
+                            
+                            stopLiveActivity()
+                            
+                            WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
+                            
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                WidgetCenter.shared.reloadTimelines(ofKind: "FoccaWidgetLive")
+                            }
+
+                            isBlocked = false
+                            isAnimatingGIF = false
+                        }
                     })
                     .padding(.horizontal, 36)
                     .offset(y: -24)
@@ -131,7 +122,6 @@ struct BlockedView: View {
             updateModeInfo()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ModeDataUpdated"))) { _ in
-            // Atualiza o contador quando um modo é editado
             updateModeInfo()
         }
     }

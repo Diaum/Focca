@@ -46,7 +46,6 @@ struct UnlockedView: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Timer com estilo minimalista
                 HStack(spacing: 6) {
                     Text(formattedHours)
                         .font(.system(size: 18, weight: .semibold, design: .rounded))
@@ -70,17 +69,10 @@ struct UnlockedView: View {
                 .padding(.top, -80)
                 .padding(.bottom, 20)
 
-                ZStack {
-                    // Background vermelho claro
-                    RoundedRectangle(cornerRadius: 24)
-                        .fill(Color(hex: "FFE5E5"))
-                        .frame(width: 300, height: 197)
-                    
-                    AnimatedGIFView(name: "focca-rectangle-white-to-black", duration: 1.5, isAnimating: showGIF)
-                        .frame(width: 300, height: 197)
-                        .clipShape(RoundedRectangle(cornerRadius: 24))
-                }
-                .padding(.bottom, 65)
+                AnimatedGIFView(name: "focca-rectangle-white-to-black", duration: 1.5, isAnimating: showGIF)
+                    .frame(width: 300, height: 197)
+                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .padding(.bottom, 65)
                 
                 VStack(spacing: 12) {
                     Button(action: { showModeSheet = true }) {
@@ -148,11 +140,9 @@ struct UnlockedView: View {
                 .presentationCornerRadius(30)
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ModeDataUpdated"))) { _ in
-            // Atualiza o contador quando um modo é editado
             updateActiveModeDisplayInfo()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ModeSaved"))) { _ in
-            // Atualiza quando um modo é criado
             updateActiveModeDisplayInfo()
         }
         .sheet(isPresented: $showCreateMode) {
@@ -236,10 +226,8 @@ struct UnlockedView: View {
     }
     
     private func activateCurrentMode() {
-        // Mostra o GIF na ativação do bloqueio
         showGIF = true
         
-        // Aguarda a animação (1.5s) antes de iniciar o bloqueio
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             proceedWithBlocking()
         }
@@ -252,18 +240,15 @@ struct UnlockedView: View {
            let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
             let store = ManagedSettingsStore()
 
-            // Bloqueia apps individuais
             if !saved.applicationTokens.isEmpty {
                 let apps = Set(saved.applicationTokens.compactMap { Application(token: $0) })
                 store.application.blockedApplications = apps
             }
 
-            // Bloqueia categorias de apps
             if !saved.categoryTokens.isEmpty {
                 store.shield.applicationCategories = .specific(saved.categoryTokens)
             }
 
-            // Bloqueia domínios web
             if !saved.webDomainTokens.isEmpty {
                 let domains = Set(saved.webDomainTokens.compactMap { WebDomain(token: $0) })
                 store.webContent.blockedByFilter = .specific(domains)
