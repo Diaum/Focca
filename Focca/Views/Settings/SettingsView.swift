@@ -389,8 +389,10 @@ struct SettingsView: View {
         }
         
         private func shareToWhatsApp() {
-            let text = "Conheça o Focca! Um app incrível para ajudar você a focar."
-            let encodedText = text.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+            let text = """
+            Use o Focca, um app para você focar no que realmente importa. Por enquanto ele está em testes, mas você já pode experimentar aqui: https://testflight.apple.com/join/Kv6aPEEU
+            """
+            let encodedText = text.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? text
             let whatsAppURL = URL(string: "https://wa.me/?text=\(encodedText)")
             
             if let url = whatsAppURL, UIApplication.shared.canOpenURL(url) {
