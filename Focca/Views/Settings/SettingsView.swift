@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct SettingsView: View {
     @Binding var selectedTab: Int
@@ -28,97 +29,125 @@ struct SettingsView: View {
                  : Color(hex: "d9d4d3"))
                 .ignoresSafeArea()
                 
-                VStack(spacing: 14) {
-                    ProfileHeaderView(
-                        email: authViewModel.currentEmail ?? "usuário@focca.app",
-                        isBlocked: isBlocked
-                    )
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 16)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(isBlocked ? Color(hex: "1C1C1C") : Color(hex: "e4e0e0"))
-                            .shadow(color: isBlocked ? Color.black.opacity(0.3) : Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
-                    )
-                    .padding(.top, 0)
-                    .padding(.bottom, 14)
-                    SettingsSection(
-                        title: nil,
-                        items: [
-                            SettingsItem(title: "Sobre o Focca", hasArrow: true),
-                            SettingsItem(title: "Política de Privacidade", hasArrow: true)
-                        ],
-                        showNotificationsView: $showNotificationsView,
-                        selectedTab: $selectedTab,
-                        isBlocked: isBlocked
-                    )
-                    
-                    SettingsSection(
-                        title: nil,
-                        items: [
-                            SettingsItem(title: "Conquistas", hasArrow: true, action: .awards),
-                            SettingsItem(title: "Metas", hasArrow: true, action: .goals),
-                            SettingsItem(title: "Estatísticas Avançadas", hasArrow: true, action: .advancedStats)
-                        ],
-                        showNotificationsView: $showNotificationsView,
-                        selectedTab: $selectedTab,
-                        isBlocked: isBlocked
-                    )
-                    
-                    SettingsSection(
-                        title: nil,
-                        items: [
-                            SettingsItem(title: "Amigos (breve)", hasArrow: true, action: .friends)
-                        ],
-                        showNotificationsView: $showNotificationsView,
-                        selectedTab: $selectedTab,
-                        isBlocked: isBlocked
-                    )
-                    
-                    SettingsSection(
-                        title: nil,
-                        items: [
-                            SettingsItem(title: "Desbloqueio de Emergência", subtitle: "4 restantes", hasArrow: true)
-                        ],
-                        showNotificationsView: $showNotificationsView,
-                        selectedTab: $selectedTab,
-                        isBlocked: isBlocked
-                    )
-                    
-                    VStack(spacing: 12) {
-                        Button(action: {
-                            Task {
-                                await authViewModel.signOut()
+                GeometryReader { geometry in
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 14) {
+                            ProfileHeaderView(
+                                email: authViewModel.currentEmail ?? "usuário@focca.app",
+                                isBlocked: isBlocked
+                            )
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(isBlocked ? Color(hex: "1C1C1C") : Color(hex: "e4e0e0"))
+                                    .shadow(color: isBlocked ? Color.black.opacity(0.3) : Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
+                            )
+                            .padding(.top, 0)
+                            .padding(.bottom, 14)
+                            
+                            SettingsSection(
+                                title: nil,
+                                items: [
+                                    SettingsItem(title: "Sobre o Focca", hasArrow: true),
+                                    SettingsItem(title: "Política de Privacidade", hasArrow: true)
+                                ],
+                                showNotificationsView: $showNotificationsView,
+                                selectedTab: $selectedTab,
+                                isBlocked: isBlocked
+                            )
+                            
+                            ReferralCard(isBlocked: isBlocked)
+                                .padding(.top, 14)
+                            
+                            SettingsSection(
+                                title: nil,
+                                items: [
+                                    SettingsItem(title: "Conquistas", hasArrow: true, action: .awards),
+                                    SettingsItem(title: "Metas", hasArrow: true, action: .goals),
+                                    SettingsItem(title: "Estatísticas Avançadas", hasArrow: true, action: .advancedStats)
+                                ],
+                                showNotificationsView: $showNotificationsView,
+                                selectedTab: $selectedTab,
+                                isBlocked: isBlocked
+                            )
+                            
+                            SettingsSection(
+                                title: nil,
+                                items: [
+                                    SettingsItem(title: "Amigos (breve)", hasArrow: true, action: .friends)
+                                ],
+                                showNotificationsView: $showNotificationsView,
+                                selectedTab: $selectedTab,
+                                isBlocked: isBlocked
+                            )
+                            
+                            SettingsSection(
+                                title: nil,
+                                items: [
+                                    SettingsItem(title: "Desbloqueio de Emergência", subtitle: "4 restantes", hasArrow: true)
+                                ],
+                                showNotificationsView: $showNotificationsView,
+                                selectedTab: $selectedTab,
+                                isBlocked: isBlocked
+                            )
+                            
+                            VStack(spacing: 12) {
+                            Button(action: {
+                                Task {
+                                    await authViewModel.signOut()
+                                }
+                            }) {
+                                Text("Deslogar")
+                                    .font(.system(size: 15, weight: .medium))
+                                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 44)
+                                    .background(
+                                        Capsule()
+                                            .fill(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "c4c0c0"))
+                                            .shadow(color: isBlocked ? Color.black.opacity(0.2) : Color.black.opacity(0.04), radius: 2, x: 0, y: 1)
+                                    )
                             }
-                        }) {
-                            Text("Deslogar")
-                                .font(.system(size: 17, weight: .medium))
-                                .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 50)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .fill(isBlocked ? Color(hex: "1C1C1C") : Color(hex: "d1cece"))
-                                        .shadow(color: isBlocked ? Color.black.opacity(0.3) : Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
-                                )
+                            .buttonStyle(PlainButtonStyle())
+                            
+                                Text("version \(appVersion)")
+                                    .font(.system(size: 13, weight: .regular))
+                                    .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "A0A0A0"))
+                            }
+                            .padding(.top, 40)
+                            .padding(.bottom, 150)
                         }
-                        .buttonStyle(PlainButtonStyle())
-                        
-                        Text("version \(appVersion)")
-                            .font(.system(size: 13, weight: .regular))
-                            .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "A0A0A0"))
+                        .padding(.horizontal, 16)
+                        .padding(.top, 20)
                     }
-                    .padding(.top, 40)
+                    .frame(height: geometry.size.height - 100)
+                    .clipped()
+                    .overlay(
+                        VStack {
+                            Spacer()
+                            LinearGradient(
+                                colors: [
+                                    (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(1.0),
+                                    (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(0.7),
+                                    (isBlocked ? Color(hex: "242424") : Color(hex: "d9d4d3")).opacity(0.0)
+                                ],
+                                startPoint: .bottom,
+                                endPoint: .top
+                            )
+                            .frame(height: 100)
+                            .frame(maxWidth: .infinity)
+                            .allowsHitTesting(false)
+                        }
+                        .padding(.bottom, 0)
+                    )
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, -30)
-                .padding(.bottom, 40)
-                .zIndex(2)
+                .zIndex(3)
                 
                 VStack(spacing: 0) {
                     Spacer()
                     WhiteRoundedBottomPlain(isBlocked: isBlocked)
-                        .offset(y: -5)
+                        .offset(y: -0)
                     TabBar(selectedTab: $selectedTab)
                         .padding(.bottom, -38)
                 }
@@ -295,11 +324,65 @@ struct SettingsView: View {
         var action: SettingsAction = .none
     }
     
-    #Preview {
-        ZStack {
-            Color(hex: "d9d4d3")
-                .ignoresSafeArea()
-            SettingsView(selectedTab: .constant(3), isBlocked: false)
+    struct ReferralCard: View {
+        let isBlocked: Bool
+        
+        var body: some View {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Compartilhe o Focca com um Amigo")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                
+                Text("Seu amigo ganha 10% de desconto no pedido dele!")
+                    .font(.system(size: 14, weight: .regular))
+                    .foregroundColor(isBlocked ? Color(hex: "8A8A8E") : Color(hex: "8E8E93"))
+                
+                Button(action: {
+                    shareToWhatsApp()
+                }) {
+                    Text("Compartilhar agora")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(isBlocked ? .white : Color(hex: "1C1C1E"))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(
+                            Capsule()
+                                .fill(isBlocked ? Color(hex: "2C2C2E") : Color(hex: "c4c0c0"))
+                                .shadow(color: isBlocked ? Color.black.opacity(0.2) : Color.black.opacity(0.04), radius: 2, x: 0, y: 1)
+                        )
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(isBlocked ? Color(hex: "1C1C1C") : Color(hex: "e4e0e0"))
+                    .shadow(color: isBlocked ? Color.black.opacity(0.3) : Color.black.opacity(0.04), radius: 3, x: 0, y: 1)
+            )
         }
+        
+        private func shareToWhatsApp() {
+            let text = "Conheça o Focca! Um app incrível para ajudar você a focar."
+            let encodedText = text.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+            let whatsAppURL = URL(string: "https://wa.me/?text=\(encodedText)")
+            
+            if let url = whatsAppURL, UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url)
+            } else {
+                let activityVC = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                   let rootViewController = windowScene.windows.first?.rootViewController {
+                    rootViewController.present(activityVC, animated: true)
+                }
+            }
+        }
+    }
+    
+    #Preview("Light Mode") {
+        SettingsView(selectedTab: .constant(3), isBlocked: false)
+    }
+    
+    #Preview("Dark Mode") {
+        SettingsView(selectedTab: .constant(3), isBlocked: true)
     }
 }
