@@ -113,9 +113,9 @@ class AuthViewModel: ObservableObject {
         
         do {
             try await SupabaseManager.shared.signOut()
+            clearAuthState()
             isAuthenticated = false
             currentEmail = nil
-            clearAuthState()
         } catch {
             errorMessage = error.localizedDescription
         }
