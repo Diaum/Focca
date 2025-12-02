@@ -5,6 +5,7 @@ struct SettingsView: View {
     @Binding var selectedTab: Int
     let isBlocked: Bool
     @State private var showNotificationsView = false
+    @State private var showSignOutConfirmation = false
     @ObservedObject private var authViewModel = AuthViewModel.shared
     @ObservedObject private var awardManager = AwardManager.shared
     @ObservedObject private var statsAchievementManager = StatsAchievementManager.shared
@@ -94,9 +95,7 @@ struct SettingsView: View {
                             
                             VStack(spacing: 12) {
                             Button(action: {
-                                Task {
-                                    await authViewModel.signOut()
-                                }
+                                showSignOutConfirmation = true
                             }) {
                                 Text("Deslogar")
                                     .font(.system(size: 15, weight: .medium))
@@ -157,6 +156,16 @@ struct SettingsView: View {
         .preferredColorScheme(isBlocked ? .dark : .light)
         .sheet(isPresented: $showNotificationsView) {
             NotificationsView()
+        }
+        .alert("Deslogar", isPresented: $showSignOutConfirmation) {
+            Button("Cancelar", role: .cancel) {}
+            Button("Deslogar", role: .destructive) {
+                Task {
+                    await authViewModel.signOut()
+                }
+            }
+        } message: {
+            Text("Tem certeza que deseja deslogar? Você precisará fazer login novamente.")
         }
     }
     
